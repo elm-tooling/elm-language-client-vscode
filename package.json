@@ -104,8 +104,7 @@
     "postinstall": "cd client && npm install && cd ../server && npm install && cd ..",
     "test": "sh ./scripts/e2e.sh",
     "lint": "tslint -p tsconfig.json",
-    "tslint-check": "tslint-config-prettier-check ./tslint.json",
-    "package": "vsce package"
+    "tslint-check": "tslint-config-prettier-check ./tslint.json"
   },
   "devDependencies": {
     "@types/mocha": "^5.2.6",
