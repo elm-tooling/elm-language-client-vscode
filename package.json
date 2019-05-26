@@ -1,13 +1,15 @@
 {
   "name": "elm-vscode-ls",
-  "displayName": "Elm",
+  "displayName": "ElmLS",
   "description": "VSCode plugin using the elm-language-server",
+  "publisher": "elmTooling",
+  "icon": "images/elm.png",
   "author": "Kolja Lampe",
   "license": "MIT",
   "version": "1.0.0",
   "repository": {
     "type": "git",
-    "url": "https://github.com/elm-tooling/elm-language-server"
+    "url": "https://github.com/elm-tooling/elm-language-client-vscode"
   },
   "categories": [
     "Linters",
@@ -102,11 +104,12 @@
     "postinstall": "cd client && npm install && cd ../server && npm install && cd ..",
     "test": "sh ./scripts/e2e.sh",
     "lint": "tslint -p tsconfig.json",
-    "tslint-check": "tslint-config-prettier-check ./tslint.json"
+    "tslint-check": "tslint-config-prettier-check ./tslint.json",
+    "package": "cd client && vsce package"
   },
   "devDependencies": {
     "@types/mocha": "^5.2.6",
-    "@types/node": "^12.0.1",
+    "@types/node": "^12.0.2",
     "prettier": "^1.17.1",
     "tslint": "^5.16.0",
     "tslint-config-prettier": "^1.18.0",
