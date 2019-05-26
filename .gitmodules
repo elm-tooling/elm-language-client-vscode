@@ -1,0 +1,3 @@
+[submodule "server"]
+	path = server
+	url = git@github.com:elm-tooling/elm-language-server.git
