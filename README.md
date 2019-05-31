@@ -25,5 +25,5 @@ You will need to install `elm` and `elm-format`, to get all diagnostics. If your
 This extension contributes the following settings:
 
 - `elmLS.trace.server`: Enable/disable trace logging of client and server communication
-- `elmLS.elmPath`: The path to your elm executeable.
-- `elmLS.elmFormatPath`: The path to your elm-format executeable.
+- `elmLS.elmPath`: The path to your elm executable.
+- `elmLS.elmFormatPath`: The path to your elm-format executable.
