@@ -1,20 +1,30 @@
 "use strict";
 
 import * as path from "path";
-import { ExtensionContext, OutputChannel, RelativePattern, Uri, window as Window, workspace } from "vscode";
-import { LanguageClient, LanguageClientOptions, ServerOptions, TransportKind } from "vscode-languageclient";
+import {
+  ExtensionContext,
+  OutputChannel,
+  RelativePattern,
+  Uri,
+  window as Window,
+  workspace,
+} from "vscode";
+import {
+  LanguageClient,
+  LanguageClientOptions,
+  ServerOptions,
+  TransportKind,
+} from "vscode-languageclient";
 
 let languageClient: LanguageClient;
+const elmJsonGlob = "**/elm.json";
 
 export async function activate(context: ExtensionContext) {
   // We get activated if there is one or more elm.json file in the workspace
   // Start one server for each workspace with at least one elm.json
   // and watch Elm files in those directories.
 
-  const elmJsons = await workspace.findFiles(
-    "**/elm.json",
-    "**/node_modules/**",
-  );
+  const elmJsons = await workspace.findFiles(elmJsonGlob, "**/node_modules/**");
   // Todo do this smarter
   if (elmJsons) {
     const workspaceFolder = workspace.getWorkspaceFolder(elmJsons[0]);
@@ -25,7 +35,7 @@ export async function activate(context: ExtensionContext) {
   }
 
   const watcher = workspace.createFileSystemWatcher(
-    "**/elm.json",
+    elmJsonGlob,
     false,
     true,
     false,
@@ -54,7 +64,7 @@ async function stopClient(workspaceUri: Uri) {
   const client = clients.get(workspaceUri.fsPath);
 
   if (client) {
-    const pattern = new RelativePattern(workspaceUri.fsPath, "**/elm.json");
+    const pattern = new RelativePattern(workspaceUri.fsPath, elmJsonGlob);
     const files = await workspace.findFiles(pattern, "**/node_modules/**");
     if (files.length === 0) {
       languageClient.info("Found the client shutting it down.");
@@ -113,7 +123,7 @@ function startClient(context: ExtensionContext, elmWorkspace: Uri) {
     // Notify the server about file changes to 'elm.json'
     synchronize: {
       fileEvents: workspace.createFileSystemWatcher(
-        path.join(elmWorkspace.fsPath, "**/elm.json"),
+        path.join(elmWorkspace.fsPath, elmJsonGlob),
       ),
     },
   };

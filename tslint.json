@@ -2,6 +2,7 @@
   "defaultSeverity": "error",
   "extends": [
     "tslint:recommended",
+    "tslint-sonarts",
     "tslint-plugin-prettier",
     "tslint-config-prettier"
   ],

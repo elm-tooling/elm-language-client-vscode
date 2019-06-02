@@ -8,7 +8,7 @@
     "lib": ["es6"],
     "sourceMap": true
   },
-  "include": ["src"],
+  "include": ["server/src", "client/src"],
   "exclude": ["node_modules", ".vscode-test"],
   "references": [{ "path": "./client" }, { "path": "./server" }]
 }
