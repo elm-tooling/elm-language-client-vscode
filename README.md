@@ -2,7 +2,13 @@
 
 This vscode extension is in development and might be lacking features you know working from `vscode-elm`.
 
-You will need to install `elm` and `elm-format`, to get all diagnostics. If your setup fails to find the global installations of those, you can use the settings panel is VSCode to set the paths to the executables manually.
+You will need to install `elm`, `elm-test` and `elm-format`, to get all diagnostics. If your setup fails to find the global installations of those, you can use the settings panel is VSCode to set the paths to the executables manually.
+
+```shell
+npm install -g elm
+npm install -g elm-test
+npm install -g elm-format
+```
 
 ## Features
 
@@ -27,3 +33,4 @@ This extension contributes the following settings:
 - `elmLS.trace.server`: Enable/disable trace logging of client and server communication
 - `elmLS.elmPath`: The path to your elm executable.
 - `elmLS.elmFormatPath`: The path to your elm-format executable.
+- `elmLS.elmTestPath`: The path to your elm-test executable.
