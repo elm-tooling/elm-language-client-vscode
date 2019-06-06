@@ -130,7 +130,7 @@ function startClient(context: ExtensionContext, elmWorkspace: Uri) {
 
   // Create the language client and start the client.
   languageClient = new LanguageClient(
-    "elmLanguageServer",
+    "elmLS",
     "Elm Language Server",
     serverOptions,
     clientOptions,
