@@ -81,24 +81,6 @@
           ],
           "default": "off",
           "description": "Traces the communication between VS Code and the language server."
-        },
-        "elmLS.elmPath": {
-          "scope": "window",
-          "type": "string",
-          "default": "elm",
-          "description": "The path to your elm executeable."
-        },
-        "elmLS.elmFormatPath": {
-          "scope": "window",
-          "type": "string",
-          "default": "elm-format",
-          "description": "The path to your elm-format executeable."
-        },
-        "elmLS.elmTestPath": {
-          "scope": "window",
-          "type": "string",
-          "default": "elm-test",
-          "description": "The path to your elm-test executeable."
         }
       }
     }
@@ -114,8 +96,8 @@
   },
   "devDependencies": {
     "@types/mocha": "^5.2.7",
-    "@types/node": "^12.0.4",
-    "prettier": "^1.17.1",
+    "@types/node": "^12.0.7",
+    "prettier": "^1.18.2",
     "tslint": "^5.17.0",
     "tslint-config-prettier": "^1.18.0",
     "tslint-plugin-prettier": "^2.0.1",
