@@ -81,6 +81,24 @@
           ],
           "default": "off",
           "description": "Traces the communication between VS Code and the language server."
+        },
+        "elmLS.elmPath": {
+          "scope": "window",
+          "type": "string",
+          "default": "elm",
+          "description": "The path to your elm executeable."
+        },
+        "elmLS.elmFormatPath": {
+          "scope": "window",
+          "type": "string",
+          "default": "elm-format",
+          "description": "The path to your elm-format executeable."
+        },
+        "elmLS.elmTestPath": {
+          "scope": "window",
+          "type": "string",
+          "default": "elm-test",
+          "description": "The path to your elm-test executeable."
         }
       }
     }
