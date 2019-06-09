@@ -12,6 +12,8 @@ npm install -g elm-format
 
 ## Features
 
+Supports elm 0.19
+
 | Feature          | Description                                                                                                                                          |
 | ---------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------- |
 | Diagnostics      | Provided via `elm make` and `elm-analyse`                                                                                                            |
