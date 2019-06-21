@@ -86,19 +86,19 @@
           "scope": "window",
           "type": "string",
           "default": "elm",
-          "description": "The path to your elm executeable."
+          "description": "The path to your elm executable."
         },
         "elmLS.elmFormatPath": {
           "scope": "window",
           "type": "string",
           "default": "elm-format",
-          "description": "The path to your elm-format executeable."
+          "description": "The path to your elm-format executable."
         },
         "elmLS.elmTestPath": {
           "scope": "window",
           "type": "string",
           "default": "elm-test",
-          "description": "The path to your elm-test executeable."
+          "description": "The path to your elm-test executable."
         }
       }
     }
