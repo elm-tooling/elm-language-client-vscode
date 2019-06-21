@@ -146,7 +146,7 @@
         },
         "exposed-modules": {
           "description": "All modules that your project will make available to end users.",
-          "type": "array",
+          "type": "object",
           "items": {
             "type": "string"
           }
