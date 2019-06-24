@@ -25,13 +25,12 @@ export async function activate(context: ExtensionContext) {
   // and watch Elm files in those directories.
 
   const elmJsons = await workspace.findFiles(elmJsonGlob, "**/node_modules/**");
-  // Todo do this smarter
   if (elmJsons) {
-    const workspaceFolder = workspace.getWorkspaceFolder(elmJsons[0]);
-    const elmJsonFolder = getElmJsonFolder(elmJsons[0]);
-    if (workspaceFolder) {
+    const listOfElmJsonFolders = elmJsons.map(a => getElmJsonFolder(a));
+    const newList: Map<string, Uri> = findTopLevelFolders(listOfElmJsonFolders);
+    newList.forEach(elmJsonFolder => {
       startClient(context, elmJsonFolder);
-    }
+    });
   }
 
   const watcher = workspace.createFileSystemWatcher(
@@ -41,19 +40,33 @@ export async function activate(context: ExtensionContext) {
     false,
   );
   watcher.onDidCreate(uri => {
-    const workspaceFolder = workspace.getWorkspaceFolder(uri);
     const elmJsonFolder = getElmJsonFolder(uri);
-    if (workspaceFolder) {
-      startClient(context, elmJsonFolder);
-    }
+    startClient(context, elmJsonFolder);
   });
   watcher.onDidDelete(uri => {
-    const workspaceFolder = workspace.getWorkspaceFolder(uri);
     const elmJsonFolder = getElmJsonFolder(uri);
-    if (workspaceFolder) {
-      stopClient(elmJsonFolder);
-    }
+    stopClient(elmJsonFolder);
   });
+}
+
+function findTopLevelFolders(listOfElmJsonFolders: Uri[]) {
+  const result: Map<string, Uri> = new Map();
+  listOfElmJsonFolders.forEach(element => {
+    result.set(element.toString(), element);
+  });
+
+  listOfElmJsonFolders.forEach(a => {
+    listOfElmJsonFolders.forEach(b => {
+      if (
+        b.toString() !== a.toString() &&
+        b.toString().startsWith(a.toString())
+      ) {
+        result.delete(b.toString());
+      }
+    });
+  });
+
+  return result;
 }
 
 function getElmJsonFolder(uri: Uri): Uri {
