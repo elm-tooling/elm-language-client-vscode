@@ -114,12 +114,12 @@
   },
   "devDependencies": {
     "@types/mocha": "^5.2.7",
-    "@types/node": "^12.0.7",
+    "@types/node": "^12.0.10",
     "prettier": "^1.18.2",
-    "tslint": "^5.17.0",
+    "tslint": "^5.18.0",
     "tslint-config-prettier": "^1.18.0",
     "tslint-plugin-prettier": "^2.0.1",
     "tslint-sonarts": "^1.9.0",
-    "typescript": "3.5.1"
+    "typescript": "3.5.2"
   }
 }
