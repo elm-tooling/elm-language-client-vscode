@@ -2,7 +2,7 @@
 
 ![Showcase](images/elm-ls.gif)
 
-This vscode extension is using the [elm-language-server](https://github.com/elm-tooling/elm-language-server) which enables most of the used features.
+This [vscode extension](https://marketplace.visualstudio.com/items?itemName=Elmtooling.elm-ls-vscode) is including the [elm-language-server](https://github.com/elm-tooling/elm-language-server) which enables most of the used features.
 
 You will need to install `elm`, `elm-test` and `elm-format`, to get all diagnostics. If your setup fails to find the global installations of those, you can use the settings panel is VSCode to set the paths to the executables manually.
 
