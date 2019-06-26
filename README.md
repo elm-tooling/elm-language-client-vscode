@@ -40,7 +40,7 @@ This extension contributes the following settings:
 ## Contributing / Debugging
 
 ```shell
-git clone https://github.com/elm-tooling/elm-language-client-vscode.git
+git clone --recursive git@github.com:elm-tooling/elm-language-client-vscode.git
 cd elm-language-client-vscode
 npm install
 ```
