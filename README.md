@@ -36,3 +36,13 @@ This extension contributes the following settings:
 - `elmLS.elmPath`: The path to your elm executable.
 - `elmLS.elmFormatPath`: The path to your elm-format executable.
 - `elmLS.elmTestPath`: The path to your elm-test executable.
+
+## Contributing / Debugging
+
+```shell
+git clone https://github.com/elm-tooling/elm-language-client-vscode.git
+cd elm-language-client-vscode
+npm install
+```
+
+Open VSCode with this project (`code .`) and press `F5` to start debugging the plugin.
