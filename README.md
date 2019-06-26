@@ -1,4 +1,4 @@
-# elm-vscode-ls
+# ElmLS
 
 ![Showcase](images/elm-ls.gif)
 

@@ -1,7 +1,7 @@
 {
   "name": "elm-ls-vscode",
   "displayName": "ElmLS",
-  "description": "VSCode plugin using the elm-language-server",
+  "description": "Improving your Elm experience since 2019",
   "publisher": "elmTooling",
   "icon": "images/elm.png",
   "author": "Kolja Lampe",
