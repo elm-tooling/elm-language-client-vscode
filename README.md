@@ -7,9 +7,7 @@ This vscode extension is using the [elm-language-server](https://github.com/elm-
 You will need to install `elm`, `elm-test` and `elm-format`, to get all diagnostics. If your setup fails to find the global installations of those, you can use the settings panel is VSCode to set the paths to the executables manually.
 
 ```shell
-npm install -g elm
-npm install -g elm-test
-npm install -g elm-format
+npm install -g elm elm-test elm-format
 ```
 
 ## Features
