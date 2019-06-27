@@ -16,7 +16,7 @@ Supports elm 0.19
 
 | Feature          | Description                                                                                                                                          |
 | ---------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------- |
-| Diagnostics      | Provided via `elm make` and `elm-analyse`                                                                                                            |
+| Diagnostics      | Provided via `elm make`, `elm-test` and `elm-analyse`                                                                                                            |
 | Formatting       | Provided via `elm-format` and post-processed to only return a diff of changes. This way it should not be as intrusive as running `elm-format` normal |
 | codeLenses       | Currently only shows if a type alias, custom type or function is exposed from that module                                                            |
 | completions      | Show completions for the current file and snippets                                                                                                   |
