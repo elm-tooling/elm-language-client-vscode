@@ -119,7 +119,17 @@ function startClient(context: ExtensionContext, elmWorkspace: Uri) {
     },
     run: { module: serverModule, transport: TransportKind.ipc },
   };
-  const outputChannel: OutputChannel = Window.createOutputChannel("elmLS");
+
+  if (!workspace.workspaceFolders) {
+    return;
+  }
+
+  const outputChannel: OutputChannel = Window.createOutputChannel(
+    "elmLS " +
+      elmWorkspace
+        .toString(true)
+        .replace(workspace.workspaceFolders[0].uri.toString(true), ""),
+  );
 
   // Options to control the language client
   const clientOptions: LanguageClientOptions = {
