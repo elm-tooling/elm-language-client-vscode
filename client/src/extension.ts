@@ -124,11 +124,12 @@ function startClient(context: ExtensionContext, elmWorkspace: Uri) {
     return;
   }
 
+  const relativeWorkspace = elmWorkspace
+    .toString(true)
+    .replace(workspace.workspaceFolders[0].uri.toString(true), "");
+
   const outputChannel: OutputChannel = Window.createOutputChannel(
-    "elmLS " +
-      elmWorkspace
-        .toString(true)
-        .replace(workspace.workspaceFolders[0].uri.toString(true), ""),
+    relativeWorkspace.length > 1 ? "elmLS " + relativeWorkspace : "elmLS",
   );
 
   // Options to control the language client
