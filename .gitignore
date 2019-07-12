@@ -69,6 +69,7 @@ dist
 # TypeScript build output
 out
 
+.vscode-test
 .vscode/*
 !.vscode/settings.json
 !.vscode/tasks.json

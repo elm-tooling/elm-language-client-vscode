@@ -104,7 +104,7 @@
     }
   },
   "scripts": {
-    "build": "parcel build ./client/src/extension.ts -t node",
+    "build": "parcel build server/src/index.ts -t node && parcel build client/src/extension.ts -t node",
     "vscode:prepublish": "cd client && npm run update-vscode && cd .. && npm run compile",
     "compile": "tsc -b",
     "watch": "tsc -b -w",
