@@ -18,6 +18,12 @@ jobs:
       command: custom
       verbose: false
       customCommand: 'run compile'
+  - task: Npm@1
+    displayName: 'Build sources with Parcel'
+    inputs:
+      command: custom
+      verbose: false
+      customCommand: 'run build'
   - script: 'node node_modules/vscode/bin/test'
     displayName: 'Run tests'
 - job: macOS
@@ -39,6 +45,12 @@ jobs:
       command: custom
       verbose: false
       customCommand: 'run compile'
+  - task: Npm@1
+    displayName: 'Build sources with Parcel'
+    inputs:
+      command: custom
+      verbose: false
+      customCommand: 'run build'
   - script: 'node node_modules/vscode/bin/test'
     displayName: 'Run tests'
 - job: Linux
@@ -60,6 +72,12 @@ jobs:
       command: custom
       verbose: false
       customCommand: 'run compile'
+  - task: Npm@1
+    displayName: 'Build sources with Parcel'
+    inputs:
+      command: custom
+      verbose: false
+      customCommand: 'run build'
   - script: |
       set -e
       /usr/bin/Xvfb :10 -ac >> /tmp/Xvfb.out 2>&1 &
