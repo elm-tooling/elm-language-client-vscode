@@ -100,9 +100,7 @@ function startClient(context: ExtensionContext, elmWorkspace: Uri) {
     return;
   }
 
-  const serverModule = context.asAbsolutePath(
-    path.join("server", "out", "index.js"),
-  );
+  const serverModule = context.asAbsolutePath(path.join("dist", "index.js"));
   // The debug options for the server
   // --inspect=6009: runs the server in Node's Inspector mode so VS Code can attach to the server for debugging
   const debugOptions = {

@@ -13,7 +13,7 @@
         "--extensionDevelopmentPath=${workspaceRoot}"
       ],
       "sourceMaps": true,
-      "outFiles": ["${workspaceRoot}/client/out/**/*.js"],
+      "outFiles": ["${workspaceRoot}/client/dist/**/*.js"],
       "preLaunchTask": {
         "type": "npm",
         "script": "watch"
@@ -27,7 +27,7 @@
       "protocol": "inspector",
       "port": 6010,
       "sourceMaps": true,
-      "outFiles": ["${workspaceRoot}/server/out/**/*.js"]
+      "outFiles": ["${workspaceRoot}/server/dist/**/*.js"]
     },
     {
       "type": "node",
@@ -37,7 +37,7 @@
       "protocol": "inspector",
       "port": 6011,
       "sourceMaps": true,
-      "outFiles": ["${workspaceRoot}/server/out/**/*.js"]
+      "outFiles": ["${workspaceRoot}/server/dist/**/*.js"]
     },
     {
       "type": "node",
@@ -47,7 +47,7 @@
       "protocol": "inspector",
       "port": 6012,
       "sourceMaps": true,
-      "outFiles": ["${workspaceRoot}/server/out/**/*.js"]
+      "outFiles": ["${workspaceRoot}/server/dist/**/*.js"]
     },
     {
       "name": "Language Server E2E Test",
@@ -56,10 +56,10 @@
       "runtimeExecutable": "${execPath}",
       "args": [
         "--extensionDevelopmentPath=${workspaceRoot}",
-        "--extensionTestsPath=${workspaceRoot}/client/out/test",
+        "--extensionTestsPath=${workspaceRoot}/client/dist/test",
         "${workspaceRoot}/client/testFixture"
       ],
-      "outFiles": ["${workspaceRoot}/client/out/test/**/*.js"]
+      "outFiles": ["${workspaceRoot}/client/dist/test/**/*.js"]
     }
   ],
   "compounds": [

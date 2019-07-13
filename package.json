@@ -104,6 +104,7 @@
     }
   },
   "scripts": {
+    "build": "parcel build server/src/index.ts -t node && parcel build client/src/extension.ts -t node",
     "vscode:prepublish": "cd client && npm run update-vscode && cd .. && npm run compile",
     "compile": "tsc -b",
     "watch": "tsc -b -w",
@@ -115,6 +116,7 @@
   "devDependencies": {
     "@types/mocha": "^5.2.7",
     "@types/node": "^12.0.10",
+    "parcel-bundler": "^1.12.3",
     "prettier": "^1.18.2",
     "tslint": "^5.18.0",
     "tslint-config-prettier": "^1.18.0",
