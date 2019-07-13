@@ -26,6 +26,7 @@ jobs:
       customCommand: 'run build'
   - script: 'node node_modules/vscode/bin/test'
     displayName: 'Run tests'
+
 - job: macOS
   pool:
     name: Hosted macOS
@@ -53,6 +54,7 @@ jobs:
       customCommand: 'run build'
   - script: 'node node_modules/vscode/bin/test'
     displayName: 'Run tests'
+
 - job: Linux
   pool:
     name: Hosted Ubuntu 1604
