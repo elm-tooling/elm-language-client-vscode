@@ -162,7 +162,6 @@ function startClient(context: ExtensionContext, elmWorkspace: Uri) {
 
   // Start the client. This will also launch the server
   languageClient.start();
-  languageClient.info(`Starting language server for ${elmWorkspace.fsPath}`);
   clients.set(elmWorkspace.fsPath, languageClient);
 }
 
