@@ -14,6 +14,7 @@ import {
   LanguageClientOptions,
   ServerOptions,
   TransportKind,
+  RevealOutputChannelOn,
 } from "vscode-languageclient";
 
 let languageClient: LanguageClient;
@@ -144,6 +145,7 @@ function startClient(context: ExtensionContext, elmWorkspace: Uri) {
     ],
     initializationOptions: { elmWorkspace: elmWorkspace.toString() },
     outputChannel,
+    revealOutputChannelOn: RevealOutputChannelOn.Never,
     // Notify the server about file changes to 'elm.json'
     synchronize: {
       fileEvents: workspace.createFileSystemWatcher(
