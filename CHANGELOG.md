@@ -1,5 +1,9 @@
 # Change Log
 
+## 0.4.1
+
+- Revert determination of used elm compiler version, as it was causing file open to go unnoticed
+
 ## 0.4.0
 
 - Updated the language server
