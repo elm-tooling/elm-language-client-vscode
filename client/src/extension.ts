@@ -17,6 +17,8 @@ import {
   RevealOutputChannelOn,
 } from "vscode-languageclient";
 
+import * as Package from "./elmPackage";
+
 let languageClient: LanguageClient;
 const elmJsonGlob = "**/elm.json";
 
@@ -164,6 +166,7 @@ function startClient(context: ExtensionContext, elmWorkspace: Uri) {
 
   // Start the client. This will also launch the server
   languageClient.start();
+  Package.activatePackage()
   clients.set(elmWorkspace.fsPath, languageClient);
 }
 
