@@ -50,6 +50,8 @@ export async function activate(context: ExtensionContext) {
     const elmJsonFolder = getElmJsonFolder(uri);
     stopClient(elmJsonFolder);
   });
+  let packageDisposables = Package.activatePackage()
+  packageDisposables.forEach(d => context.subscriptions.push(d))
 }
 
 function findTopLevelFolders(listOfElmJsonFolders: Uri[]) {
@@ -166,7 +168,6 @@ function startClient(context: ExtensionContext, elmWorkspace: Uri) {
 
   // Start the client. This will also launch the server
   languageClient.start();
-  Package.activatePackage()
   clients.set(elmWorkspace.fsPath, languageClient);
 }
 
