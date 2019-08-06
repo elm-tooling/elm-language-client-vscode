@@ -126,13 +126,16 @@ function runInstall(): Thenable<void> {
 	const quickPickOptions: vscode.QuickPickOptions = {
 		matchOnDescription: true,
 		placeHolder:
-			'Choose a package, or press <esc> to install all packages in elm-package.json',
+			'Choose a package, or press <esc> to cancel',
 	};
 
 	return getJSON()
 		.then(transformToQuickPickItems)
 		.then(items => vscode.window.showQuickPick(items, quickPickOptions))
 		.then(value => {
+			if (value === undefined) {
+				return; // no package
+			}
 			const packageName = value ? value.label : '';
 			return installPackageInTerminal(packageName);
 		});
