@@ -4,9 +4,7 @@ export const isWindows = process.platform === 'win32';
 
 function isPowershell() {
   try {
-    const config: vscode.WorkspaceConfiguration = vscode.workspace.getConfiguration(
-      'ElmLS',
-    );
+    const config: vscode.WorkspaceConfiguration = vscode.workspace.getConfiguration();
     const t: string = <string>config.get('terminal.integrated.shell.windows');
     return t.toLowerCase().includes('powershell');
   } catch (error) {
