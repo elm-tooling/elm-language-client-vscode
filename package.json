@@ -67,6 +67,18 @@
         "path": "./syntaxes/elm.json"
       }
     ],
+    "commands":[
+      {
+        "command": "elm.install",
+        "title": "Install Package",
+        "category": "Elm"
+      },
+      {
+        "command": "elm.browsePackage",
+        "title": "Browse Package",
+        "category": "Elm"
+      }
+    ],
     "configuration": {
       "type": "object",
       "title": "ElmLS",

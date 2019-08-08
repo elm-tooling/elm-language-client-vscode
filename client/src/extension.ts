@@ -17,6 +17,8 @@ import {
   RevealOutputChannelOn,
 } from "vscode-languageclient";
 
+import * as Package from "./elmPackage";
+
 let languageClient: LanguageClient;
 const elmJsonGlob = "**/elm.json";
 
@@ -48,6 +50,8 @@ export async function activate(context: ExtensionContext) {
     const elmJsonFolder = getElmJsonFolder(uri);
     stopClient(elmJsonFolder);
   });
+  let packageDisposables = Package.activatePackage()
+  packageDisposables.forEach(d => context.subscriptions.push(d))
 }
 
 function findTopLevelFolders(listOfElmJsonFolders: Uri[]) {
