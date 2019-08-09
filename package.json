@@ -67,7 +67,7 @@
         "path": "./syntaxes/elm.json"
       }
     ],
-    "commands":[
+    "commands": [
       {
         "command": "elm.install",
         "title": "Install Package",
@@ -126,7 +126,7 @@
   },
   "devDependencies": {
     "@types/mocha": "^5.2.7",
-    "@types/node": "^12.6.8",
+    "@types/node": "^12.7.1",
     "prettier": "^1.18.2",
     "tslint": "^5.18.0",
     "tslint-config-prettier": "^1.18.0",

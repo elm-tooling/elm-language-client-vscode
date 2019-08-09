@@ -10,16 +10,14 @@
     "url": "https://github.com/elmtooling/elm-language-client-vscode"
   },
   "engines": {
-    "vscode": "^1.30.0"
-  },
-  "scripts": {
-    "update-vscode": "vscode-install",
-    "postinstall": "vscode-install"
+    "vscode": "^1.37.0"
   },
   "dependencies": {
     "vscode-languageclient": "^5.2.1"
   },
   "devDependencies": {
-    "vscode": "^1.1.35"
+    "@types/request": "^2.48.2",
+    "@types/vscode": "^1.37.0",
+    "vscode-test": "^1.2.0"
   }
 }

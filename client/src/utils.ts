@@ -1,25 +1,19 @@
-import * as vscode from 'vscode';
+import * as vscode from "vscode";
 
-export const isWindows = process.platform === 'win32';
+export const isWindows = process.platform === "win32";
 
 function isPowershell() {
-  try {
-    const config: vscode.WorkspaceConfiguration = vscode.workspace.getConfiguration();
-    const t: string = <string>config.get('terminal.integrated.shell.windows');
-    return t.toLowerCase().includes('powershell');
-  } catch (error) {
-    return false;
-  }
+  return vscode.env.shell.search(/(powershell|pwsh)/i) !== -1;
 }
 
 export function getTerminalLaunchCommands(command: string): [string, string] {
   if (isWindows) {
     if (isPowershell()) {
-      return [`cmd /c ${command}`, 'clear'];
+      return [`cmd /c ${command}`, "clear"];
     } else {
-      return [`${command}`, 'cls'];
+      return [`${command}`, "cls"];
     }
   } else {
-    return [command, 'clear'];
+    return [command, "clear"];
   }
 }
