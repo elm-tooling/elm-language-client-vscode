@@ -2,23 +2,21 @@ import * as path from "path";
 import {
   ExtensionContext,
   OutputChannel,
-  RelativePattern,
+  TextDocument,
   Uri,
   window as Window,
-  workspace,
+  workspace as Workspace,
+  WorkspaceFolder,
 } from "vscode";
+
 import {
   LanguageClient,
   LanguageClientOptions,
   RevealOutputChannelOn,
-  ServerOptions,
   TransportKind,
 } from "vscode-languageclient";
 
 import * as Package from "./elmPackage";
-
-let languageClient: LanguageClient;
-const elmJsonGlob = "**/elm.json";
 
 export interface IClientSettings {
   elmFormatPath: string;
@@ -27,164 +25,132 @@ export interface IClientSettings {
   trace: { server: string };
 }
 
-export async function activate(context: ExtensionContext) {
-  // We get activated if there is one or more elm.json file in the workspace
-  // Start one server for each workspace with at least one elm.json
-  // and watch Elm files in those directories.
+const clients: Map<string, LanguageClient> = new Map();
 
-  const elmJsons = await workspace.findFiles(elmJsonGlob, "**/node_modules/**");
-  if (elmJsons) {
-    const listOfElmJsonFolders = elmJsons.map(a => getElmJsonFolder(a));
-    const newList: Map<string, Uri> = findTopLevelFolders(listOfElmJsonFolders);
-    newList.forEach(elmJsonFolder => {
-      startClient(context, elmJsonFolder);
-    });
+let sortedWorkspaceFolders: string[] | undefined;
+
+function getSortedWorkspaceFolders(): string[] {
+  if (sortedWorkspaceFolders === void 0) {
+    sortedWorkspaceFolders = Workspace.workspaceFolders
+      ? Workspace.workspaceFolders
+          .map(folder => {
+            let result = folder.uri.toString();
+            if (result.charAt(result.length - 1) !== "/") {
+              result = result + "/";
+            }
+            return result;
+          })
+          .sort((a, b) => {
+            return a.length - b.length;
+          })
+      : [];
+  }
+  return sortedWorkspaceFolders;
+}
+Workspace.onDidChangeWorkspaceFolders(
+  () => (sortedWorkspaceFolders = undefined),
+);
+
+function getOuterMostWorkspaceFolder(folder: WorkspaceFolder): WorkspaceFolder {
+  const sorted = getSortedWorkspaceFolders();
+  for (const element of sorted) {
+    let uri = folder.uri.toString();
+    if (uri.charAt(uri.length - 1) !== "/") {
+      uri = uri + "/";
+    }
+    if (uri.startsWith(element)) {
+      return Workspace.getWorkspaceFolder(Uri.parse(element))!;
+    }
+  }
+  return folder;
+}
+
+export async function activate(context: ExtensionContext) {
+  const module = context.asAbsolutePath(path.join("server", "out", "index.js"));
+
+  function didOpenTextDocument(document: TextDocument) {
+    // We are only interested in everything elm, no handling for untitled files for now
+    if (document.languageId !== "elm") {
+      return;
+    }
+
+    const config = Workspace.getConfiguration().get<IClientSettings>("elmLS");
+
+    const uri = document.uri;
+    let folder = Workspace.getWorkspaceFolder(uri);
+    // Files outside a folder can't be handled. This might depend on the language.
+    // Single file languages like JSON might handle files outside the workspace folders.
+    if (!folder) {
+      return;
+    }
+    // If we have nested workspace folders we only start a server on the outer most workspace folder.
+    folder = getOuterMostWorkspaceFolder(folder);
+
+    if (!clients.has(folder.uri.toString())) {
+      const relativeWorkspace = folder.name;
+      const outputChannel: OutputChannel = Window.createOutputChannel(
+        relativeWorkspace.length > 1 ? `elmLS (${relativeWorkspace})` : "elmLS",
+      );
+
+      const debugOptions = {
+        execArgv: ["--nolazy", `--inspect=${6010 + clients.size}`],
+      };
+      const serverOptions = {
+        debug: {
+          module,
+          options: debugOptions,
+          transport: TransportKind.ipc,
+        },
+        run: { module, transport: TransportKind.ipc },
+      };
+      const clientOptions: LanguageClientOptions = {
+        diagnosticCollectionName: "elmLS",
+        documentSelector: [
+          {
+            language: "elm",
+            pattern: `${folder.uri.fsPath}/**/*`,
+            scheme: "file",
+          },
+        ],
+        initializationOptions: config
+          ? {
+              elmFormatPath: config.elmFormatPath,
+              elmPath: config.elmPath,
+              elmTestPath: config.elmTestPath,
+              trace: {
+                server: config.trace.server,
+              },
+            }
+          : {},
+        outputChannel,
+        revealOutputChannelOn: RevealOutputChannelOn.Never,
+        workspaceFolder: folder,
+      };
+      const client = new LanguageClient(
+        "elmLS",
+        "Elm Language Server",
+        serverOptions,
+        clientOptions,
+      );
+      client.start();
+      clients.set(folder.uri.toString(), client);
+    }
   }
 
-  const watcher = workspace.createFileSystemWatcher(
-    elmJsonGlob,
-    false,
-    true,
-    false,
-  );
-  watcher.onDidCreate(uri => {
-    const elmJsonFolder = getElmJsonFolder(uri);
-    startClient(context, elmJsonFolder);
+  Workspace.onDidOpenTextDocument(didOpenTextDocument);
+  Workspace.textDocuments.forEach(didOpenTextDocument);
+  Workspace.onDidChangeWorkspaceFolders(event => {
+    for (const folder of event.removed) {
+      const client = clients.get(folder.uri.toString());
+      if (client) {
+        clients.delete(folder.uri.toString());
+        client.stop();
+      }
+    }
   });
-  watcher.onDidDelete(uri => {
-    const elmJsonFolder = getElmJsonFolder(uri);
-    stopClient(elmJsonFolder);
-  });
+
   const packageDisposables = Package.activatePackage();
   packageDisposables.forEach(d => context.subscriptions.push(d));
-}
-
-function findTopLevelFolders(listOfElmJsonFolders: Uri[]) {
-  const result: Map<string, Uri> = new Map();
-  listOfElmJsonFolders.forEach(element => {
-    result.set(element.toString(), element);
-  });
-
-  listOfElmJsonFolders.forEach(a => {
-    listOfElmJsonFolders.forEach(b => {
-      if (
-        b.toString() !== a.toString() &&
-        b.toString().startsWith(a.toString())
-      ) {
-        result.delete(b.toString());
-      }
-    });
-  });
-
-  return result;
-}
-
-function getElmJsonFolder(uri: Uri): Uri {
-  return Uri.parse(uri.toString().replace("elm.json", ""));
-}
-
-async function stopClient(workspaceUri: Uri) {
-  const client = clients.get(workspaceUri.fsPath);
-
-  if (client) {
-    const pattern = new RelativePattern(workspaceUri.fsPath, elmJsonGlob);
-    const files = await workspace.findFiles(pattern, "**/node_modules/**");
-    if (files.length === 0) {
-      languageClient.info("Found the client shutting it down.");
-      client.stop();
-      clients.delete(workspaceUri.fsPath);
-    } else {
-      languageClient.info(
-        "There are still elm.json files in this workspace, not stopping the client.",
-      );
-    }
-  } else {
-    languageClient.info("Could not find the client that we want to shutdown.");
-  }
-}
-
-const clients: Map<string, LanguageClient> = new Map();
-function startClient(context: ExtensionContext, elmWorkspace: Uri) {
-  if (clients.has(elmWorkspace.fsPath)) {
-    // Client was already started for this directory
-    return;
-  }
-
-  const serverModule = context.asAbsolutePath(
-    path.join("server", "out", "index.js"),
-  );
-  // The debug options for the server
-  // --inspect=6009: runs the server in Node's Inspector mode so VS Code can attach to the server for debugging
-  const debugOptions = {
-    execArgv: ["--nolazy", `--inspect=${6010 + clients.size}`],
-  };
-
-  // If the extension is launched in debug mode then the debug server options are used
-  // Otherwise the run options are used
-  const serverOptions: ServerOptions = {
-    debug: {
-      module: serverModule,
-      options: debugOptions,
-      transport: TransportKind.ipc,
-    },
-    run: { module: serverModule, transport: TransportKind.ipc },
-  };
-
-  if (!workspace.workspaceFolders) {
-    return;
-  }
-
-  const relativeWorkspace = elmWorkspace
-    .toString(true)
-    .replace(workspace.workspaceFolders[0].uri.toString(true), "");
-
-  const outputChannel: OutputChannel = Window.createOutputChannel(
-    relativeWorkspace.length > 1 ? "elmLS " + relativeWorkspace : "elmLS",
-  );
-
-  const config = workspace.getConfiguration().get<IClientSettings>("elmLS");
-  // Options to control the language client
-  const clientOptions: LanguageClientOptions = {
-    diagnosticCollectionName: "elmLS",
-    // Register the server for Elm documents in the directory
-    documentSelector: [
-      {
-        pattern: "**/*.elm",
-        scheme: "file",
-      },
-    ],
-    initializationOptions: config
-      ? {
-          elmFormatPath: config.elmFormatPath,
-          elmPath: config.elmPath,
-          elmTestPath: config.elmTestPath,
-          elmWorkspace: elmWorkspace.toString(),
-          trace: {
-            server: config.trace.server,
-          },
-        }
-      : {},
-    outputChannel,
-    revealOutputChannelOn: RevealOutputChannelOn.Never,
-    // Notify the server about file changes to 'elm.json'
-    synchronize: {
-      fileEvents: workspace.createFileSystemWatcher(
-        path.join(elmWorkspace.fsPath, elmJsonGlob),
-      ),
-    },
-  };
-
-  // Create the language client and start the client.
-  languageClient = new LanguageClient(
-    "elmLS",
-    "Elm Language Server",
-    serverOptions,
-    clientOptions,
-  );
-
-  // Start the client. This will also launch the server
-  languageClient.start();
-  clients.set(elmWorkspace.fsPath, languageClient);
 }
 
 export function deactivate(): Thenable<void> | undefined {
