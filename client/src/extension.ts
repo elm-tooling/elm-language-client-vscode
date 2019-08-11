@@ -168,7 +168,6 @@ function startClient(context: ExtensionContext, elmWorkspace: Uri) {
     revealOutputChannelOn: RevealOutputChannelOn.Never,
     // Notify the server about file changes to 'elm.json'
     synchronize: {
-      configurationSection: ["elmLS"],
       fileEvents: workspace.createFileSystemWatcher(
         path.join(elmWorkspace.fsPath, elmJsonGlob),
       ),
