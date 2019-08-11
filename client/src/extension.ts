@@ -1,5 +1,3 @@
-"use strict";
-
 import * as path from "path";
 import {
   ExtensionContext,
@@ -12,15 +10,22 @@ import {
 import {
   LanguageClient,
   LanguageClientOptions,
+  RevealOutputChannelOn,
   ServerOptions,
   TransportKind,
-  RevealOutputChannelOn,
 } from "vscode-languageclient";
 
 import * as Package from "./elmPackage";
 
 let languageClient: LanguageClient;
 const elmJsonGlob = "**/elm.json";
+
+export interface IClientSettings {
+  elmFormatPath: string;
+  elmPath: string;
+  elmTestPath: string;
+  trace: { server: string };
+}
 
 export async function activate(context: ExtensionContext) {
   // We get activated if there is one or more elm.json file in the workspace
@@ -50,8 +55,8 @@ export async function activate(context: ExtensionContext) {
     const elmJsonFolder = getElmJsonFolder(uri);
     stopClient(elmJsonFolder);
   });
-  let packageDisposables = Package.activatePackage()
-  packageDisposables.forEach(d => context.subscriptions.push(d))
+  const packageDisposables = Package.activatePackage();
+  packageDisposables.forEach(d => context.subscriptions.push(d));
 }
 
 function findTopLevelFolders(listOfElmJsonFolders: Uri[]) {
@@ -137,6 +142,7 @@ function startClient(context: ExtensionContext, elmWorkspace: Uri) {
     relativeWorkspace.length > 1 ? "elmLS " + relativeWorkspace : "elmLS",
   );
 
+  const config = workspace.getConfiguration().get<IClientSettings>("elmLS");
   // Options to control the language client
   const clientOptions: LanguageClientOptions = {
     diagnosticCollectionName: "elmLS",
@@ -147,11 +153,22 @@ function startClient(context: ExtensionContext, elmWorkspace: Uri) {
         scheme: "file",
       },
     ],
-    initializationOptions: { elmWorkspace: elmWorkspace.toString() },
+    initializationOptions: config
+      ? {
+          elmFormatPath: config.elmFormatPath,
+          elmPath: config.elmPath,
+          elmTestPath: config.elmTestPath,
+          elmWorkspace: elmWorkspace.toString(),
+          trace: {
+            server: config.trace.server,
+          },
+        }
+      : {},
     outputChannel,
     revealOutputChannelOn: RevealOutputChannelOn.Never,
     // Notify the server about file changes to 'elm.json'
     synchronize: {
+      configurationSection: ["elmLS"],
       fileEvents: workspace.createFileSystemWatcher(
         path.join(elmWorkspace.fsPath, elmJsonGlob),
       ),
