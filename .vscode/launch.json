@@ -10,7 +10,8 @@
       "args": [
         // Needs to be set to your vscode path, for arch this works
         "/usr/lib/code",
-        "--extensionDevelopmentPath=${workspaceRoot}"
+        "--extensionDevelopmentPath=${workspaceRoot}",
+        "code --inspect-extensions=9993"
       ],
       "sourceMaps": true,
       "outFiles": ["${workspaceRoot}/client/out/**/*.js"],
