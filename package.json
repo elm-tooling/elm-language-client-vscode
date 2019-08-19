@@ -112,6 +112,17 @@
           "type": "string",
           "default": "elm-test",
           "description": "The path to your elm-test executable."
+        },
+        "elmLS.elmAnalyseTrigger": {
+          "scope": "window",
+          "type": "string",
+          "enum": [
+            "change",
+            "save",
+            "never"
+          ],
+          "default": "change",
+          "description": "When do you want the extension to run elm-analyse? Might need a restart to take effect."
         }
       }
     }
