@@ -125,7 +125,6 @@
     "tslint-check": "tslint-config-prettier-check ./tslint.json"
   },
   "devDependencies": {
-    "@types/mocha": "^5.2.7",
     "@types/node": "^12.7.1",
     "prettier": "^1.18.2",
     "tslint": "^5.18.0",

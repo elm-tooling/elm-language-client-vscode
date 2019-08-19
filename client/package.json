@@ -16,6 +16,7 @@
     "vscode-languageclient": "^5.2.1"
   },
   "devDependencies": {
+    "@types/mocha": "^5.2.7",
     "@types/request": "^2.48.2",
     "@types/vscode": "^1.37.0",
     "vscode-test": "^1.2.0"
