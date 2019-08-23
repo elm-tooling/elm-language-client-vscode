@@ -18,11 +18,14 @@ import {
 
 import * as Package from "./elmPackage";
 
+export type ElmAnalyseTrigger = "change" | "save" | "never";
+
 export interface IClientSettings {
   elmFormatPath: string;
   elmPath: string;
   elmTestPath: string;
   trace: { server: string };
+  elmAnalyseTrigger: ElmAnalyseTrigger;
 }
 
 const clients: Map<string, LanguageClient> = new Map();
@@ -114,6 +117,7 @@ export async function activate(context: ExtensionContext) {
         ],
         initializationOptions: config
           ? {
+              elmAnalyseTrigger: config.elmAnalyseTrigger,
               elmFormatPath: config.elmFormatPath,
               elmPath: config.elmPath,
               elmTestPath: config.elmTestPath,
