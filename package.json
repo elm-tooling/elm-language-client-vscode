@@ -98,20 +98,20 @@
         "elmLS.elmPath": {
           "scope": "window",
           "type": "string",
-          "default": "elm",
-          "description": "The path to your elm executable."
+          "default": "",
+          "description": "The path to your elm executable. Should be empty by default, in that case it will assume the name and try to first get it from a local npm installation or a global one. If you set it manually it will not try to load from the npm folder."
         },
         "elmLS.elmFormatPath": {
           "scope": "window",
           "type": "string",
-          "default": "elm-format",
-          "description": "The path to your elm-format executable."
+          "default": "",
+          "description": "The path to your elm-format executable. Should be empty by default, in that case it will assume the name and try to first get it from a local npm installation or a global one. If you set it manually it will not try to load from the npm folder."
         },
         "elmLS.elmTestPath": {
           "scope": "window",
           "type": "string",
-          "default": "elm-test",
-          "description": "The path to your elm-test executable."
+          "default": "",
+          "description": "The path to your elm-test executable. Should be empty by default, in that case it will assume the name and try to first get it from a local npm installation or a global one. If you set it manually it will not try to load from the npm folder."
         },
         "elmLS.elmAnalyseTrigger": {
           "scope": "window",
