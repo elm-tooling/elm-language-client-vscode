@@ -1,5 +1,20 @@
 # Change Log
 
+## 0.5.0
+
+- Added commands for installing and browsing Elm packages
+- Change extension icon
+- Updated the language server
+	- Updated and clarified the readme in multiple ways, also added sublime text instructions
+	- Reworked settings and detection of `elm`, `elm-test` and `elm-format`
+	- Server figures out the elm version automatically
+	- Correctly detect cursors on or after the last character of a token
+	- elm.json detection is now handled by the server, the setting is deprecated
+	- Handle elm libraries better, we failed to load the correct deps before this
+	- You can configure when to run elm-analyse via the setting `elmAnalyseTrigger` ("change" | "save" | "never")
+	- Some cleanups for cases where the elm compiler does not respond with a json
+
+
 ## 0.4.2
 
 - Updated the language server
