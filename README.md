@@ -4,7 +4,7 @@
 
 This [vscode extension](https://marketplace.visualstudio.com/items?itemName=Elmtooling.elm-ls-vscode) is including the [elm-language-server](https://github.com/elm-tooling/elm-language-server) which enables most of the used features.
 
-You will need to install `elm`, `elm-test` and `elm-format`, to get all diagnostics. If your setup fails to find the global installations of those, you can use the settings panel is VSCode to set the paths to the executables manually.
+You will need to install `elm` and `elm-test` to get all diagnostics and `elm-format` for formatting. If your setup fails to find the global installations of those, you can use the settings panel in VSCode to set the paths to the executable manually. Alternatively you can also just install these to your local npm `package.json`.
 
 ```shell
 npm install -g elm elm-test elm-format
@@ -16,7 +16,7 @@ Supports elm 0.19
 
 | Feature          | Description                                                                                                                                          |
 | ---------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------- |
-| Diagnostics      | Provided via `elm make`, `elm-test` and `elm-analyse`                                                                                                            |
+| Diagnostics      | Provided via `elm make`, `elm-test` and `elm-analyse`                                                                                                |
 | Formatting       | Provided via `elm-format` and post-processed to only return a diff of changes. This way it should not be as intrusive as running `elm-format` normal |
 | codeLenses       | Currently only shows if a type alias, custom type or function is exposed from that module                                                            |
 | completions      | Show completions for the current file and snippets                                                                                                   |
@@ -36,6 +36,7 @@ This extension contributes the following settings:
 - `elmLS.elmPath`: The path to your elm executable.
 - `elmLS.elmFormatPath`: The path to your elm-format executable.
 - `elmLS.elmTestPath`: The path to your elm-test executable.
+- `elmLS.elmAnalyseTrigger`: When do you want the extension to run elm-analyse? Might need a restart to take effect.
 
 ## Contributing / Debugging
 
