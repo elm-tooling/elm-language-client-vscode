@@ -129,8 +129,9 @@
   },
   "scripts": {
     "vscode:prepublish": "cd client && cd .. && npm run compile",
-    "compile": "tsc -b",
-    "watch": "tsc -b -w",
+    "compile": "npm run copy-wasm && tsc -b",
+    "watch": "npm run copy-wasm && tsc -b -w",
+    "copy-wasm": "cd server && npm run copy-wasm",
     "postinstall": "cd client && npm install && cd ../server && npm install && cd ..",
     "test": "sh ./scripts/e2e.sh",
     "lint": "tslint -p tsconfig.json",
