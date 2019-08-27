@@ -1,5 +1,11 @@
 # Change Log
 
+## 0.5.1
+
+- Fixed missing dependency on startup
+- Updated the language server
+	- Fix problem on init on windows systems
+
 ## 0.5.0
 
 - Added commands for installing and browsing Elm packages
