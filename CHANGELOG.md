@@ -1,5 +1,10 @@
 # Change Log
 
+## 0.5.2
+
+- Updated the language server
+	- Fixed case where elm-format might have strip the last line from you files
+
 ## 0.5.1
 
 - Fixed missing dependency on startup
