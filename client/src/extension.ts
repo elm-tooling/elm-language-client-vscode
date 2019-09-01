@@ -1,7 +1,13 @@
 import * as path from "path";
 import {
+  CancellationToken,
+  CodeLens,
   ExtensionContext,
+  Location,
   OutputChannel,
+  Position,
+  ProviderResult,
+  Range,
   TextDocument,
   Uri,
   window as Window,
@@ -12,6 +18,8 @@ import {
 import {
   LanguageClient,
   LanguageClientOptions,
+  Middleware,
+  ResolveCodeLensSignature,
   RevealOutputChannelOn,
   TransportKind,
 } from "vscode-languageclient";
@@ -126,6 +134,7 @@ export async function activate(context: ExtensionContext) {
               },
             }
           : {},
+        middleware: new CodeLensResolver(),
         outputChannel,
         revealOutputChannelOn: RevealOutputChannelOn.Never,
         workspaceFolder: folder,
@@ -163,4 +172,67 @@ export function deactivate(): Thenable<void> | undefined {
     promises.push(client.stop());
   }
   return Promise.all(promises).then(() => undefined);
+}
+
+export class CodeLensResolver implements Middleware {
+  public resolveCodeLens(
+    codeLens: CodeLens,
+    token: CancellationToken,
+    next: ResolveCodeLensSignature,
+  ): ProviderResult<CodeLens> {
+    const resolvedCodeLens = next(codeLens, token);
+    const resolveFunc = (codeLensToFix: CodeLens): CodeLens => {
+      if (
+        codeLensToFix &&
+        codeLensToFix.command &&
+        codeLensToFix.command.command === "editor.action.showReferences" &&
+        codeLensToFix.command.arguments
+      ) {
+        const oldArgs = codeLensToFix.command.arguments;
+
+        // Our JSON objects don't get handled correctly by
+        // VS Code's built in editor.action.showReferences
+        // command so we need to convert them into the
+        // appropriate types to send them as command
+        // arguments.
+
+        codeLensToFix.command.arguments = [
+          Uri.parse(oldArgs[0].uri),
+          new Position(
+            oldArgs[0].range.start.line,
+            oldArgs[0].range.start.character,
+          ),
+          oldArgs[0].references.map(
+            (position: {
+              uri: string;
+              range: {
+                start: { line: number; character: number };
+                end: { line: number; character: number };
+              };
+            }) => {
+              return new Location(
+                Uri.parse(position.uri),
+                new Range(
+                  position.range.start.line,
+                  position.range.start.character,
+                  position.range.end.line,
+                  position.range.end.character,
+                ),
+              );
+            },
+          ),
+        ];
+      }
+
+      return codeLensToFix;
+    };
+
+    if ((resolvedCodeLens as Thenable<CodeLens>).then) {
+      return (resolvedCodeLens as Thenable<CodeLens>).then(resolveFunc);
+    } else if (resolvedCodeLens as CodeLens) {
+      return resolveFunc(resolvedCodeLens as CodeLens);
+    }
+
+    return resolvedCodeLens;
+  }
 }
