@@ -5,6 +5,9 @@
 	"typescript.preferences.quoteStyle": "single",
 	"editor.tabSize": 2,
 	"cSpell.words": [
-		"execa"
+		"Jsons",
+		"execa",
+		"globby",
+		"promisify"
 	]
 }
