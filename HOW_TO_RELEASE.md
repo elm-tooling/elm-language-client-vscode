@@ -3,5 +3,5 @@
 - Run `npm install`
 - Run `npm run compile`
 - Push the code to github and wait for the CI
-- Run `vsce`
+- Run `vsce publish`
 - Tag the new version on github
