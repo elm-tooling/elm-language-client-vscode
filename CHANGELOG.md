@@ -1,9 +1,28 @@
 # Change Log
 
+## 0.6.0
+
+- Reference code lenses are now clickable, try it!
+
+- Updated the language server
+	- Add elm make code actions for more compiler errors
+	- Various improvements to folding
+	- Process files on init in parallel
+	- Fixed some problems with references not being correct
+	- Fallback to old configuration flow when clients don't support the new one
+	- Get rid of crypto deprecation warnings
+
+	- Updated tree-sitter syntax parsing
+		- Add glsl parsing
+		- Nest if/then/else expressions
+		- Let and in now correctly nest
+		- Change when block_comments are set, should now be better for annotations
+		- End functions/case as early as possible, so they don't include whitespace
+
 ## 0.5.2
 
 - Updated the language server
-	- Fixed case where elm-format might have strip the last line from you files
+	- Fixed case where elm-format might have stripped the last line from you files
 
 ## 0.5.1
 
