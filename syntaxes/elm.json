@@ -34,6 +34,9 @@
 			"include": "#string-double"
 		},
 		{
+			"include": "#char"
+		},
+		{
 			"include": "#string-triple"
 		},
 		{
@@ -322,6 +325,31 @@
 			"endCaptures": {
 				"0": {
 					"name": "punctuation.definition.string.end.elm"
+				}
+			},
+			"patterns": [
+				{
+					"match": "\\\\(NUL|SOH|STX|ETX|EOT|ENQ|ACK|BEL|BS|HT|LF|VT|FF|CR|SO|SI|DLE|DC1|DC2|DC3|DC4|NAK|SYN|ETB|CAN|EM|SUB|ESC|FS|GS|RS|US|SP|DEL|[abfnrtv\\\\\\\"'\\&]|x[0-9a-fA-F]{1,5})",
+					"name": "constant.character.escape.elm"
+				},
+				{
+					"match": "\\^[A-Z@\\[\\]\\\\\\^_]",
+					"name": "constant.character.escape.control.elm"
+				}
+			]
+		},
+		"char": {
+			"name": "char.quoted.elm",
+			"begin": "'",
+			"beginCaptures": {
+				"0": {
+					"name": "punctuation.definition.char.begin.elm"
+				}
+			},
+			"end": "'",
+			"endCaptures": {
+				"0": {
+					"name": "punctuation.definition.char.end.elm"
 				}
 			},
 			"patterns": [
