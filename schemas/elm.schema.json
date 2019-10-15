@@ -5,24 +5,42 @@
     "exactDependency": {
       "description": "Dependencies are specified by [author name]/[package name]: [exact version].",
       "type": "object",
-      "additionalProperties": {
-        "type": "string"
+      "patternProperties": {
+        "^.+/.+$": {
+          "type": "string",
+          "pattern": "^\\d+\\.\\d+\\.\\d+$"
+        }
+      },
+      "additionalProperties": false,
+      "propertyNames": {
+        "pattern": "^.+/.+$"
       }
     },
     "rangeDependency": {
       "description": "Dependencies are specified by [author name]/[package name]: [exact version or range]. Range versions look like: [1.0.0 <= v < 2.0.0].",
       "type": "object",
-      "additionalProperties": {
-        "type": "string"
+      "patternProperties": {
+        "^.+/.+$": {
+          "type": "string",
+          "pattern": "^\\d+\\.\\d+\\.\\d+$|^\\d+\\.\\d+\\.\\d+\\s*(<=|=|<)\\s*v\\s*(<=|=|<)\\s*\\d+\\.\\d+\\.\\d+$"
+        }
+      },
+      "additionalProperties": false,
+      "propertyNames": {
+        "pattern": "^.+/.+$"
       }
+    },
+    "version": {
+      "type": "string",
+      "pattern": "^\\d+\\.\\d+\\.\\d+$"
     },
     "packageSpecificProperties": {
       "type": "object",
       "properties": {
         "name": {
-          "description": "The name of your package.",
+          "description": "The name of a GitHub repo like 'elm-lang/core' or 'rtfeldman/elm-css'.",
           "type": "string",
-          "minLength": 1
+          "minLength": 3
         },
         "license": {
           "description": "An OSI approved license for your package.",
@@ -130,33 +148,33 @@
           ]
         },
         "summary": {
-          "description": "A helpful summary of your package, less than 80 characters",
+          "description": "A short summary that will appear on package.elm-lang.org that describes what the package is for. Must be under 80 characters.",
           "type": "string",
           "minLength": 1,
           "maxLength": 79
         },
         "version": {
-          "description": "Your package's version in semantic versioning format.",
-          "type": "string",
-          "pattern": "\\d+\\.\\d+\\.\\d+"
+          "description": "All packages start at '1.0.0' and from there, Elm automatically enforces semantic versioning by comparing API changes.",
+          "$ref": "#/definitions/version"
         },
         "elm-version": {
-          "description": "The version of elm your package is targeting",
+          "description": "The range of Elm compilers that work with your package. Right now '0.19.0 <= v < 0.20.0' is always what you want for this.",
           "type": "string"
         },
         "exposed-modules": {
-          "description": "All modules that your project will make available to end users.",
-          "type": "object",
-          "items": {
-            "type": "string"
+          "description": "A list of modules that will be exposed to people using your package. The order you list them will be the order they appear on package.elm-lang.org.",
+          "type": ["array", "string", "object"],
+          "additionalProperties": { "type": "array" },
+          "propertyNames": {
+            "pattern": "^[A-Z].*$"
           }
         },
         "dependencies": {
-          "description": "A list of elm dependencies that your package needs for in production.",
+          "description": "A list of packages that you depend upon. In each application, there can only be one version of each package, so wide ranges are great. Fewer dependencies is even better though!",
           "$ref": "#/definitions/rangeDependency"
         },
         "test-dependencies": {
-          "description": "A list of elm dependencies that your package uses only for testing.",
+          "description": "Dependencies that are only used in the 'tests/' directory by 'elm-test'. Values from these packages will not appear in any final build artifacts.",
           "$ref": "#/definitions/rangeDependency"
         }
       },
@@ -175,20 +193,20 @@
       "type": "object",
       "properties": {
         "source-directories": {
-          "description": "A list of directories that will be used to build your project.",
+          "description": "A list of directories where Elm code lives. Most projects just use 'src' for everything.",
           "type": "array",
           "items": {
             "type": "string"
           }
         },
         "elm-version": {
-          "description": "The version of elm your project is targeting",
+          "description": "The exact version of Elm this builds with. Should be '0.19.0' for most people!",
           "type": "string",
-          "pattern": "\\d+\\.\\d+\\.\\d+",
+          "$ref": "#/definitions/version",
           "enum": ["0.19.0"]
         },
         "dependencies": {
-          "description": "A list of elm dependencies that your project needs for in production.",
+          "description": "All the packages you depend upon. We use exact versions, so your elm.json file doubles as a 'lock file' that ensures reliable builds. \n \n You can use modules from any 'direct' dependency in your code. Some 'direct' dependencies have their own dependencies that folks typically do not care about. These are the 'indirect' dependencies. They are listed explicitly so that (1) builds are reproducible and (2) you can easily review the quantity and quality of dependencies.",
           "type": "object",
           "properties": {
             "direct": {
@@ -201,7 +219,7 @@
           "required": ["direct", "indirect"]
         },
         "test-dependencies": {
-          "description": "A list of elm dependencies that your project uses only for testing.",
+          "description": "All the packages that you use in 'tests/' with 'elm-test' but not in the application you actually want to ship. This also uses exact versions to make tests more reliable.",
           "type": "object",
           "properties": {
             "direct": {
@@ -224,7 +242,7 @@
   },
   "properties": {
     "type": {
-      "description": "Specifies if your project will be a package or an application",
+      "description": "Either 'application' or 'package'. All the other fields are based on this choice.",
       "type": "string",
       "enum": ["application", "package"]
     }
