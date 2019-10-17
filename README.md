@@ -1,32 +1,30 @@
-# ElmLS
-
-![Showcase](images/elm-ls.gif)
-
-This [vscode extension](https://marketplace.visualstudio.com/items?itemName=Elmtooling.elm-ls-vscode) is including the [elm-language-server](https://github.com/elm-tooling/elm-language-server) which enables most of the used features.
-
-You will need to install `elm` and `elm-test` to get all diagnostics and `elm-format` for formatting. If your setup fails to find the global installations of those, you can use the settings panel in VSCode to set the paths to the executable manually. Alternatively you can also just install these to your local npm `package.json`.
-
-```shell
-npm install -g elm elm-test elm-format
-```
-
-## Features
+# Elm Plugin for Visual Studio Code (VSCode)
 
 Supports elm 0.19
 
-| Feature          | Description                                                                                                                                          |
-| ---------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------- |
-| Diagnostics      | Provided via `elm make`, `elm-test` and `elm-analyse`                                                                                                |
-| Formatting       | Provided via `elm-format` and post-processed to only return a diff of changes. This way it should not be as intrusive as running `elm-format` normal |
-| codeLenses       | Currently only shows if a type alias, custom type or function is exposed from that module                                                            |
-| completions      | Show completions for the current file and snippets                                                                                                   |
-| definitions      | Enables you to jump to the definition of a type alias, module, custom type or function                                                               |
-| documentSymbols  | Identifies all symbols in a document.                                                                                                                |
-| folding          | Let's you fold the code on certain elm constructs                                                                                                    |
-| hover            | Shows type annotations and documentation for a type alias, module, custom type or function                                                           |
-| references       | Lists all references to a type alias, module, custom type or function                                                                                |
-| rename           | Enables you to rename a type alias, module, custom type or function                                                                                  |
-| workspaceSymbols | Identifies all symbols in the current workspace                                                                                                      |
+## Install
+
+1. Install VSCode from [here](https://code.visualstudio.com/)
+2. Follow [this link](https://marketplace.visualstudio.com/items?itemName=Elmtooling.elm-ls-vscode) to install the plugin
+3. Make sure you have nodejs and therefor npm installed from [here](https://nodejs.org/)
+4. Install elm-test and elm-format by running `npm install -g elm-test elm-format` from the terminal or commandline
+
+## Highlighted Features
+
+- Errors and helpful tips will be shown whenever you save a file (Control + S)
+- Format on save (Control + S)
+- Suggests completions and snippets (Control + Space)
+
+## Additional Features
+
+- Lists all references to a type alias, module, custom type or function (Alt + Shift + F12)
+- Jump to the definition of a type alias, module, custom type or function
+- Shows type annotations and documentation on hover for type alia, module, custom type or function
+- Rename a type alias, module, custom type or function (F2)
+- Browse file by symbols (Control + Shift + O)
+- Browse workspace by symbols (Control + Shift + R)
+- Codelenses show how many times you calling a function and if it's exposed or not
+- Code folding
 
 ## Extension Settings
 
@@ -37,6 +35,20 @@ This extension contributes the following settings:
 - `elmLS.elmFormatPath`: The path to your elm-format executable.
 - `elmLS.elmTestPath`: The path to your elm-test executable.
 - `elmLS.elmAnalyseTrigger`: When do you want the extension to run elm-analyse? Might need a restart to take effect.
+
+## FAQ
+
+- What's the relation to the language server?
+
+  - This [vscode extension](https://marketplace.visualstudio.com/items?itemName=Elmtooling.elm-ls-vscode) is including the [elm-language-server](https://github.com/elm-tooling/elm-language-server) which enables most of the used features.
+
+- Why do I need to install `elm`, `elm-test` and `elm-format`?
+
+  - You will need to install `elm` and `elm-test` to get all diagnostics and `elm-format` for formatting. If your setup fails to find the global installations of those, you can use the settings panel in VSCode to set the paths to the executable manually. Alternatively you can also just install these to your local npm `package.json`.
+
+- Can I use an `elm-analyse` config?
+
+  - Yes, you can, please check [here](https://github.com/elm-tooling/elm-language-server#elm-analyse-configuration) for more details.
 
 ## Contributing / Debugging
 
