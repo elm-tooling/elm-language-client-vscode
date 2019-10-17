@@ -4,6 +4,9 @@ jobs:
       name: Hosted VS2017
       demands: npm
     steps:
+      - checkout: self
+        submodules: true
+        persistCredentials: true
       - task: NodeTool@0
         displayName: "Use Node 12.x"
         inputs:
@@ -25,6 +28,9 @@ jobs:
       name: Hosted macOS
       demands: npm
     steps:
+      - checkout: self
+        submodules: true
+        persistCredentials: true
       - task: NodeTool@0
         displayName: "Use Node 12.x"
         inputs:
@@ -46,6 +52,9 @@ jobs:
       name: Hosted Ubuntu 1604
       demands: npm
     steps:
+      - checkout: self
+        submodules: true
+        persistCredentials: true
       - task: NodeTool@0
         displayName: "Use Node 12.x"
         inputs:
