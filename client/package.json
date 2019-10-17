@@ -17,7 +17,7 @@
   },
   "devDependencies": {
     "@types/request": "^2.48.3",
-    "@types/vscode": "^1.38.0",
+    "@types/vscode": "^1.39.0",
     "vscode-test": "^1.2.0"
   }
 }
