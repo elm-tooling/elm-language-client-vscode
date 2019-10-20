@@ -1,3 +1,5 @@
+.github/**
+server/.github/**
 .vscode/**
 **/*.ts
 **/*.map
