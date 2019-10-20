@@ -1,5 +1,18 @@
 # Change Log
 
+## 0.7.0
+
+- Made elm.json schema completions better and more helpful
+- Fixed '"' breaking syntax highlighting
+
+- Updated the language server
+	- Completions should be much nicer to use now
+	- Improved performance for codeLenses
+	- Do not crash when the elm compiler generates invalid json
+	- Fix codeLens bug showing wrong count for types
+	- Print version with `-v` or `--version`
+
+
 ## 0.6.0
 
 - Reference code lenses are now clickable, try it!
