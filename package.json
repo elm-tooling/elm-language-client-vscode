@@ -128,8 +128,8 @@
     }
   },
   "scripts": {
-    "vscode:prepublish": "cd client && cd .. && npm run compile",
-    "compile": "npm run copy-wasm && tsc -b",
+    "vscode:prepublish": "npm run compile",
+    "compile": "cd client && npm run compile && cd ../server && npm run compile && cd .. && tsc -b",
     "watch": "npm run copy-wasm && tsc -b -w",
     "copy-wasm": "cd server && npm run copy-wasm",
     "postinstall": "cd client && npm install && cd ../server && npm install && cd ..",
