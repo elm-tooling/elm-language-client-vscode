@@ -1,5 +1,10 @@
 # Change Log
 
+## 0.7.1
+
+- Updated the language server
+	- Remove completions committing when space is pressed
+
 ## 0.7.0
 
 - Made elm.json schema completions better and more helpful
