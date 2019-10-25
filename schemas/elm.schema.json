@@ -200,10 +200,10 @@
           }
         },
         "elm-version": {
-          "description": "The exact version of Elm this builds with. Should be '0.19.0' for most people!",
+          "description": "The exact version of Elm this builds with. Should be '0.19.1' for most people!",
           "type": "string",
           "$ref": "#/definitions/version",
-          "enum": ["0.19.0"]
+          "enum": ["0.19.0", "0.19.1"]
         },
         "dependencies": {
           "description": "All the packages you depend upon. We use exact versions, so your elm.json file doubles as a 'lock file' that ensures reliable builds. \n \n You can use modules from any 'direct' dependency in your code. Some 'direct' dependencies have their own dependencies that folks typically do not care about. These are the 'indirect' dependencies. They are listed explicitly so that (1) builds are reproducible and (2) you can easily review the quantity and quality of dependencies.",
