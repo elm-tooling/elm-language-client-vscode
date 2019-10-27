@@ -100,7 +100,7 @@ export async function activate(context: ExtensionContext) {
     if (!clients.has(folder.uri.toString())) {
       const relativeWorkspace = folder.name;
       const outputChannel: OutputChannel = Window.createOutputChannel(
-        relativeWorkspace.length > 1 ? `elmLS (${relativeWorkspace})` : "elmLS",
+        relativeWorkspace.length > 1 ? `Elm (${relativeWorkspace})` : "Elm",
       );
 
       const debugOptions = {
@@ -115,7 +115,7 @@ export async function activate(context: ExtensionContext) {
         run: { module, transport: TransportKind.ipc },
       };
       const clientOptions: LanguageClientOptions = {
-        diagnosticCollectionName: "elmLS",
+        diagnosticCollectionName: "Elm",
         documentSelector: [
           {
             language: "elm",
@@ -141,7 +141,7 @@ export async function activate(context: ExtensionContext) {
       };
       const client = new LanguageClient(
         "elmLS",
-        "Elm Language Server",
+        "Elm",
         serverOptions,
         clientOptions,
       );

@@ -54,9 +54,9 @@ function getJSON(): Thenable<any[]> {
 
 function getInstallPackageCommand(packageToInstall: string): string {
   const config: vscode.WorkspaceConfiguration = vscode.workspace.getConfiguration(
-    "ElmLS",
+    "elmLS",
   );
-  let t: string = config.get("elmLS.elmPath") as string;
+  let t: string = config.get("elmPath") as string;
   t = t || "elm";
 
   return t + " install " + packageToInstall;

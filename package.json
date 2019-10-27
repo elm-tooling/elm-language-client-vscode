@@ -1,6 +1,6 @@
 {
   "name": "elm-ls-vscode",
-  "displayName": "ElmLS",
+  "displayName": "Elm",
   "description": "Improving your Elm experience since 2019",
   "publisher": "elmTooling",
   "icon": "images/elm.png",
@@ -82,7 +82,7 @@
     ],
     "configuration": {
       "type": "object",
-      "title": "ElmLS",
+      "title": "Elm",
       "properties": {
         "elmLS.trace.server": {
           "scope": "window",

@@ -1,6 +1,6 @@
 {
   "name": "elm-language-client-vscode",
-  "description": "VSCode client for the elm language server",
+  "description": "VSCode client for Elm",
   "author": "Kolja Lampe",
   "publisher": "elmTooling",
   "license": "MIT",
