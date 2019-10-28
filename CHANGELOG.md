@@ -1,5 +1,15 @@
 # Change Log
 
+## 0.7.2
+
+- Update `elm.json` schema to allow `0.19.1` as a version
+- Renamed extension from `ElmLS` to `Elm`
+
+- Updated the language server
+	- Add more feedback on init for common errors 
+	- Make sure a file without permissions doesn't crash the server
+	- `-v` to print version was not working
+
 ## 0.7.1
 
 - Updated the language server
