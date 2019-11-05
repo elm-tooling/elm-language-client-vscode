@@ -21,7 +21,7 @@
   "devDependencies": {
     "@types/request": "^2.48.3",
     "@types/vscode": "^1.39.0",
-    "vscode-test": "^1.2.0",
-    "typescript": "3.6.4"
+    "vscode-test": "^1.2.2",
+    "typescript": "3.7.2"
   }
 }
