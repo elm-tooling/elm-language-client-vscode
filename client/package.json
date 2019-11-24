@@ -20,8 +20,8 @@
   },
   "devDependencies": {
     "@types/request": "^2.48.3",
-    "@types/vscode": "^1.39.0",
-    "vscode-test": "^1.2.2",
+    "@types/vscode": "^1.40.0",
+    "vscode-test": "^1.2.3",
     "typescript": "3.7.2"
   }
 }
