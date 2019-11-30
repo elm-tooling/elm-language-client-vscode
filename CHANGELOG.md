@@ -1,5 +1,11 @@
 # Change Log
 
+## 0.7.3
+
+- Update the language server
+	- Improved completions for type annotations, functions, import and module statements
+	- Fixed a bug where files without imports would not index the virtual imports
+
 ## 0.7.2
 
 - Update `elm.json` schema to allow `0.19.1` as a version
