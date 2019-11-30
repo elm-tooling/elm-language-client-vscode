@@ -2,6 +2,8 @@
 
 ## 0.7.3
 
+- Fix a case of wrong highlighting 
+
 - Update the language server
 	- Improved completions for type annotations, functions, import and module statements
 	- Fixed a bug where files without imports would not index the virtual imports
