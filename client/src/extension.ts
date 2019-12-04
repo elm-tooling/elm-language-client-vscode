@@ -2,6 +2,7 @@ import * as path from "path";
 import {
   CancellationToken,
   CodeLens,
+  commands,
   ExtensionContext,
   Location,
   OutputChannel,
@@ -37,6 +38,7 @@ export interface IClientSettings {
 }
 
 const clients: Map<string, LanguageClient> = new Map();
+let elmCommandsRegistered: boolean = false;
 
 let sortedWorkspaceFolders: string[] | undefined;
 
@@ -148,8 +150,12 @@ export async function activate(context: ExtensionContext) {
       client.start();
       clients.set(folder.uri.toString(), client);
     }
+    if (elmCommandsRegistered) {
+      registerElmCommand("elmLS.runTests", context);
+      registerElmCommand("elmLS.runTestsCurrentFile", context);
+      elmCommandsRegistered = true;
+    }
   }
-
   Workspace.onDidOpenTextDocument(didOpenTextDocument);
   Workspace.textDocuments.forEach(didOpenTextDocument);
   Workspace.onDidChangeWorkspaceFolders(event => {
@@ -164,6 +170,36 @@ export async function activate(context: ExtensionContext) {
 
   const packageDisposables = Package.activatePackage();
   packageDisposables.forEach(d => context.subscriptions.push(d));
+}
+
+async function registerElmCommand(command: string, context: ExtensionContext) {
+  const editorCmd = commands.registerTextEditorCommand(
+    command,
+    (editor, edit) => {
+      const cmd = {
+        arguments: [
+          {
+            file: editor.document.uri.toString(),
+            pos: editor.selections[0].active,
+          },
+        ],
+        command,
+      };
+      // Get the current file and workspace folder.
+      const uri = editor.document.uri;
+      const folder = Workspace.getWorkspaceFolder(uri);
+      // If there is a client registered for this workspace, use that client.
+      if (folder !== undefined && clients.has(folder.uri.toString())) {
+        const client = clients.get(folder.uri.toString());
+        if (client !== undefined) {
+          client.sendRequest("workspace/executeCommand", cmd).then(_ => {
+            return true;
+          });
+        }
+      }
+    },
+  );
+  context.subscriptions.push(editorCmd);
 }
 
 export function deactivate(): Thenable<void> | undefined {

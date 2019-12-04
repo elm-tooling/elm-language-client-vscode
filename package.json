@@ -78,6 +78,16 @@
         "command": "elm.browsePackage",
         "title": "Browse Package",
         "category": "Elm"
+      },
+      {
+        "command": "elmLS.runTestsCurrentFile",
+        "title": "Run tests for this file",
+        "category": "Elm"
+      },
+      {
+        "command": "elmLS.runTests",
+        "title": "Run all tests",
+        "category": "Elm"
       }
     ],
     "configuration": {
