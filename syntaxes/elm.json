@@ -498,7 +498,7 @@
           "name": "storage.type.elm"
         }
       },
-      "end": "^(?![\\s\\n]*\\s*\\S)",
+      "end": "^(?=\\S)",
       "name": "meta.function.type-declaration.elm",
       "patterns": [
         {
@@ -557,7 +557,7 @@
           "name": "storage.type.elm"
         }
       },
-      "end": "^(?![\\s\\n]*\\s*\\S)",
+      "end": "^(?=\\S)",
       "name": "meta.function.type-declaration.elm",
       "patterns": [
         {
