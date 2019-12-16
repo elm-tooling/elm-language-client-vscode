@@ -1,5 +1,15 @@
 # Change Log
 
+## 0.7.4
+
+- Improve type alias and type highlighting for some cases
+
+- Update the language server
+	- Fix type annotations not showing for local parameters
+	- Fix files without module declaration not getting added to our index
+	- Fix rename devouring Module prefixes
+
+
 ## 0.7.3
 
 - Fix a case of wrong highlighting 
