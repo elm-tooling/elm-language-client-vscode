@@ -9,7 +9,6 @@
 	- Fix files without module declaration not getting added to our index
 	- Fix rename devouring Module prefixes
 
-
 ## 0.7.3
 
 - Fix a case of wrong highlighting 
