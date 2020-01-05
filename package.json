@@ -141,13 +141,13 @@
     "request": "2.88.0"
   },
   "devDependencies": {
-    "@types/jest": "^24.0.23",
-    "@types/node": "^12.12.18",
+    "@types/jest": "^24.0.25",
+    "@types/node": "^13.1.4",
     "prettier": "^1.19.1",
     "tslint": "^5.20.1",
     "tslint-config-prettier": "^1.18.0",
-    "tslint-plugin-prettier": "^2.0.1",
+    "tslint-plugin-prettier": "^2.1.0",
     "tslint-sonarts": "^1.9.0",
-    "typescript": "3.7.3"
+    "typescript": "3.7.4"
   }
 }
