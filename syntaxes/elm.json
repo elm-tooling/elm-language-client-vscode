@@ -29,13 +29,13 @@
       "include": "#type-alias-declaration"
     },
     {
-      "include": "#string-double"
+      "include": "#string-triple"
+    },
+    {
+      "include": "#string-quote"
     },
     {
       "include": "#char"
-    },
-    {
-      "include": "#string-triple"
     },
     {
       "comment": "Floats are always decimal",
@@ -311,7 +311,7 @@
         }
       ]
     },
-    "string-double": {
+    "string-quote": {
       "name": "string.quoted.double.elm",
       "begin": "\"",
       "beginCaptures": {
