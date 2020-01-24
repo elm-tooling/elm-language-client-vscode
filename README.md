@@ -38,6 +38,10 @@ This extension contributes the following settings:
 
 ## FAQ
 
+- Most features don't seem to work for me?
+
+  - This tool needs a valid elm project, please check if you have an `elm.json`. You can easily initialize your project with `elm init`. If it still does work, please try if you get the same behavior with the [elm-spa-example](https://github.com/rtfeldman/elm-spa-example/).
+
 - What's the relation to the language server?
 
   - This [vscode extension](https://marketplace.visualstudio.com/items?itemName=Elmtooling.elm-ls-vscode) is including the [elm-language-server](https://github.com/elm-tooling/elm-language-server) which enables most of the used features.
