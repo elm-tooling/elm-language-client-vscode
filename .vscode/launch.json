@@ -7,12 +7,7 @@
       "request": "launch",
       "name": "Launch Client",
       "runtimeExecutable": "${execPath}",
-      "args": [
-        // Needs to be set to your vscode path, for arch this works
-        "/usr/lib/code",
-        "--extensionDevelopmentPath=${workspaceRoot}",
-        "code --inspect-extensions=9993"
-      ],
+      "args": ["--extensionDevelopmentPath=${workspaceRoot}"],
       "sourceMaps": true,
       "outFiles": ["${workspaceRoot}/client/out/**/*.js"],
       "preLaunchTask": {
