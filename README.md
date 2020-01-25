@@ -52,7 +52,7 @@ This extension contributes the following settings:
 
 - Can I use an `elm-analyse` config?
 
-  - Yes, you can, please check [here](https://github.com/elm-tooling/elm-language-server#elm-analyse-configuration) for more details.
+  - Yes, you can, please check [here](https://github.com/elm-tooling/elm-language-server/blob/master/README.md#elm-analyse-configuration) for more details.
 
 ## Contributing / Debugging
 
