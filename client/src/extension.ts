@@ -136,6 +136,7 @@ export async function activate(context: ExtensionContext) {
           : {},
         middleware: new CodeLensResolver(),
         outputChannel,
+        progressOnInitialization: true,
         revealOutputChannelOn: RevealOutputChannelOn.Never,
         workspaceFolder: folder,
       };
