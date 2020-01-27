@@ -167,7 +167,7 @@ export async function activate(context: ExtensionContext) {
 }
 
 export function deactivate(): Thenable<void> | undefined {
-  const promises: Array<Thenable<void>> = [];
+  const promises: Thenable<void>[] = [];
   for (const client of clients.values()) {
     promises.push(client.stop());
   }
