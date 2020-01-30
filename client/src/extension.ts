@@ -123,6 +123,9 @@ export async function activate(context: ExtensionContext) {
             scheme: "file",
           },
         ],
+        synchronize: {
+          fileEvents: Workspace.createFileSystemWatcher("**/*.elm"),
+        },
         initializationOptions: config
           ? {
               elmAnalyseTrigger: config.elmAnalyseTrigger,
