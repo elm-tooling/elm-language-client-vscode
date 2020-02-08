@@ -43,7 +43,7 @@
       "name": "constant.numeric.float.elm"
     },
     {
-      "match": "\\b([0-9]+)\\b",
+      "match": "\\b(0x)?([0-9]+)\\b",
       "name": "constant.numeric.elm"
     },
     {
