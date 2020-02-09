@@ -47,6 +47,10 @@
       "name": "constant.numeric.elm"
     },
     {
+      "match": "\\b(0x[0-9a-fA-F]+)\\b",
+      "name": "constant.numeric.elm"
+    },
+    {
       "include": "#glsl"
     },
     {
