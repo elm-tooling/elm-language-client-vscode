@@ -138,11 +138,11 @@
     "tslint-check": "tslint-config-prettier-check ./tslint.json"
   },
   "dependencies": {
-    "request": "2.88.0"
+    "request": "2.88.2"
   },
   "devDependencies": {
-    "@types/jest": "^24.9.1",
-    "@types/node": "^13.5.0",
+    "@types/jest": "^25.1.2",
+    "@types/node": "^13.7.1",
     "prettier": "^1.19.1",
     "tslint": "^6.0.0",
     "tslint-config-prettier": "^1.18.0",
