@@ -1,5 +1,19 @@
 # Change Log
 
+## 0.9.0
+
+- Added support for new language server features
+- Add syntax highlighting for hexadecimal constants
+- Add /= to syntax highlighting
+
+- Updated the language server
+	- Add selection range handling
+	- Add progress indicator for startup
+	- Improved package ratings
+	- Remove deleted files from diagnostics
+	- Fix errors that could happen on startup
+	- Fix interactions not working after ( or similar characters
+
 ## 0.8.0
 
 - Syntax highlighting fixes for comments and some other corner cases
