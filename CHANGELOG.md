@@ -1,5 +1,9 @@
 # Change Log
 
+## 0.9.1
+
+- Fix problem with formatting
+
 ## 0.9.0
 
 - Added support for new language server features
