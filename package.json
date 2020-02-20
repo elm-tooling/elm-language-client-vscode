@@ -28,7 +28,7 @@
   ],
   "main": "./client/out/extension",
   "bin": {
-    "elm-ls": "./out/server/src/index.js"
+    "elm-ls": "./server/out/index.js"
   },
   "contributes": {
     "languages": [
