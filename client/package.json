@@ -10,7 +10,7 @@
     "url": "https://github.com/elmtooling/elm-language-client-vscode"
   },
   "engines": {
-    "vscode": "^1.37.0"
+    "vscode": "^1.42.0"
   },
   "scripts": {
     "compile": "tsc -p ./"
