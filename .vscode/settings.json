@@ -1,13 +1,15 @@
 {
-	"editor.insertSpaces": false,
-	"tslint.enable": true,
-	"typescript.tsc.autoDetect": "off",
-	"typescript.preferences.quoteStyle": "single",
-	"editor.tabSize": 2,
-	"cSpell.words": [
-		"Jsons",
-		"execa",
-		"globby",
-		"promisify"
-	]
+  "editor.insertSpaces": false,
+  "tslint.enable": true,
+  "typescript.tsc.autoDetect": "off",
+  "typescript.preferences.quoteStyle": "single",
+  "editor.tabSize": 2,
+  "cSpell.words": [
+    "Jsons",
+    "execa",
+    "globby",
+    "languageclient",
+    "promisify",
+    "textdocument"
+  ]
 }
