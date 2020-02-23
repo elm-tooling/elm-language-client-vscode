@@ -343,17 +343,17 @@
       ]
     },
     "char": {
-      "name": "char.quoted.elm",
+      "name": "string.quoted.char.elm",
       "begin": "'",
       "beginCaptures": {
         "0": {
-          "name": "punctuation.definition.char.begin.elm"
+          "name": "punctuation.definition.string.begin.elm"
         }
       },
       "end": "'",
       "endCaptures": {
         "0": {
-          "name": "punctuation.definition.char.end.elm"
+          "name": "punctuation.definition.string.end.elm"
         }
       },
       "patterns": [
