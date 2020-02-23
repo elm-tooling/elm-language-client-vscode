@@ -6,7 +6,7 @@
   "icon": "images/elm.png",
   "author": "Kolja Lampe",
   "license": "MIT",
-  "version": "0.9.1",
+  "version": "0.9.2",
   "repository": {
     "type": "git",
     "url": "https://github.com/elm-tooling/elm-language-client-vscode"
@@ -20,7 +20,7 @@
     "elm"
   ],
   "engines": {
-    "vscode": "^1.30.0"
+    "vscode": "^1.42.0"
   },
   "activationEvents": [
     "onLanguage:elm",

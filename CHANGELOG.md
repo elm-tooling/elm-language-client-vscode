@@ -1,5 +1,9 @@
 # Change Log
 
+## 0.9.2
+
+- Raised minimal vscode version
+
 ## 0.9.1
 
 - Fix problem with formatting
