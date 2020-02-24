@@ -343,7 +343,7 @@
       ]
     },
     "char": {
-      "name": "char.quoted.elm",
+      "name": "string.quoted.single.elm",
       "begin": "'",
       "beginCaptures": {
         "0": {
