@@ -1,5 +1,14 @@
 # Change Log
 
+## 0.9.3
+
+- Improve auto closing and surrounding pairs some more
+- Align char syntax highlighting to recommended namespace
+
+- Updated the language server
+	- Fade unused symbols
+	- Improved some codeAction texts
+
 ## 0.9.2
 
 - Raised minimal vscode version
