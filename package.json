@@ -65,7 +65,7 @@
       {
         "language": "elm",
         "scopeName": "source.elm",
-        "path": "./syntaxes/elm.json"
+        "path": "./syntaxes/elm-syntax.json"
       }
     ],
     "commands": [
