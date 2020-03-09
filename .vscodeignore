@@ -7,7 +7,6 @@ server/.github/**
 **/tsconfig.json
 **/tsconfig.base.json
 contributing.md
-.travis.yml
 client/node_modules/**
 !client/node_modules/vscode-jsonrpc/**
 !client/node_modules/vscode-languageclient/**

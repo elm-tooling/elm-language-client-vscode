@@ -1,5 +1,11 @@
 # Change Log
 
+## 0.9.4
+
+- Updated the language server
+	- Improved goto definition, find references and rename for anonymous functions, let definitions, destructured functions in let definitions, destructured parameters and case branches
+	- Show comment from type for type constructor
+
 ## 0.9.3
 
 - Improve auto closing and surrounding pairs some more
