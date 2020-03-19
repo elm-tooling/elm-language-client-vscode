@@ -25,6 +25,7 @@ import {
 } from "vscode-languageclient";
 
 import * as Package from "./elmPackage";
+import * as RefactorAction from "./refactorAction";
 
 export type ElmAnalyseTrigger = "change" | "save" | "never";
 
@@ -44,16 +45,16 @@ function getSortedWorkspaceFolders(): string[] {
   if (sortedWorkspaceFolders === void 0) {
     sortedWorkspaceFolders = Workspace.workspaceFolders
       ? Workspace.workspaceFolders
-          .map(folder => {
-            let result = folder.uri.toString();
-            if (result.charAt(result.length - 1) !== "/") {
-              result = result + "/";
-            }
-            return result;
-          })
-          .sort((a, b) => {
-            return a.length - b.length;
-          })
+        .map(folder => {
+          let result = folder.uri.toString();
+          if (result.charAt(result.length - 1) !== "/") {
+            result = result + "/";
+          }
+          return result;
+        })
+        .sort((a, b) => {
+          return a.length - b.length;
+        })
       : [];
   }
   return sortedWorkspaceFolders;
@@ -128,14 +129,14 @@ export async function activate(context: ExtensionContext) {
         },
         initializationOptions: config
           ? {
-              elmAnalyseTrigger: config.elmAnalyseTrigger,
-              elmFormatPath: config.elmFormatPath,
-              elmPath: config.elmPath,
-              elmTestPath: config.elmTestPath,
-              trace: {
-                server: config.trace.server,
-              },
-            }
+            elmAnalyseTrigger: config.elmAnalyseTrigger,
+            elmFormatPath: config.elmFormatPath,
+            elmPath: config.elmPath,
+            elmTestPath: config.elmTestPath,
+            trace: {
+              server: config.trace.server,
+            },
+          }
           : {},
         middleware: new CodeLensResolver(),
         outputChannel,
@@ -151,6 +152,8 @@ export async function activate(context: ExtensionContext) {
       );
       client.start();
       clients.set(folder.uri.toString(), client);
+
+      RefactorAction.registerCommands(client, context);
     }
   }
 
