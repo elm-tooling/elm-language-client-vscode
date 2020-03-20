@@ -7,9 +7,15 @@ export const MoveRequest = new RequestType<MoveParams, void, void, void>('elm/mo
 export interface MoveParams {
 	sourceUri: string;
 	params: CodeActionParams;
-	destination?: any;
+	destination?: string;
 }
 
 export interface MoveDestinationsResponse {
-	destinations: any[];
+	destinations: MoveDestination[];
+}
+
+export interface MoveDestination {
+	name: string,
+	path: string,
+	uri: string
 }

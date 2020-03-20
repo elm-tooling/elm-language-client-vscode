@@ -23,13 +23,13 @@ async function moveFunction(languageClient: LanguageClient, params: CodeActionPa
 
 	const destinationNodeItems = moveDestinations.destinations.map((destination) => {
 		return {
-			label: `${destination.type} ${destination.name}`,
-			description: destination.isField ? "Field" : "Function Parameter",
+			label: destination.name,
+			description: destination.path,
 			destination,
 		};
 	});
 
-	const functionName = commandInfo && commandInfo.displayName ? commandInfo.displayName : '';
+	const functionName = commandInfo || '';
 	const selected = await window.showQuickPick(destinationNodeItems, {
 		placeHolder: `Select the new file for the function ${functionName}.`,
 	});
@@ -41,6 +41,6 @@ async function moveFunction(languageClient: LanguageClient, params: CodeActionPa
 	await languageClient.sendRequest(MoveRequest, {
 		sourceUri: params.textDocument.uri,
 		params,
-		destination: selected.destination,
+		destination: selected.destination.uri,
 	});
 }

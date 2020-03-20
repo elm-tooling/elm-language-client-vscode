@@ -136,6 +136,9 @@ export async function activate(context: ExtensionContext) {
             trace: {
               server: config.trace.server,
             },
+            extendedCapabilities: {
+              moveFunctionRefactoringSupport: true
+            }
           }
           : {},
         middleware: new CodeLensResolver(),
