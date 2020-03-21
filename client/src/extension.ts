@@ -45,16 +45,16 @@ function getSortedWorkspaceFolders(): string[] {
   if (sortedWorkspaceFolders === void 0) {
     sortedWorkspaceFolders = Workspace.workspaceFolders
       ? Workspace.workspaceFolders
-        .map(folder => {
-          let result = folder.uri.toString();
-          if (result.charAt(result.length - 1) !== "/") {
-            result = result + "/";
-          }
-          return result;
-        })
-        .sort((a, b) => {
-          return a.length - b.length;
-        })
+          .map(folder => {
+            let result = folder.uri.toString();
+            if (result.charAt(result.length - 1) !== "/") {
+              result = result + "/";
+            }
+            return result;
+          })
+          .sort((a, b) => {
+            return a.length - b.length;
+          })
       : [];
   }
   return sortedWorkspaceFolders;
@@ -129,17 +129,17 @@ export async function activate(context: ExtensionContext) {
         },
         initializationOptions: config
           ? {
-            elmAnalyseTrigger: config.elmAnalyseTrigger,
-            elmFormatPath: config.elmFormatPath,
-            elmPath: config.elmPath,
-            elmTestPath: config.elmTestPath,
-            trace: {
-              server: config.trace.server,
-            },
-            extendedCapabilities: {
-              moveFunctionRefactoringSupport: true
+              elmAnalyseTrigger: config.elmAnalyseTrigger,
+              elmFormatPath: config.elmFormatPath,
+              elmPath: config.elmPath,
+              elmTestPath: config.elmTestPath,
+              trace: {
+                server: config.trace.server,
+              },
+              extendedCapabilities: {
+                moveFunctionRefactoringSupport: true,
+              },
             }
-          }
           : {},
         middleware: new CodeLensResolver(),
         outputChannel,
