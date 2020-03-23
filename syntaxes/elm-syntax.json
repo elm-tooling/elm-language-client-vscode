@@ -1,7 +1,5 @@
 {
-  "fileTypes": [
-    "elm"
-  ],
+  "fileTypes": ["elm"],
   "name": "Elm",
   "scopeName": "source.elm",
   "patterns": [
@@ -507,6 +505,15 @@
       "end": "^(?=\\S)",
       "name": "meta.function.type-declaration.elm",
       "patterns": [
+        {
+          "name": "meta.record.field.elm",
+          "match": "^\\s*([A-Z][a-zA-Z0-9_]*)\\b",
+          "captures": {
+            "1": {
+              "name": "constant.type-constructor.elm"
+            }
+          }
+        },
         {
           "match": "\\s+",
           "name": "punctuation.spaces.elm"
