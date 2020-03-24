@@ -24,6 +24,7 @@ import {
 } from "vscode-languageclient";
 import * as Package from "./elmPackage";
 import * as RefactorAction from "./refactorAction";
+import * as ExposeUnexposeAction from "./exposeUnexposeAction";
 
 export type ElmAnalyseTrigger = "change" | "save" | "never";
 
@@ -136,6 +137,7 @@ export async function activate(context: ExtensionContext) {
               },
               extendedCapabilities: {
                 moveFunctionRefactoringSupport: true,
+                exposeUnexposeSupport: true,
               },
             }
           : {},
@@ -155,6 +157,7 @@ export async function activate(context: ExtensionContext) {
       clients.set(folder.uri.toString(), client);
 
       RefactorAction.registerCommands(client, context);
+      ExposeUnexposeAction.registerCommands(client, context);
     }
   }
 
