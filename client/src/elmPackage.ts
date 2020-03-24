@@ -95,10 +95,10 @@ function browsePackage(): Thenable<void> {
 
   return getJSON()
     .then(transformToPackageQuickPickItems)
-    .then(packages =>
+    .then((packages) =>
       vscode.window.showQuickPick(packages, quickPickPackageOptions),
     )
-    .then(selectedPackage => {
+    .then((selectedPackage) => {
       if (selectedPackage === undefined) {
         return; // no package
       }
@@ -107,7 +107,7 @@ function browsePackage(): Thenable<void> {
           transformToPackageVersionQuickPickItems(selectedPackage),
           quickPickVersionOptions,
         )
-        .then(selectedVersion => {
+        .then((selectedVersion) => {
           const uri = selectedVersion
             ? vscode.Uri.parse(
                 "https://package.elm-lang.org/packages/" +
@@ -134,8 +134,8 @@ function runInstall(): Thenable<void> {
 
   return getJSON()
     .then(transformToQuickPickItems)
-    .then(items => vscode.window.showQuickPick(items, quickPickOptions))
-    .then(value => {
+    .then((items) => vscode.window.showQuickPick(items, quickPickOptions))
+    .then((value) => {
       if (value === undefined) {
         return; // no package
       }
