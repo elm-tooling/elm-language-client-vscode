@@ -1,5 +1,5 @@
-import { commands, window, ExtensionContext } from "vscode";
-import { LanguageClient, CodeActionParams } from "vscode-languageclient";
+import { commands, ExtensionContext, window } from "vscode";
+import { CodeActionParams, LanguageClient } from "vscode-languageclient";
 import { GetMoveDestinationRequest, MoveRequest } from "./protocol";
 
 export function registerCommands(
@@ -43,7 +43,7 @@ async function moveFunction(
   }
 
   const destinationNodeItems = moveDestinations.destinations.map(
-    destination => {
+    (destination) => {
       return {
         label: destination.name,
         description: destination.path,

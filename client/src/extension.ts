@@ -14,7 +14,6 @@ import {
   workspace as Workspace,
   WorkspaceFolder,
 } from "vscode";
-
 import {
   LanguageClient,
   LanguageClientOptions,
@@ -23,7 +22,6 @@ import {
   RevealOutputChannelOn,
   TransportKind,
 } from "vscode-languageclient";
-
 import * as Package from "./elmPackage";
 import * as RefactorAction from "./refactorAction";
 
@@ -45,7 +43,7 @@ function getSortedWorkspaceFolders(): string[] {
   if (sortedWorkspaceFolders === void 0) {
     sortedWorkspaceFolders = Workspace.workspaceFolders
       ? Workspace.workspaceFolders
-          .map(folder => {
+          .map((folder) => {
             let result = folder.uri.toString();
             if (result.charAt(result.length - 1) !== "/") {
               result = result + "/";
@@ -162,7 +160,7 @@ export async function activate(context: ExtensionContext) {
 
   Workspace.onDidOpenTextDocument(didOpenTextDocument);
   Workspace.textDocuments.forEach(didOpenTextDocument);
-  Workspace.onDidChangeWorkspaceFolders(event => {
+  Workspace.onDidChangeWorkspaceFolders((event) => {
     for (const folder of event.removed) {
       const client = clients.get(folder.uri.toString());
       if (client) {
@@ -173,7 +171,7 @@ export async function activate(context: ExtensionContext) {
   });
 
   const packageDisposables = Package.activatePackage();
-  packageDisposables.forEach(d => context.subscriptions.push(d));
+  packageDisposables.forEach((d) => context.subscriptions.push(d));
 }
 
 export function deactivate(): Thenable<void> | undefined {

@@ -1,4 +1,4 @@
-import { RequestType, CodeActionParams } from "vscode-languageclient";
+import { CodeActionParams, RequestType } from "vscode-languageclient";
 
 export const GetMoveDestinationRequest = new RequestType<
   MoveParams,
