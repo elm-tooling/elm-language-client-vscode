@@ -25,6 +25,7 @@ import {
 } from "vscode-languageclient";
 
 import * as Package from "./elmPackage";
+import * as RefactorAction from "./refactorAction";
 
 export type ElmAnalyseTrigger = "change" | "save" | "never";
 
@@ -135,6 +136,9 @@ export async function activate(context: ExtensionContext) {
               trace: {
                 server: config.trace.server,
               },
+              extendedCapabilities: {
+                moveFunctionRefactoringSupport: true,
+              },
             }
           : {},
         middleware: new CodeLensResolver(),
@@ -151,6 +155,8 @@ export async function activate(context: ExtensionContext) {
       );
       client.start();
       clients.set(folder.uri.toString(), client);
+
+      RefactorAction.registerCommands(client, context);
     }
   }
 
