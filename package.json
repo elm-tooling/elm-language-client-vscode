@@ -6,7 +6,7 @@
   "icon": "images/elm.png",
   "author": "Kolja Lampe",
   "license": "MIT",
-  "version": "0.9.4",
+  "version": "0.10.0",
   "repository": {
     "type": "git",
     "url": "https://github.com/elm-tooling/elm-language-client-vscode"
@@ -142,11 +142,11 @@
   },
   "devDependencies": {
     "@types/jest": "^25.1.4",
-    "@types/node": "^13.9.3",
+    "@types/node": "^13.9.8",
     "prettier": "^2.0.2",
     "tslint": "^6.1.0",
     "tslint-config-prettier": "^1.18.0",
-    "tslint-plugin-prettier": "^2.2.0",
+    "tslint-plugin-prettier": "^2.3.0",
     "tslint-sonarts": "^1.9.0",
     "typescript": "3.8.3"
   }

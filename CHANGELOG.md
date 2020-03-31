@@ -1,5 +1,22 @@
 # Change Log
 
+## 0.10.0
+
+- Fix case where type constructor highlighting was wrong
+- Client support for codeLens exposing/unexposing and move function refactoring
+
+- Updated the language server
+	- Add diagnostic on unknown symbols and offer importing via codeAction (needs the file to be save and the compiler to run)
+	- Support exposing/unexposing functions and types via codeLense or codeAction
+	- Add support for move function refactoring
+	- Fix init taking long when using files with thousands of functions
+	- Add new snippet for if-else conditions
+	- Better completions for record update syntax
+	- Added completions for basic keywords like if, then, else, let etc.
+	- Improved hovers for types aliases
+	- Added jump to definition for fields of records
+	- Better handling of invalid renames
+
 ## 0.9.4
 
 - Updated the language server
