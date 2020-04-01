@@ -4,4 +4,5 @@
 - Run `npm run compile`
 - Push the code to github and wait for the CI
 - Run `vsce publish`
+- Run `ovsx publish`
 - Tag the new version on github
