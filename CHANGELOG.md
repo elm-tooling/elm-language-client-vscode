@@ -1,5 +1,12 @@
 # Change Log
 
+## 0.10.1
+
+- Updated the language server
+	- Fix exposing list params not getting completed for imports
+	- Fix possible imports for packages not in ranking list
+	- Prevent imports from getting out of date
+
 ## 0.10.0
 
 - Fix case where type constructor highlighting was wrong
