@@ -56,6 +56,20 @@
         "${workspaceRoot}/client/testFixture"
       ],
       "outFiles": ["${workspaceRoot}/client/out/test/**/*.js"]
+    },
+    {
+      "name": "Debug Jest Tests",
+      "type": "node",
+      "request": "launch",
+      "cwd": "${workspaceFolder}/server",
+      "runtimeArgs": [
+        "--inspect-brk",
+        "${workspaceRoot}/server/node_modules/.bin/jest",
+        "--runInBand"
+      ],
+      "console": "integratedTerminal",
+      "internalConsoleOptions": "neverOpen",
+      "port": 9229
     }
   ],
   "compounds": [
