@@ -1,5 +1,16 @@
 # Change Log
 
+## 0.10.2
+
+- Updated the language server
+	- Add record access completions for types and nested types
+	- Fix elm.json being ignored when paths are similar to another
+	- Fix record field jump to definitions 
+	- Fix record field completions in some cases
+	- Fix auto import not suggesting modules with multiple prefixes
+	- Fix error where qualified names were not taken into account for definition resolving
+	- Updated package rankings
+
 ## 0.10.1
 
 - Updated the language server
