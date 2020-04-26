@@ -1,6 +1,6 @@
 # Elm Plugin for Visual Studio Code (VSCode)
 
-Supports elm 0.19
+Supports elm 0.19 and up
 
 ## Install
 
