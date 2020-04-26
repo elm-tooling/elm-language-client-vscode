@@ -78,6 +78,11 @@
         "command": "elm.browsePackage",
         "title": "Browse Package",
         "category": "Elm"
+      },
+      {
+        "command": "elm.commands.restart",
+        "title": "Restart Elm Language Server",
+        "category": "Elm"
       }
     ],
     "configuration": {

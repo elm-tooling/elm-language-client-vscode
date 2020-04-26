@@ -25,6 +25,7 @@ import {
 import * as Package from "./elmPackage";
 import * as RefactorAction from "./refactorAction";
 import * as ExposeUnexposeAction from "./exposeUnexposeAction";
+import { Restart } from "./restart";
 
 export type ElmAnalyseTrigger = "change" | "save" | "never";
 
@@ -175,6 +176,7 @@ export async function activate(context: ExtensionContext) {
 
   const packageDisposables = Package.activatePackage();
   packageDisposables.forEach((d) => context.subscriptions.push(d));
+  context.subscriptions.push(Restart.registerCommand(clients));
 }
 
 export function deactivate(): Thenable<void> | undefined {
