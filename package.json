@@ -146,13 +146,13 @@
     "request": "2.88.2"
   },
   "devDependencies": {
-    "@types/jest": "^25.2.1",
-    "@types/node": "^13.11.1",
-    "prettier": "^2.0.4",
-    "tslint": "^6.1.1",
+    "@types/jest": "^25.2.2",
+    "@types/node": "^14.0.1",
+    "prettier": "^2.0.5",
+    "tslint": "^6.1.2",
     "tslint-config-prettier": "^1.18.0",
     "tslint-plugin-prettier": "^2.3.0",
     "tslint-sonarts": "^1.9.0",
-    "typescript": "3.8.3"
+    "typescript": "3.9.2"
   }
 }
