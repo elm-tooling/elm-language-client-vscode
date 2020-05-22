@@ -3,7 +3,7 @@ import { ExtensionContext, commands } from "vscode";
 import {
   ExposeRequest,
   UnexposeRequest,
-  ExposeUnexposeParams,
+  IExposeUnexposeParams,
 } from "./protocol";
 
 export function registerCommands(
@@ -25,14 +25,14 @@ export function registerCommands(
 
 async function expose(
   languageClient: LanguageClient,
-  params: ExposeUnexposeParams,
+  params: IExposeUnexposeParams,
 ) {
   await languageClient.sendRequest(ExposeRequest, params);
 }
 
 async function unexpose(
   languageClient: LanguageClient,
-  params: ExposeUnexposeParams,
+  params: IExposeUnexposeParams,
 ) {
   await languageClient.sendRequest(UnexposeRequest, params);
 }

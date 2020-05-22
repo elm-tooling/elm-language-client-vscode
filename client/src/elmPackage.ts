@@ -35,7 +35,7 @@ function getJSON(): Thenable<any[]> {
   return new Promise((resolve, reject) => {
     request(
       "https://package.elm-lang.org/all-packages",
-      (err: any, _: any, body: any) => {
+      (err: any, _: any, body: string) => {
         if (err) {
           reject(err);
         } else {
@@ -77,7 +77,8 @@ function installPackageInTerminal(packageToInstall: string) {
     packageTerminal.sendText(installPackageLaunchCommand, true);
     packageTerminal.show(false);
   } catch (error) {
-    vscode.window.showErrorMessage(
+    void vscode.window.showErrorMessage(
+      // eslint-disable-next-line @typescript-eslint/restrict-plus-operands
       "Cannot start Elm Package install. " + error,
     );
   }
@@ -107,7 +108,7 @@ function browsePackage(): Thenable<void> {
           transformToPackageVersionQuickPickItems(selectedPackage),
           quickPickVersionOptions,
         )
-        .then((selectedVersion) => {
+        .then(async (selectedVersion) => {
           const uri = selectedVersion
             ? vscode.Uri.parse(
                 "https://package.elm-lang.org/packages/" +
@@ -120,7 +121,7 @@ function browsePackage(): Thenable<void> {
                   selectedPackage.label +
                   "/latest",
               );
-          vscode.commands.executeCommand("vscode.open", uri);
+          await vscode.commands.executeCommand("vscode.open", uri);
         })
         .then(() => undefined);
     });

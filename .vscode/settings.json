@@ -11,5 +11,6 @@
     "languageclient",
     "promisify",
     "textdocument"
-  ]
+  ],
+  "deno.enable": false
 }

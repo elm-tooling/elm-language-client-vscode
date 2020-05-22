@@ -138,9 +138,7 @@
     "watch": "npm run copy-wasm && tsc -b -w",
     "copy-wasm": "cd server && npm run copy-wasm",
     "postinstall": "cd client && npm install && cd ../server && npm install && cd ..",
-    "test": "sh ./scripts/e2e.sh",
-    "lint": "tslint -p tsconfig.json",
-    "tslint-check": "tslint-config-prettier-check ./tslint.json"
+    "test": "sh ./scripts/e2e.sh"
   },
   "dependencies": {
     "request": "2.88.2"
@@ -149,10 +147,6 @@
     "@types/jest": "^25.2.2",
     "@types/node": "^14.0.1",
     "prettier": "^2.0.5",
-    "tslint": "^6.1.2",
-    "tslint-config-prettier": "^1.18.0",
-    "tslint-plugin-prettier": "^2.3.0",
-    "tslint-sonarts": "^1.9.0",
     "typescript": "3.9.2"
   }
 }

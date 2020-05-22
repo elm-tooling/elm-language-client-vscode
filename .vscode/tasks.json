@@ -28,13 +28,16 @@
     {
       "type": "npm",
       "script": "lint",
+      "detail": "Lint the client",
+      "path": "client/",
       "problemMatcher": ["$tslint5"]
     },
     {
       "type": "npm",
       "script": "lint",
+      "detail": "Lint the server",
       "path": "server/",
-      "problemMatcher": ["$tslint5"]
+      "problemMatcher": ["$eslint-stylish"]
     }
   ]
 }

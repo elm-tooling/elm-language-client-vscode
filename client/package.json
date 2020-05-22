@@ -13,7 +13,9 @@
     "vscode": "^1.42.0"
   },
   "scripts": {
-    "compile": "tsc -p ./"
+    "compile": "tsc -p ./",
+    "lint": "tslint -p tsconfig.json",
+    "tslint-check": "tslint-config-prettier-check ./tslint.json"
   },
   "dependencies": {
     "vscode-languageclient": "^6.1.3"
@@ -21,6 +23,10 @@
   "devDependencies": {
     "@types/request": "^2.48.5",
     "@types/vscode": "^1.45.1",
+    "tslint": "^6.1.2",
+    "tslint-config-prettier": "^1.18.0",
+    "tslint-plugin-prettier": "^2.3.0",
+    "tslint-sonarts": "^1.9.0",
     "vscode-test": "^1.3.0",
     "typescript": "3.9.2"
   }

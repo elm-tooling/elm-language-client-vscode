@@ -25,7 +25,7 @@ import {
 import * as Package from "./elmPackage";
 import * as RefactorAction from "./refactorAction";
 import * as ExposeUnexposeAction from "./exposeUnexposeAction";
-import { Restart } from "./restart";
+import * as Restart from "./restart";
 
 export type ElmAnalyseTrigger = "change" | "save" | "never";
 
@@ -37,7 +37,7 @@ export interface IClientSettings {
   elmAnalyseTrigger: ElmAnalyseTrigger;
 }
 
-const clients: Map<string, LanguageClient> = new Map();
+const clients: Map<string, LanguageClient> = new Map<string, LanguageClient>();
 
 let sortedWorkspaceFolders: string[] | undefined;
 
@@ -77,7 +77,7 @@ function getOuterMostWorkspaceFolder(folder: WorkspaceFolder): WorkspaceFolder {
   return folder;
 }
 
-export async function activate(context: ExtensionContext) {
+export function activate(context: ExtensionContext): void {
   const module = context.asAbsolutePath(path.join("server", "out", "index.js"));
 
   function didOpenTextDocument(document: TextDocument) {
@@ -164,12 +164,12 @@ export async function activate(context: ExtensionContext) {
 
   Workspace.onDidOpenTextDocument(didOpenTextDocument);
   Workspace.textDocuments.forEach(didOpenTextDocument);
-  Workspace.onDidChangeWorkspaceFolders((event) => {
+  Workspace.onDidChangeWorkspaceFolders(async (event) => {
     for (const folder of event.removed) {
       const client = clients.get(folder.uri.toString());
       if (client) {
         clients.delete(folder.uri.toString());
-        client.stop();
+        await client.stop();
       }
     }
   });
@@ -240,12 +240,6 @@ export class CodeLensResolver implements Middleware {
       return codeLensToFix;
     };
 
-    if ((resolvedCodeLens as Thenable<CodeLens>).then) {
-      return (resolvedCodeLens as Thenable<CodeLens>).then(resolveFunc);
-    } else if (resolvedCodeLens as CodeLens) {
-      return resolveFunc(resolvedCodeLens as CodeLens);
-    }
-
-    return resolvedCodeLens;
+    return (resolvedCodeLens as Thenable<CodeLens>).then(resolveFunc);
   }
 }
