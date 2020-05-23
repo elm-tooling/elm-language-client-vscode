@@ -63,7 +63,9 @@ Workspace.onDidChangeWorkspaceFolders(
   () => (sortedWorkspaceFolders = undefined),
 );
 
-function getOuterMostWorkspaceFolder(folder: WorkspaceFolder): WorkspaceFolder {
+function getOuterMostWorkspaceFolder(
+  folder: WorkspaceFolder,
+): WorkspaceFolder | undefined {
   const sorted = getSortedWorkspaceFolders();
   for (const element of sorted) {
     let uri = folder.uri.toString();
@@ -71,7 +73,7 @@ function getOuterMostWorkspaceFolder(folder: WorkspaceFolder): WorkspaceFolder {
       uri = uri + "/";
     }
     if (uri.startsWith(element)) {
-      return Workspace.getWorkspaceFolder(Uri.parse(element))!;
+      return Workspace.getWorkspaceFolder(Uri.parse(element));
     }
   }
   return folder;
@@ -97,6 +99,10 @@ export function activate(context: ExtensionContext): void {
     }
     // If we have nested workspace folders we only start a server on the outer most workspace folder.
     folder = getOuterMostWorkspaceFolder(folder);
+
+    if (!folder) {
+      return;
+    }
 
     if (!clients.has(folder.uri.toString())) {
       const relativeWorkspace = folder.name;

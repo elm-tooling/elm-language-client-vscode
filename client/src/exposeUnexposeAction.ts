@@ -9,17 +9,23 @@ import {
 export function registerCommands(
   languageClient: LanguageClient,
   context: ExtensionContext,
-) {
+): void {
   context.subscriptions.push(
-    commands.registerCommand("elm.expose", async (params: any) => {
-      await expose(languageClient, params);
-    }),
+    commands.registerCommand(
+      "elm.expose",
+      async (params: IExposeUnexposeParams) => {
+        await expose(languageClient, params);
+      },
+    ),
   );
 
   context.subscriptions.push(
-    commands.registerCommand("elm.unexpose", async (params: any) => {
-      await unexpose(languageClient, params);
-    }),
+    commands.registerCommand(
+      "elm.unexpose",
+      async (params: IExposeUnexposeParams) => {
+        await unexpose(languageClient, params);
+      },
+    ),
   );
 }
 

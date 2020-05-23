@@ -6,13 +6,13 @@ import request = require("request");
 let packageTerminal: vscode.Terminal;
 
 interface IElmPackageQuickPickItem extends vscode.QuickPickItem {
-  info: any;
+  info: string[];
 }
 
 function transformToPackageQuickPickItems(
-  packages: any[],
+  packages: { [K in string]: string[] },
 ): IElmPackageQuickPickItem[] {
-  return Object.keys(packages).map((item: any) => {
+  return Object.keys(packages).map((item: string) => {
     return { label: item, description: item, info: packages[item] };
   });
 }
@@ -20,32 +20,32 @@ function transformToPackageQuickPickItems(
 function transformToPackageVersionQuickPickItems(
   selectedPackage: IElmPackageQuickPickItem,
 ): vscode.QuickPickItem[] {
-  return selectedPackage.info.map((version: any) => {
-    return { label: version, description: null };
+  return selectedPackage.info.map((version: string) => {
+    return { label: version, description: undefined };
   });
 }
 
-function transformToQuickPickItems(packages: any[]): vscode.QuickPickItem[] {
-  return Object.keys(packages).map((item: any) => {
+function transformToQuickPickItems(
+  packages: { [K in string]: string[] },
+): vscode.QuickPickItem[] {
+  return Object.keys(packages).map((item: string) => {
     return { label: item, description: "", info: packages[item] };
   });
 }
 
-function getJSON(): Thenable<any[]> {
+function getJSON(): Thenable<{ [K in string]: string[] }> {
   return new Promise((resolve, reject) => {
     request(
       "https://package.elm-lang.org/all-packages",
-      (err: any, _: any, body: string) => {
+      (err: unknown, _: request.Response, body: string) => {
         if (err) {
           reject(err);
         } else {
-          let json;
           try {
-            json = JSON.parse(body);
+            resolve(JSON.parse(body));
           } catch (e) {
             reject(e);
           }
-          resolve(json);
         }
       },
     );

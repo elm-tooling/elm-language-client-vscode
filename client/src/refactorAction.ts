@@ -5,11 +5,15 @@ import { GetMoveDestinationRequest, MoveRequest } from "./protocol";
 export function registerCommands(
   languageClient: LanguageClient,
   context: ExtensionContext,
-) {
+): void {
   context.subscriptions.push(
     commands.registerCommand(
       "elm.refactor",
-      async (command: string, params: any, commandInfo: any) => {
+      async (
+        command: string,
+        params: CodeActionParams,
+        commandInfo: string,
+      ) => {
         if (command === "moveFunction") {
           await moveFunction(languageClient, params, commandInfo);
         }
@@ -21,7 +25,7 @@ export function registerCommands(
 async function moveFunction(
   languageClient: LanguageClient,
   params: CodeActionParams,
-  commandInfo: any,
+  commandInfo: string,
 ) {
   const moveDestinations = await languageClient.sendRequest(
     GetMoveDestinationRequest,
@@ -36,7 +40,7 @@ async function moveFunction(
     !moveDestinations.destinations ||
     !moveDestinations.destinations.length
   ) {
-    window.showErrorMessage(
+    void window.showErrorMessage(
       "Cannot find possible file targets to move the selected method to.",
     );
     return;
