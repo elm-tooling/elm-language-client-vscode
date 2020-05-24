@@ -163,7 +163,7 @@
         },
         "exposed-modules": {
           "description": "A list of modules that will be exposed to people using your package. The order you list them will be the order they appear on package.elm-lang.org.",
-          "type": ["array", "string", "object"],
+          "type": ["array", "object"],
           "additionalProperties": { "type": "array" },
           "propertyNames": {
             "pattern": "^[A-Z].*$"
