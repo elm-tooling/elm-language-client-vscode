@@ -30,7 +30,7 @@
       "script": "lint",
       "detail": "Lint the client",
       "path": "client/",
-      "problemMatcher": ["$tslint5"]
+      "problemMatcher": ["$eslint-stylish"]
     },
     {
       "type": "npm",
