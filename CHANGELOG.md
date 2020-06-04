@@ -1,5 +1,24 @@
 # Change Log
 
+## 1.0.0
+
+- Added restart command
+- Make elm.json schema stricter
+- Update dependencies
+
+- Updated the language server
+	- Add completions for possible imports
+	- Scaffold case branches (use the new snippet and code action)
+	- Sort auto imports by closest similar modules
+	- Improve record field access completions
+	- Remove exposing subscriptions in Browser.sandbox snippet
+	- Fixed references to shadowed modules being potentially wrong
+	- Don't use flatmap to be node 10 compatible (caused problems for npm package users)
+	- Update elm-analyse
+	- Update dependencies
+
+
+
 ## 0.10.2
 
 - Updated the language server
