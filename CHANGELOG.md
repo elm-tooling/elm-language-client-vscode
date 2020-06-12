@@ -1,5 +1,10 @@
 # Change Log
 
+## 1.0.1
+
+- Updated the language server
+	- Fix imports form other files not showing up in some cases
+
 ## 1.0.0
 
 - Added restart command
@@ -16,8 +21,6 @@
 	- Don't use flatmap to be node 10 compatible (caused problems for npm package users)
 	- Update elm-analyse
 	- Update dependencies
-
-
 
 ## 0.10.2
 
