@@ -1,5 +1,10 @@
 # Change Log
 
+## 1.0.2
+
+- Updated the language server
+	- Fix problem on import generation for windows systems
+
 ## 1.0.1
 
 - Updated the language server
