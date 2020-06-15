@@ -1,5 +1,10 @@
 # Change Log
 
+## 1.0.3
+
+- Updated the language server
+	- Fixed bug that was causing problems with completions from external packages
+
 ## 1.0.2
 
 - Updated the language server
