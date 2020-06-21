@@ -1,5 +1,10 @@
 # Change Log
 
+## 1.1.1
+
+- Updated the language server
+	- Revert "We changed the used globbing lib to a slightly faster one"
+
 ## 1.1.0
 
 - Updated the language server
