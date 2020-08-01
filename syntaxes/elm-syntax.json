@@ -64,7 +64,7 @@
     },
     {
       "name": "meta.record.field.update.elm",
-      "match": "(\\{)\\s+([a-z][a-zA-Z0-9]*)\\s+(\\|)\\s+([a-z][a-zA-Z0-9]*)",
+      "match": "(\\{)\\s+([a-z][a-zA-Z0-9_]*)\\s+(\\|)\\s+([a-z][a-zA-Z0-9_]*)",
       "captures": {
         "1": {
           "name": "punctuation.bracket.elm"
@@ -82,7 +82,7 @@
     },
     {
       "name": "meta.record.field.update.elm",
-      "match": "(\\|)\\s+([a-z][a-zA-Z0-9]*)\\s+(\\=)",
+      "match": "(\\|)\\s+([a-z][a-zA-Z0-9_]*)\\s+(\\=)",
       "captures": {
         "1": {
           "name": "keyword.pipe.elm"
@@ -97,7 +97,7 @@
     },
     {
       "name": "meta.record.field.update.elm",
-      "match": "(\\{)\\s+([a-z][a-zA-Z0-9]*)\\s+$",
+      "match": "(\\{)\\s+([a-z][a-zA-Z0-9_]*)\\s+$",
       "captures": {
         "1": {
           "name": "punctuation.bracket.elm"
@@ -109,7 +109,7 @@
     },
     {
       "name": "meta.record.field.elm",
-      "match": "(\\{)\\s+([a-z][a-zA-Z0-9]*)\\s+(\\=)",
+      "match": "(\\{)\\s+([a-z][a-zA-Z0-9_]*)\\s+(\\=)",
       "captures": {
         "1": {
           "name": "punctuation.bracket.elm"
@@ -124,7 +124,7 @@
     },
     {
       "name": "meta.record.field.elm",
-      "match": "(,)\\s+([a-z][a-zA-Z0-9]*)\\s+(\\=)",
+      "match": "(,)\\s+([a-z][a-zA-Z0-9_]*)\\s+(\\=)",
       "captures": {
         "1": {
           "name": "punctuation.separator.comma.elm"
@@ -422,7 +422,7 @@
       ]
     },
     "module_chunk": {
-      "match": "[A-Z][a-zA-Z0-9]*",
+      "match": "[A-Z][a-zA-Z0-9_]*",
       "name": "support.module.elm"
     },
     "period": {
@@ -434,7 +434,7 @@
       "name": "punctuation.definition.list.elm"
     },
     "record-prefix": {
-      "match": "([a-z][a-zA-Z0-9]*)(\\.)([a-z][a-zA-Z0-9]*)",
+      "match": "([a-z][a-zA-Z0-9_]*)(\\.)([a-z][a-zA-Z0-9_]*)",
       "name": "record.accessor.elm",
       "captures": {
         "1": {
@@ -449,7 +449,7 @@
       }
     },
     "module-prefix": {
-      "match": "([A-Z][a-zA-Z0-9]*)(\\.)",
+      "match": "([A-Z][a-zA-Z0-9_]*)(\\.)",
       "name": "meta.module.name.elm",
       "captures": {
         "1": {
@@ -625,7 +625,7 @@
         },
         {
           "name": "meta.record.field.elm",
-          "match": "([a-z][a-zA-Z0-9]*)\\s+(\\:)",
+          "match": "([a-z][a-zA-Z0-9_]*)\\s+(\\:)",
           "captures": {
             "1": {
               "name": "entity.name.record.field.elm"
@@ -643,11 +643,11 @@
           "include": "#module-prefix"
         },
         {
-          "match": "\\b[a-z][a-zA-Z0-9]*\\b",
+          "match": "\\b[a-z][a-zA-Z0-9_]*\\b",
           "name": "variable.type.elm"
         },
         {
-          "match": "\\b[A-Z][a-zA-Z0-9]*\\b",
+          "match": "\\b[A-Z][a-zA-Z0-9_]*\\b",
           "name": "storage.type.elm"
         },
         {
@@ -693,7 +693,7 @@
           "include": "#module-prefix"
         },
         {
-          "match": "\\b[a-z][a-zA-Z0-9]*\\b",
+          "match": "\\b[a-z][a-zA-Z0-9_]*\\b",
           "name": "variable.type.elm"
         },
         {
