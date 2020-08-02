@@ -1,5 +1,19 @@
 # Change Log
 
+## 1.2.0
+
+- Fixed names with "_" being highlighted wrong
+- Updated dependencies
+
+- Updated the language server
+	- Add value completions for non-imported modules
+	- Add definition handling for type variables
+	- Improved annotation/function name completions
+	- Various other completion improvements
+	- Fixed wrong wildcard shadowing rules
+	- Update tree sitter and other dependencies
+
+
 ## 1.1.1
 
 - Updated the language server
