@@ -13,7 +13,6 @@
 	- Fixed wrong wildcard shadowing rules
 	- Update tree sitter and other dependencies
 
-
 ## 1.1.1
 
 - Updated the language server
