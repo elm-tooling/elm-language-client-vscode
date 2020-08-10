@@ -21,6 +21,7 @@ import {
   ResolveCodeLensSignature,
   RevealOutputChannelOn,
   TransportKind,
+  ProvideCodeLensesSignature,
 } from "vscode-languageclient";
 import * as Package from "./elmPackage";
 import * as RefactorAction from "./refactorAction";
@@ -192,8 +193,41 @@ export function deactivate(): Thenable<void> | undefined {
   }
   return Promise.all(promises).then(() => undefined);
 }
+class CachedCodeLensResponse {
+  response?: ProviderResult<CodeLens[]>;
+  version: number = -1;
+  document: string = "";
+
+  matches(document: TextDocument): boolean {
+    return (
+      this.version === document.version &&
+      this.document === document.uri.toString()
+    );
+  }
+
+  update(document: TextDocument, response: ProviderResult<CodeLens[]>) {
+    this.response = response;
+    this.version = document.version;
+    this.document = document.uri.toString();
+  }
+}
+
+const cachedCodeLens = new CachedCodeLensResponse();
 
 export class CodeLensResolver implements Middleware {
+  public provideCodeLenses(
+    this: void,
+    document: TextDocument,
+    token: CancellationToken,
+    next: ProvideCodeLensesSignature,
+  ): ProviderResult<CodeLens[]> {
+    if (!cachedCodeLens.matches(document)) {
+      cachedCodeLens.update(document, next(document, token));
+    }
+
+    return cachedCodeLens.response;
+  }
+
   public resolveCodeLens(
     codeLens: CodeLens,
     token: CancellationToken,
