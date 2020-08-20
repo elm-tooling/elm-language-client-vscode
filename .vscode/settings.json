@@ -11,5 +11,6 @@
     "promisify",
     "textdocument"
   ],
-  "deno.enable": false
+  "deno.enable": false,
+  "jest.rootPath": "/server"
 }
