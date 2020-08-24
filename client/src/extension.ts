@@ -27,6 +27,7 @@ import * as Package from "./elmPackage";
 import * as RefactorAction from "./refactorAction";
 import * as ExposeUnexposeAction from "./exposeUnexposeAction";
 import * as Restart from "./restart";
+import { OnDidCreateFilesRequest, OnDidRenameFilesRequest } from "./protocol";
 
 export type ElmAnalyseTrigger = "change" | "save" | "never";
 
@@ -178,6 +179,22 @@ export function activate(context: ExtensionContext): void {
         clients.delete(folder.uri.toString());
         await client.stop();
       }
+    }
+  });
+
+  Workspace.onDidCreateFiles((e) => {
+    if (e.files.some((file) => file.toString().endsWith(".elm"))) {
+      clients.forEach((client) =>
+        client.sendRequest(OnDidCreateFilesRequest, e),
+      );
+    }
+  });
+
+  Workspace.onDidRenameFiles((e) => {
+    if (e.files.some(({ newUri }) => newUri.toString().endsWith(".elm"))) {
+      clients.forEach((client) =>
+        client.sendRequest(OnDidRenameFilesRequest, e),
+      );
     }
   });
 
