@@ -1,5 +1,19 @@
 # Change Log
 
+## 1.3.0
+
+- Prefill newly create elm files
+- Renaming files in the file explorer will rename tho module definition
+- Cache codelens requests to prevent duplicate server requests
+
+- Updated the language server	
+	- Improve definition for conflicting module/type names
+	- Various completion sorting tweaks
+	- Add parameter names to hovers/autocompletions for functions
+	- Improve module renames to also rename the file
+	- Add support renaming files in the vscode file explorer
+	- Use dependency injection to resolve classes
+
 ## 1.2.0
 
 - Fixed names with "_" being highlighted wrong
