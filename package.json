@@ -126,7 +126,7 @@
             "save",
             "never"
           ],
-          "default": "change",
+          "default": "never",
           "description": "When do you want the extension to run elm-analyse? Might need a restart to take effect."
         }
       }
