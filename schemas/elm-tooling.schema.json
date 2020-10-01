@@ -1,0 +1,28 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "properties": {
+    "entrypoints": {
+      "description": "A list of file paths, to the Elm entrypoint files of the project.",
+      "type": "array",
+      "uniqueItems": true,
+      "minItems": 1,
+      "items": {
+        "description": "File path. Must start with `./`, use `/` rather than `\\` and end with `.elm`.",
+        "type": "string",
+        "pattern": "^\\./[^\\\\]+\\.elm$"
+      }
+    },
+    "tools": {
+      "description": "A mapping between Elm tool names and the version of the tool.",
+      "type": "object",
+      "propertyNames": {
+        "pattern": "^\\S+$"
+      },
+      "additionalProperties": {
+        "description": "Key: Tool name, such as `elm`.\nValue: A valid semver version, such as `0.19.1`.",
+        "type": "string",
+        "pattern": "^\\d+\\.\\d+\\.\\d+([+-].+)?$"
+      }
+    }
+  }
+}
