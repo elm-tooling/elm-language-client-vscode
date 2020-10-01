@@ -48,6 +48,10 @@
       {
         "fileMatch": "elm.json",
         "url": "./schemas/elm.schema.json"
+      },
+      {
+        "fileMatch": "elm-tooling.json",
+        "url": "./schemas/elm-tooling.schema.json"
       }
     ],
     "grammars": [
