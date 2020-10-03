@@ -59,6 +59,10 @@ This extension contributes the following settings:
 
   - Yes, you can, please check [here](https://github.com/elm-tooling/elm-language-server/blob/master/README.md#elm-analyse-configuration) for more details.
 
+- I don't like the inserted lines for "X references" (CodeLenses)
+
+  - You can configure VSCode to not show them, just look for "Editor: Code Lens" in your settings.
+
 ## Contributing / Debugging
 
 ```shell
