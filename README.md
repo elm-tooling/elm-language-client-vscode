@@ -30,6 +30,7 @@ Supports elm 0.19 and up
 - Browse workspace by symbols (Control + Shift + R)
 - Codelenses show how many times you calling a function and if it's exposed or not
 - Code folding
+- Type inference
 
 ## Extension Settings
 
@@ -40,6 +41,25 @@ This extension contributes the following settings:
 - `elmLS.elmFormatPath`: The path to your elm-format executable.
 - `elmLS.elmTestPath`: The path to your elm-test executable.
 - `elmLS.elmAnalyseTrigger`: When do you want the extension to run elm-analyse? Might need a restart to take effect.
+
+## Configuration
+
+Create an [elm-tooling.json](https://github.com/lydell/elm-tooling.json) file next to your `elm.json` to configure your project.
+
+Currently there’s just one thing that you can configure: entrypoints. We run `elm make` to get errors. Without this `elm make` is run on the current file only. To get errors for the entire project you can specify your entrypoint files – basically, those with `main =` in them. Then the language server will run `elm make` on those instead.
+
+Example:
+
+```json
+{
+  "entrypoints": ["./src/Main.elm"]
+}
+```
+
+The entrypoints are relative to the directory where your `elm.json` and `elm-tooling.json` is and must start with `./`.
+
+Check out the [elm-tooling](https://github.com/lydell/elm-tooling.json/tree/main/cli#readme) CLI for creating and validating your `elm-tooling.json`!
+
 
 ## FAQ
 
