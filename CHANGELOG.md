@@ -1,5 +1,22 @@
 # Change Log
 
+## 1.4.0
+
+- Elm-Analyse will be disabled by default from now on
+- Added elm-tooling.json schema for better integration
+- Updated dependencies
+
+- Updated the language server	
+	- Make entrypoints configurable via elm-tooling.json
+	- Default elmAnalyseTrigger to never
+	- Added type inference
+	- Added type inference diagnostics for missing top level type annotations
+	- Added codeActions to infer annotations for functions
+	- Added goto definition and references for ports
+	- Create function declaration from usage
+	- More goto definition improvements
+	- Tree sitter now parses the files incrementally after the initial scan
+
 ## 1.3.0
 
 - Prefill newly create elm files
