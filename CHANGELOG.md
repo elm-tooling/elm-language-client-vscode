@@ -1,5 +1,12 @@
 # Change Log
 
+## 1.4.1
+
+- Updated the language server
+	- Fixed hovers for functions not showing up
+	- Fixed hovers for let definitions not showing if they have no type annotation
+	- Fixed a problem with node 10
+
 ## 1.4.0
 
 - Elm-Analyse will be disabled by default from now on
