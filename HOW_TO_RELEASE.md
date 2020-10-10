@@ -1,8 +1,4 @@
 - Update the changelog in `CHANGELOG.md`
-- Increase the version in `package.json`
-- Run `npm install`
-- Run `npm run compile`
+- Run `npm run version-patch`, `npm run version-minor` or `npm run version-major`
 - Push the code to github and wait for the CI
-- Run `vsce publish`
-- Run `ovsx publish`
-- Tag the new version on github
+- Create a new release on github, the CI pipeline will then publish to Visual Studio Marketplace and the Open VSX Registry
