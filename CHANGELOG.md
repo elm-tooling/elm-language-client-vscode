@@ -1,5 +1,13 @@
 # Change Log
 
+## 1.5.0
+
+- Updated the language server	
+	- Debounce sending diagnostics to the client
+	- Support finding field references and renaming
+	- Tree sitter parser improvements
+	- Handle negate expressions in type inference
+
 ## 1.4.1
 
 - Updated the language server
