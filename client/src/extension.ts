@@ -212,8 +212,8 @@ export function deactivate(): Thenable<void> | undefined {
 }
 class CachedCodeLensResponse {
   response?: ProviderResult<CodeLens[]>;
-  version: number = -1;
-  document: string = "";
+  version = -1;
+  document = "";
 
   matches(document: TextDocument): boolean {
     return (
