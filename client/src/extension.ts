@@ -109,7 +109,7 @@ export function activate(context: ExtensionContext): void {
     if (!clients.has(folder.uri.toString())) {
       const relativeWorkspace = folder.name;
       const outputChannel: OutputChannel = Window.createOutputChannel(
-        relativeWorkspace.length > 1 ? `Elm (${relativeWorkspace})` : "Elm",
+        relativeWorkspace.length > 0 ? `Elm (${relativeWorkspace})` : "Elm",
       );
 
       const debugOptions = {
