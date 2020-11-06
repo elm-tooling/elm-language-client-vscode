@@ -1,5 +1,12 @@
 # Change Log
 
+## 1.5.1
+
+- Updated the language server
+	- Fix bug on file open
+	- Fix some type inference bugs
+	- Reset diagnostics for elmMake and elmAnalyze
+
 ## 1.5.0
 
 - Updated the language server	
