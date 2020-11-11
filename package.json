@@ -128,6 +128,12 @@
           ],
           "default": "change",
           "description": "When do you want the extension to run elm-analyse? Might need a restart to take effect."
+        },
+        "elmLS.disableElmLSDiagnostics": {
+          "scope": "window",
+          "type": "boolean",
+          "default": false,
+          "description": "Disable linting diagnostics from the language server."
         }
       }
     }

@@ -37,6 +37,7 @@ export interface IClientSettings {
   elmTestPath: string;
   trace: { server: string };
   elmAnalyseTrigger: ElmAnalyseTrigger;
+  disableElmLSDiagnostics: boolean;
 }
 
 const clients: Map<string, LanguageClient> = new Map<string, LanguageClient>();
@@ -148,6 +149,7 @@ export function activate(context: ExtensionContext): void {
                 moveFunctionRefactoringSupport: true,
                 exposeUnexposeSupport: true,
               },
+              disableElmLSDiagnostics: config.disableElmLSDiagnostics,
             }
           : {},
         middleware: new CodeLensResolver(),
