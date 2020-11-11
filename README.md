@@ -41,6 +41,7 @@ This extension contributes the following settings:
 - `elmLS.elmFormatPath`: The path to your elm-format executable.
 - `elmLS.elmTestPath`: The path to your elm-test executable.
 - `elmLS.elmAnalyseTrigger`: When do you want the extension to run elm-analyse? Might need a restart to take effect.
+- `elmLS.disableElmLSDiagnostics`: Disable linting diagnostics from the language server.
 
 ## Configuration
 
