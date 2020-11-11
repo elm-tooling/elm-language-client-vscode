@@ -22,6 +22,7 @@ import {
   RevealOutputChannelOn,
   TransportKind,
   ProvideCodeLensesSignature,
+  DidChangeConfigurationNotification,
 } from "vscode-languageclient";
 import * as Package from "./elmPackage";
 import * as RefactorAction from "./refactorAction";
@@ -136,22 +137,7 @@ export function activate(context: ExtensionContext): void {
         synchronize: {
           fileEvents: Workspace.createFileSystemWatcher("**/*.elm"),
         },
-        initializationOptions: config
-          ? {
-              elmAnalyseTrigger: config.elmAnalyseTrigger,
-              elmFormatPath: config.elmFormatPath,
-              elmPath: config.elmPath,
-              elmTestPath: config.elmTestPath,
-              trace: {
-                server: config.trace.server,
-              },
-              extendedCapabilities: {
-                moveFunctionRefactoringSupport: true,
-                exposeUnexposeSupport: true,
-              },
-              disableElmLSDiagnostics: config.disableElmLSDiagnostics,
-            }
-          : {},
+        initializationOptions: getSettings(config),
         middleware: new CodeLensResolver(),
         outputChannel,
         progressOnInitialization: true,
@@ -186,16 +172,28 @@ export function activate(context: ExtensionContext): void {
 
   Workspace.onDidCreateFiles((e) => {
     if (e.files.some((file) => file.toString().endsWith(".elm"))) {
-      clients.forEach((client) =>
-        client.sendRequest(OnDidCreateFilesRequest, e),
+      clients.forEach(
+        (client) => void client.sendRequest(OnDidCreateFilesRequest, e),
       );
     }
   });
 
   Workspace.onDidRenameFiles((e) => {
     if (e.files.some(({ newUri }) => newUri.toString().endsWith(".elm"))) {
+      clients.forEach(
+        (client) => void client.sendRequest(OnDidRenameFilesRequest, e),
+      );
+    }
+  });
+
+  Workspace.onDidChangeConfiguration((event) => {
+    if (event.affectsConfiguration("elmLS")) {
       clients.forEach((client) =>
-        client.sendRequest(OnDidRenameFilesRequest, e),
+        client.sendNotification(DidChangeConfigurationNotification.type, {
+          settings: getSettings(
+            Workspace.getConfiguration().get<IClientSettings>("elmLS"),
+          ),
+        }),
       );
     }
   });
@@ -203,6 +201,25 @@ export function activate(context: ExtensionContext): void {
   const packageDisposables = Package.activatePackage();
   packageDisposables.forEach((d) => context.subscriptions.push(d));
   context.subscriptions.push(Restart.registerCommand(clients));
+
+  function getSettings(config: IClientSettings | undefined): unknown {
+    return config
+      ? {
+          elmAnalyseTrigger: config.elmAnalyseTrigger,
+          elmFormatPath: config.elmFormatPath,
+          elmPath: config.elmPath,
+          elmTestPath: config.elmTestPath,
+          trace: {
+            server: config.trace.server,
+          },
+          extendedCapabilities: {
+            moveFunctionRefactoringSupport: true,
+            exposeUnexposeSupport: true,
+          },
+          disableElmLSDiagnostics: config.disableElmLSDiagnostics,
+        }
+      : {};
+  }
 }
 
 export function deactivate(): Thenable<void> | undefined {
@@ -214,8 +231,8 @@ export function deactivate(): Thenable<void> | undefined {
 }
 class CachedCodeLensResponse {
   response?: ProviderResult<CodeLens[]>;
-  version: number = -1;
-  document: string = "";
+  version = -1;
+  document = "";
 
   matches(document: TextDocument): boolean {
     return (
