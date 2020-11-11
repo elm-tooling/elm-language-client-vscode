@@ -1,5 +1,52 @@
 # Change Log
 
+## 1.5.3
+
+- Updated the language server
+	- Fix bug on file open
+	- Fix some type inference bugs
+	- Reset diagnostics for elmMake and elmAnalyze
+
+## 1.5.2
+
+- No changes
+
+## 1.5.1
+
+- No changes
+
+## 1.5.0
+
+- Updated the language server	
+	- Debounce sending diagnostics to the client
+	- Support finding field references and renaming
+	- Tree sitter parser improvements
+	- Handle negate expressions in type inference
+
+## 1.4.1
+
+- Updated the language server
+	- Fixed hovers for functions not showing up
+	- Fixed hovers for let definitions not showing if they have no type annotation
+	- Fixed a problem with node 10
+
+## 1.4.0
+
+- Elm-Analyse will be disabled by default from now on
+- Added elm-tooling.json schema for better integration
+- Updated dependencies
+
+- Updated the language server	
+	- Make entrypoints configurable via elm-tooling.json
+	- Default elmAnalyseTrigger to never
+	- Added type inference
+	- Added type inference diagnostics for missing top level type annotations
+	- Added codeActions to infer annotations for functions
+	- Added goto definition and references for ports
+	- Create function declaration from usage
+	- More goto definition improvements
+	- Tree sitter now parses the files incrementally after the initial scan
+
 ## 1.3.0
 
 - Prefill newly create elm files

@@ -1,5 +1,9 @@
 # Elm Plugin for Visual Studio Code (VSCode)
 
+[![Version](https://vsmarketplacebadge.apphb.com/version/Elmtooling.elm-ls-vscode.svg)](https://marketplace.visualstudio.com/items?itemName=Elmtooling.elm-ls-vscode)
+[![Downloads](https://vsmarketplacebadge.apphb.com/downloads-short/Elmtooling.elm-ls-vscode.svg)](https://marketplace.visualstudio.com/items?itemName=Elmtooling.elm-ls-vscode)
+[![Rating](https://vsmarketplacebadge.apphb.com/rating-star/Elmtooling.elm-ls-vscode.svg)](https://marketplace.visualstudio.com/items?itemName=Elmtooling.elm-ls-vscode)
+
 Supports elm 0.19 and up
 
 ## Install
@@ -26,6 +30,7 @@ Supports elm 0.19 and up
 - Browse workspace by symbols (Control + Shift + R)
 - Codelenses show how many times you calling a function and if it's exposed or not
 - Code folding
+- Type inference
 
 ## Extension Settings
 
@@ -36,6 +41,25 @@ This extension contributes the following settings:
 - `elmLS.elmFormatPath`: The path to your elm-format executable.
 - `elmLS.elmTestPath`: The path to your elm-test executable.
 - `elmLS.elmAnalyseTrigger`: When do you want the extension to run elm-analyse? Might need a restart to take effect.
+
+## Configuration
+
+Create an [elm-tooling.json](https://github.com/lydell/elm-tooling.json) file next to your `elm.json` to configure your project.
+
+Currently there’s just one thing that you can configure: entrypoints. We run `elm make` to get errors. Without this `elm make` is run on the current file only. To get errors for the entire project you can specify your entrypoint files – basically, those with `main =` in them. Then the language server will run `elm make` on those instead.
+
+Example:
+
+```json
+{
+  "entrypoints": ["./src/Main.elm"]
+}
+```
+
+The entrypoints are relative to the directory where your `elm.json` and `elm-tooling.json` is and must start with `./`.
+
+Check out the [elm-tooling](https://github.com/lydell/elm-tooling.json/tree/main/cli#readme) CLI for creating and validating your `elm-tooling.json`!
+
 
 ## FAQ
 
@@ -54,6 +78,10 @@ This extension contributes the following settings:
 - Can I use an `elm-analyse` config?
 
   - Yes, you can, please check [here](https://github.com/elm-tooling/elm-language-server/blob/master/README.md#elm-analyse-configuration) for more details.
+
+- I don't like the inserted lines for "X references" (CodeLenses)
+
+  - You can configure VSCode to not show them, just look for "Editor: Code Lens" in your settings.
 
 ## Contributing / Debugging
 
