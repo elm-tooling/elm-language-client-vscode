@@ -1,6 +1,6 @@
 "use strict";
 import * as vscode from "vscode";
-import { LanguageClient } from "vscode-languageclient";
+import { LanguageClient } from "vscode-languageclient/node";
 
 export function registerCommand(
   langClients: Map<string, LanguageClient>,

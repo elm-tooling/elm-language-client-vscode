@@ -1,6 +1,7 @@
 import { commands, ExtensionContext, window } from "vscode";
-import { CodeActionParams, LanguageClient } from "vscode-languageclient";
-import { GetMoveDestinationRequest, MoveRequest } from "./protocol";
+import { CodeActionParams } from "vscode-languageclient";
+import { LanguageClient } from "vscode-languageclient/node";
+import { Protocol } from "@elm-tooling/elm-language-server";
 
 export function registerCommands(
   languageClient: LanguageClient,
@@ -28,7 +29,7 @@ async function moveFunction(
   commandInfo: string,
 ) {
   const moveDestinations = await languageClient.sendRequest(
-    GetMoveDestinationRequest,
+    Protocol.GetMoveDestinationRequest,
     {
       sourceUri: params.textDocument.uri,
       params,
@@ -65,7 +66,7 @@ async function moveFunction(
     return;
   }
 
-  await languageClient.sendRequest(MoveRequest, {
+  await languageClient.sendRequest(Protocol.MoveRequest, {
     sourceUri: params.textDocument.uri,
     params,
     destination: selected.destination,
