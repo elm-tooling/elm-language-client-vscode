@@ -15,20 +15,25 @@ import {
   WorkspaceFolder,
 } from "vscode";
 import {
-  LanguageClient,
   LanguageClientOptions,
   Middleware,
   ResolveCodeLensSignature,
   RevealOutputChannelOn,
-  TransportKind,
   ProvideCodeLensesSignature,
   DidChangeConfigurationNotification,
+  Disposable,
 } from "vscode-languageclient";
+import {
+  LanguageClient,
+  ServerOptions,
+  TransportKind,
+} from "vscode-languageclient/node";
 import * as Package from "./elmPackage";
 import * as RefactorAction from "./refactorAction";
 import * as ExposeUnexposeAction from "./exposeUnexposeAction";
 import * as Restart from "./restart";
-import { OnDidCreateFilesRequest, OnDidRenameFilesRequest } from "./protocol";
+import { Protocol } from "@elm-tooling/elm-language-server";
+import { FileBasedCancellationStrategy } from "./cancellation";
 
 export type ElmAnalyseTrigger = "change" | "save" | "never";
 
@@ -83,6 +88,8 @@ function getOuterMostWorkspaceFolder(
   return folder;
 }
 
+const disposables: Disposable[] = [];
+
 export function activate(context: ExtensionContext): void {
   const module = context.asAbsolutePath(path.join("server", "out", "index.js"));
 
@@ -114,16 +121,24 @@ export function activate(context: ExtensionContext): void {
         relativeWorkspace.length > 0 ? `Elm (${relativeWorkspace})` : "Elm",
       );
 
+      const cancellationStrategy = new FileBasedCancellationStrategy();
+      disposables.push(cancellationStrategy);
+
       const debugOptions = {
         execArgv: ["--nolazy", `--inspect=${6010 + clients.size}`],
       };
-      const serverOptions = {
+      const serverOptions: ServerOptions = {
         debug: {
           module,
           options: debugOptions,
           transport: TransportKind.ipc,
+          args: cancellationStrategy.getCommandLineArguments(),
         },
-        run: { module, transport: TransportKind.ipc },
+        run: {
+          module,
+          transport: TransportKind.ipc,
+          args: cancellationStrategy.getCommandLineArguments(),
+        },
       };
       const clientOptions: LanguageClientOptions = {
         diagnosticCollectionName: "Elm",
@@ -143,6 +158,9 @@ export function activate(context: ExtensionContext): void {
         progressOnInitialization: true,
         revealOutputChannelOn: RevealOutputChannelOn.Never,
         workspaceFolder: folder,
+        connectionOptions: {
+          cancellationStrategy,
+        },
       };
       const client = new LanguageClient(
         "elmLS",
@@ -173,7 +191,8 @@ export function activate(context: ExtensionContext): void {
   Workspace.onDidCreateFiles((e) => {
     if (e.files.some((file) => file.toString().endsWith(".elm"))) {
       clients.forEach(
-        (client) => void client.sendRequest(OnDidCreateFilesRequest, e),
+        (client) =>
+          void client.sendRequest(Protocol.OnDidCreateFilesRequest, e),
       );
     }
   });
@@ -181,7 +200,8 @@ export function activate(context: ExtensionContext): void {
   Workspace.onDidRenameFiles((e) => {
     if (e.files.some(({ newUri }) => newUri.toString().endsWith(".elm"))) {
       clients.forEach(
-        (client) => void client.sendRequest(OnDidRenameFilesRequest, e),
+        (client) =>
+          void client.sendRequest(Protocol.OnDidRenameFilesRequest, e),
       );
     }
   });
@@ -223,6 +243,7 @@ export function activate(context: ExtensionContext): void {
 }
 
 export function deactivate(): Thenable<void> | undefined {
+  disposables.forEach((d) => d.dispose());
   const promises: Thenable<void>[] = [];
   for (const client of clients.values()) {
     promises.push(client.stop());

@@ -1,10 +1,6 @@
-import { LanguageClient } from "vscode-languageclient";
+import { LanguageClient } from "vscode-languageclient/node";
 import { ExtensionContext, commands } from "vscode";
-import {
-  ExposeRequest,
-  UnexposeRequest,
-  IExposeUnexposeParams,
-} from "./protocol";
+import { Protocol } from "@elm-tooling/elm-language-server";
 
 export function registerCommands(
   languageClient: LanguageClient,
@@ -13,7 +9,7 @@ export function registerCommands(
   context.subscriptions.push(
     commands.registerCommand(
       "elm.expose",
-      async (params: IExposeUnexposeParams) => {
+      async (params: Protocol.IExposeUnexposeParams) => {
         await expose(languageClient, params);
       },
     ),
@@ -22,7 +18,7 @@ export function registerCommands(
   context.subscriptions.push(
     commands.registerCommand(
       "elm.unexpose",
-      async (params: IExposeUnexposeParams) => {
+      async (params: Protocol.IExposeUnexposeParams) => {
         await unexpose(languageClient, params);
       },
     ),
@@ -31,14 +27,14 @@ export function registerCommands(
 
 async function expose(
   languageClient: LanguageClient,
-  params: IExposeUnexposeParams,
+  params: Protocol.IExposeUnexposeParams,
 ) {
-  await languageClient.sendRequest(ExposeRequest, params);
+  await languageClient.sendRequest(Protocol.ExposeRequest, params);
 }
 
 async function unexpose(
   languageClient: LanguageClient,
-  params: IExposeUnexposeParams,
+  params: Protocol.IExposeUnexposeParams,
 ) {
-  await languageClient.sendRequest(UnexposeRequest, params);
+  await languageClient.sendRequest(Protocol.UnexposeRequest, params);
 }
