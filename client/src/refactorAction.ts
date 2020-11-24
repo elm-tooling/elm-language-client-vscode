@@ -1,5 +1,6 @@
 import { commands, ExtensionContext, window } from "vscode";
-import { CodeActionParams, LanguageClient } from "vscode-languageclient";
+import { CodeActionParams } from "vscode-languageclient";
+import { LanguageClient } from "vscode-languageclient/node";
 import { GetMoveDestinationRequest, MoveRequest } from "./protocol";
 
 export function registerCommands(
