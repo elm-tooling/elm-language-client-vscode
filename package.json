@@ -122,17 +122,6 @@
           "default": "",
           "description": "The path to your elm-test executable. Should be empty by default, in that case it will assume the name and try to first get it from a local npm installation or a global one. If you set it manually it will not try to load from the npm folder."
         },
-        "elmLS.elmAnalyseTrigger": {
-          "scope": "window",
-          "type": "string",
-          "enum": [
-            "change",
-            "save",
-            "never"
-          ],
-          "default": "never",
-          "description": "When do you want the extension to run elm-analyse? Might need a restart to take effect."
-        },
         "elmLS.disableElmLSDiagnostics": {
           "scope": "window",
           "type": "boolean",

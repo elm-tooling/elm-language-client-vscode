@@ -40,7 +40,6 @@ This extension contributes the following settings:
 - `elmLS.elmPath`: The path to your elm executable.
 - `elmLS.elmFormatPath`: The path to your elm-format executable.
 - `elmLS.elmTestPath`: The path to your elm-test executable.
-- `elmLS.elmAnalyseTrigger`: When do you want the extension to run elm-analyse? Might need a restart to take effect.
 - `elmLS.disableElmLSDiagnostics`: Disable linting diagnostics from the language server.
 
 ## Configuration
@@ -61,7 +60,6 @@ The entrypoints are relative to the directory where your `elm.json` and `elm-too
 
 Check out the [elm-tooling](https://github.com/lydell/elm-tooling.json/tree/main/cli#readme) CLI for creating and validating your `elm-tooling.json`!
 
-
 ## FAQ
 
 - Most features don't seem to work for me?
@@ -75,10 +73,6 @@ Check out the [elm-tooling](https://github.com/lydell/elm-tooling.json/tree/main
 - Why do I need to install `elm`, `elm-test` and `elm-format`?
 
   - You will need to install `elm` and `elm-test` to get all diagnostics and `elm-format` for formatting. If your setup fails to find the global installations of those, you can use the settings panel in VSCode to set the paths to the executable manually. Alternatively you can also just install these to your local npm `package.json`.
-
-- Can I use an `elm-analyse` config?
-
-  - Yes, you can, please check [here](https://github.com/elm-tooling/elm-language-server/blob/master/README.md#elm-analyse-configuration) for more details.
 
 - I don't like the inserted lines for "X references" (CodeLenses)
 
