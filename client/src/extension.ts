@@ -30,14 +30,11 @@ import * as ExposeUnexposeAction from "./exposeUnexposeAction";
 import * as Restart from "./restart";
 import { OnDidCreateFilesRequest, OnDidRenameFilesRequest } from "./protocol";
 
-export type ElmAnalyseTrigger = "change" | "save" | "never";
-
 export interface IClientSettings {
   elmFormatPath: string;
   elmPath: string;
   elmTestPath: string;
   trace: { server: string };
-  elmAnalyseTrigger: ElmAnalyseTrigger;
   disableElmLSDiagnostics: boolean;
 }
 
@@ -205,7 +202,6 @@ export function activate(context: ExtensionContext): void {
   function getSettings(config: IClientSettings | undefined): unknown {
     return config
       ? {
-          elmAnalyseTrigger: config.elmAnalyseTrigger,
           elmFormatPath: config.elmFormatPath,
           elmPath: config.elmPath,
           elmTestPath: config.elmTestPath,
