@@ -15,15 +15,18 @@ import {
   WorkspaceFolder,
 } from "vscode";
 import {
-  LanguageClient,
   LanguageClientOptions,
   Middleware,
   ResolveCodeLensSignature,
   RevealOutputChannelOn,
-  TransportKind,
   ProvideCodeLensesSignature,
   DidChangeConfigurationNotification,
 } from "vscode-languageclient";
+import {
+  LanguageClient,
+  ServerOptions,
+  TransportKind,
+} from "vscode-languageclient/node";
 import * as Package from "./elmPackage";
 import * as RefactorAction from "./refactorAction";
 import * as ExposeUnexposeAction from "./exposeUnexposeAction";
@@ -114,13 +117,16 @@ export function activate(context: ExtensionContext): void {
       const debugOptions = {
         execArgv: ["--nolazy", `--inspect=${6010 + clients.size}`],
       };
-      const serverOptions = {
+      const serverOptions: ServerOptions = {
         debug: {
           module,
           options: debugOptions,
           transport: TransportKind.ipc,
         },
-        run: { module, transport: TransportKind.ipc },
+        run: {
+          module,
+          transport: TransportKind.ipc,
+        },
       };
       const clientOptions: LanguageClientOptions = {
         diagnosticCollectionName: "Elm",
