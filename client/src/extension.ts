@@ -1,7 +1,9 @@
 import * as path from "path";
 import {
   CancellationToken,
+  CodeAction,
   CodeLens,
+  commands,
   ExtensionContext,
   Location,
   OutputChannel,
@@ -21,6 +23,8 @@ import {
   RevealOutputChannelOn,
   ProvideCodeLensesSignature,
   DidChangeConfigurationNotification,
+  ResolveCodeActionSignature,
+  Position as LspPosition,
 } from "vscode-languageclient";
 import {
   LanguageClient,
@@ -319,5 +323,32 @@ export class CodeLensResolver implements Middleware {
     };
 
     return (resolvedCodeLens as Thenable<CodeLens>).then(resolveFunc);
+  }
+
+  resolveCodeAction(
+    item: CodeAction,
+    token: CancellationToken,
+    next: ResolveCodeActionSignature,
+  ): ProviderResult<CodeAction> {
+    // TODO: Export IRefactorAction type from the server to use here
+    return (next(item, token) as Thenable<CodeAction>).then(
+      async (codeAction) => {
+        if ((<any>codeAction).data?.renamePosition && codeAction.edit) {
+          const success = await Workspace.applyEdit(codeAction.edit);
+
+          if (success) {
+            codeAction.edit = undefined;
+            const renamePostion = (<any>codeAction).data
+              .renamePosition as LspPosition;
+            await commands.executeCommand("editor.action.rename", [
+              Uri.parse((<any>codeAction).data.uri),
+              new Position(renamePostion.line, renamePostion.character),
+            ]);
+          }
+        }
+
+        return codeAction;
+      },
+    );
   }
 }
