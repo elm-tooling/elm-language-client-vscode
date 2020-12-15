@@ -283,7 +283,15 @@ export class CodeLensResolver implements Middleware {
         codeLensToFix.command.command === "editor.action.showReferences" &&
         codeLensToFix.command.arguments
       ) {
-        const oldArgs = codeLensToFix.command.arguments;
+        const oldArgs: {
+          uri: string;
+          range: Range;
+          references: Location[];
+        }[] = codeLensToFix.command.arguments as {
+          uri: string;
+          range: Range;
+          references: Location[];
+        }[];
 
         // Our JSON objects don't get handled correctly by
         // VS Code's built in editor.action.showReferences
@@ -297,25 +305,17 @@ export class CodeLensResolver implements Middleware {
             oldArgs[0].range.start.line,
             oldArgs[0].range.start.character,
           ),
-          oldArgs[0].references.map(
-            (position: {
-              uri: string;
-              range: {
-                start: { line: number; character: number };
-                end: { line: number; character: number };
-              };
-            }) => {
-              return new Location(
-                Uri.parse(position.uri),
-                new Range(
-                  position.range.start.line,
-                  position.range.start.character,
-                  position.range.end.line,
-                  position.range.end.character,
-                ),
-              );
-            },
-          ),
+          oldArgs[0].references.map((position: Location) => {
+            return new Location(
+              position.uri,
+              new Range(
+                position.range.start.line,
+                position.range.start.character,
+                position.range.end.line,
+                position.range.end.character,
+              ),
+            );
+          }),
         ];
       }
 
