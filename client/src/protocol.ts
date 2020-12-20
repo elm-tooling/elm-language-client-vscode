@@ -1,4 +1,3 @@
-import { FileCreateEvent, FileRenameEvent, Uri } from "vscode";
 import { CodeActionParams, RequestType } from "vscode-languageclient";
 
 export const GetMoveDestinationRequest = new RequestType<
@@ -39,19 +38,3 @@ export const UnexposeRequest = new RequestType<
   void,
   void
 >("elm/unexpose");
-
-export interface IOnDidCreateFilesParams {
-  files: ReadonlyArray<Uri>;
-}
-
-export const OnDidCreateFilesRequest = new RequestType<
-  FileCreateEvent,
-  void,
-  void
->("elm/ondidCreateFiles");
-
-export const OnDidRenameFilesRequest = new RequestType<
-  FileRenameEvent,
-  void,
-  void
->("elm/ondidRenameFiles");
