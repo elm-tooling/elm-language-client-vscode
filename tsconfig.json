@@ -7,7 +7,8 @@
     "lib": ["es6", "ES2019"],
     "sourceMap": true,
     "esModuleInterop": true,
-    "experimentalDecorators": true
+    "experimentalDecorators": true,
+    "baseUrl": "."
   },
   "include": ["server/src", "client/src"],
   "exclude": ["node_modules", ".vscode-test"],
