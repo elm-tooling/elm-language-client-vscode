@@ -25,6 +25,8 @@ import {
   DidChangeConfigurationNotification,
   ResolveCodeActionSignature,
   Position as LspPosition,
+  Location as LspLocation,
+  Range as LspRange,
 } from "vscode-languageclient";
 import {
   LanguageClient,
@@ -268,12 +270,12 @@ export class CodeLensResolver implements Middleware {
       ) {
         const oldArgs: {
           uri: string;
-          range: Range;
-          references: Location[];
+          range: LspRange;
+          references: LspLocation[];
         }[] = codeLensToFix.command.arguments as {
           uri: string;
-          range: Range;
-          references: Location[];
+          range: LspRange;
+          references: LspLocation[];
         }[];
 
         // Our JSON objects don't get handled correctly by
@@ -288,9 +290,9 @@ export class CodeLensResolver implements Middleware {
             oldArgs[0].range.start.line,
             oldArgs[0].range.start.character,
           ),
-          oldArgs[0].references.map((position: Location) => {
+          oldArgs[0].references.map((position: LspLocation) => {
             return new Location(
-              position.uri,
+              Uri.parse(position.uri),
               new Range(
                 position.range.start.line,
                 position.range.start.character,
