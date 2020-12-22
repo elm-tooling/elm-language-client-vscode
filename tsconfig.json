@@ -3,14 +3,14 @@
     "module": "commonjs",
     "target": "es6",
     "outDir": "out",
-    "strict": true,
+    "rootDir": "src",
     "lib": ["es6", "ES2019"],
+    "strict": true,
     "sourceMap": true,
     "esModuleInterop": true,
     "experimentalDecorators": true,
-    "baseUrl": "."
   },
-  "include": ["server/src", "client/src"],
+  "include": ["src"],
   "exclude": ["node_modules", ".vscode-test"],
   "references": [{ "path": "./client" }, { "path": "./server" }]
 }

@@ -10,10 +10,6 @@
       "args": ["--extensionDevelopmentPath=${workspaceRoot}"],
       "sourceMaps": true,
       "outFiles": ["${workspaceRoot}/client/out/**/*.js"],
-      "preLaunchTask": {
-        "type": "npm",
-        "script": "watch"
-      }
     },
     {
       "type": "node",
