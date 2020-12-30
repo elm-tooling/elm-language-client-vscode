@@ -80,6 +80,10 @@ Check out the [elm-tooling](https://github.com/lydell/elm-tooling.json/tree/main
 
   - You can configure VSCode to not show them, just look for "Editor: Code Lens" in your settings.
 
+- I'm using glsl and the extension is not helpful
+
+  - You need to additionally install [vscode-glsllint](https://github.com/hsimpson/vscode-glsllint)
+
 ## Contributing / Debugging
 
 ```shell
