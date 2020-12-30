@@ -17,7 +17,7 @@ Supports elm 0.19 and up
 
 ## Highlighted Features
 
-- Errors and helpful tips will be shown whenever you save a file (Control + S)
+- Errors and informations when changing code and when saving (Control + S)
 - Format on save (Control + S)
 - Suggests completions and snippets (Control + Space)
 
@@ -32,6 +32,7 @@ Supports elm 0.19 and up
 - Codelenses show how many times you calling a function and if it's exposed or not
 - Code folding
 - Type inference
+- Some more
 
 ## Extension Settings
 
