@@ -46,6 +46,17 @@ export interface IClientSettings {
   disableElmLSDiagnostics: boolean;
 }
 
+//Keep this in sync with the server for now
+export interface IRefactorCodeAction extends CodeAction {
+  data: {
+    uri: string;
+    refactorName: string;
+    actionName: string;
+    range: Range;
+    renamePosition?: Position;
+  };
+}
+
 const clients: Map<string, LanguageClient> = new Map<string, LanguageClient>();
 
 let sortedWorkspaceFolders: string[] | undefined;
@@ -316,17 +327,16 @@ export class CodeLensResolver implements Middleware {
     next: ResolveCodeActionSignature,
   ): ProviderResult<CodeAction> {
     // TODO: Export IRefactorAction type from the server to use here
-    return (next(item, token) as Thenable<CodeAction>).then(
+    return (next(item, token) as Thenable<IRefactorCodeAction>).then(
       async (codeAction) => {
-        if ((<any>codeAction).data?.renamePosition && codeAction.edit) {
+        if (codeAction.data?.renamePosition && codeAction.edit) {
           const success = await Workspace.applyEdit(codeAction.edit);
 
           if (success) {
             codeAction.edit = undefined;
-            const renamePostion = (<any>codeAction).data
-              .renamePosition as LspPosition;
+            const renamePostion = codeAction.data.renamePosition as LspPosition;
             await commands.executeCommand("editor.action.rename", [
-              Uri.parse((<any>codeAction).data.uri),
+              Uri.parse(codeAction.data.uri),
               new Position(renamePostion.line, renamePostion.character),
             ]);
           }
