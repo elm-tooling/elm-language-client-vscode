@@ -127,6 +127,12 @@
           "type": "boolean",
           "default": false,
           "description": "Disable linting diagnostics from the language server."
+        },
+        "elmLS.skipInstallPackageConfirmation": {
+          "scope": "window",
+          "type": "boolean",
+          "default": false,
+          "description": "Skips confirmation for the Install Package code action"
         }
       }
     }
