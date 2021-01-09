@@ -5,11 +5,27 @@
   "editor.tabSize": 2,
   "cSpell.words": [
     "Jsons",
+    "Shadowable",
+    "Submodules",
+    "Unexpose",
+    "appendable",
+    "compappend",
+    "entrypoints",
     "execa",
     "globby",
+    "glsl",
+    "lamba",
     "languageclient",
+    "multistep",
+    "pjson",
     "promisify",
-    "textdocument"
+    "pyright",
+    "submodule",
+    "textdocument",
+    "tsyringe",
+    "typeclasses",
+    "uncurry",
+    "wasm"
   ],
   "deno.enable": false,
   "jest.rootPath": "/server"
