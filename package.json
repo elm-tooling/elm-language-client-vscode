@@ -132,7 +132,13 @@
           "scope": "window",
           "type": "boolean",
           "default": false,
-          "description": "Skips confirmation for the Install Package code action"
+          "description": "Skips confirmation for the Install Package code action."
+        },
+        "elmLS.useElmToolingJsonForTools": {
+          "scope": "window",
+          "type": "boolean",
+          "default": true,
+          "description": "Don't rely on elm-tooling-cli to get our tooling - should be only relevant for projects that don't use npm at all."
         }
       }
     }

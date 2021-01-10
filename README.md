@@ -44,6 +44,7 @@ This extension contributes the following settings:
 - `elmLS.elmTestPath`: The path to your elm-test executable.
 - `elmLS.disableElmLSDiagnostics`: Disable linting diagnostics from the language server.
 - `elmLS.skipInstallPackageConfirmation`: Skip confirmation for the Install Package code action.
+- `elmLS.useElmToolingJsonForTools`: Don't rely on elm-tooling-cli to get our tooling - should be only relevant for projects that don't use npm at all.
 
 ## Configuration
 

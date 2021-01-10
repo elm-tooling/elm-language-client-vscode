@@ -44,6 +44,8 @@ export interface IClientSettings {
   elmTestPath: string;
   trace: { server: string };
   disableElmLSDiagnostics: boolean;
+  skipInstallPackageConfirmation: boolean;
+  useElmToolingJsonForTools: boolean;
 }
 
 //Keep this in sync with the server for now
@@ -219,6 +221,8 @@ export function activate(context: ExtensionContext): void {
             exposeUnexposeSupport: true,
           },
           disableElmLSDiagnostics: config.disableElmLSDiagnostics,
+          skipInstallPackageConfirmation: config.skipInstallPackageConfirmation,
+          useElmToolingJsonForTools: config.useElmToolingJsonForTools,
         }
       : {};
   }
