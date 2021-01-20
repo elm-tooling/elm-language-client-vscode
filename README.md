@@ -65,6 +65,10 @@ Check out the [elm-tooling](https://github.com/lydell/elm-tooling.json/tree/main
 
 ## FAQ
 
+- How to get a logfile?
+
+  - `F1` -> Type `Output: Focus on Output View` -> In the now open panel, use the drop down on the right to choose `Elm (your project name)`
+
 - Most features don't seem to work for me?
 
   - This tool needs a valid elm project, please check if you have an `elm.json`. You can easily initialize your project with `elm init`. If it still does work, please try if you get the same behavior with the [elm-spa-example](https://github.com/rtfeldman/elm-spa-example/).
