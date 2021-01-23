@@ -1,5 +1,16 @@
 # Change Log
 
+## 2.0.1
+
+- Fix elm package install command
+
+- Updated language server
+	- Fixed test files not being recognized correctly on windows
+	- Fixed some type inference problems
+	- Fixed linked editing ranges breaking, when deleting a whole word
+	- Remove `file` entry from symbolproviders (Outline, Go to symbol and breadcrumbs)
+	- Don't show files from dependencies in WorkspaceSymbolProvider (Go to symbol in workspace)
+
 ## 2.0.0
 - Improved docs
 
@@ -53,7 +64,7 @@
 
 ## 1.5.0
 
-- Updated the language server	
+- Updated the language server
 	- Debounce sending diagnostics to the client
 	- Support finding field references and renaming
 	- Tree sitter parser improvements
@@ -72,7 +83,7 @@
 - Added elm-tooling.json schema for better integration
 - Updated dependencies
 
-- Updated the language server	
+- Updated the language server
 	- Make entrypoints configurable via elm-tooling.json
 	- Default elmAnalyseTrigger to never
 	- Added type inference
@@ -89,7 +100,7 @@
 - Renaming files in the file explorer will rename tho module definition
 - Cache codelens requests to prevent duplicate server requests
 
-- Updated the language server	
+- Updated the language server
 	- Improve definition for conflicting module/type names
 	- Various completion sorting tweaks
 	- Add parameter names to hovers/autocompletions for functions
@@ -165,7 +176,7 @@
 - Updated the language server
 	- Add record access completions for types and nested types
 	- Fix elm.json being ignored when paths are similar to another
-	- Fix record field jump to definitions 
+	- Fix record field jump to definitions
 	- Fix record field completions in some cases
 	- Fix auto import not suggesting modules with multiple prefixes
 	- Fix error where qualified names were not taken into account for definition resolving
@@ -256,7 +267,7 @@
 
 ## 0.7.3
 
-- Fix a case of wrong highlighting 
+- Fix a case of wrong highlighting
 
 - Update the language server
 	- Improved completions for type annotations, functions, import and module statements
@@ -268,7 +279,7 @@
 - Renamed extension from `ElmLS` to `Elm`
 
 - Updated the language server
-	- Add more feedback on init for common errors 
+	- Add more feedback on init for common errors
 	- Make sure a file without permissions doesn't crash the server
 	- `-v` to print version was not working
 
