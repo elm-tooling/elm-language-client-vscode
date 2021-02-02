@@ -132,7 +132,13 @@
           "scope": "window",
           "type": "boolean",
           "default": false,
-          "description": "Skips confirmation for the Install Package code action"
+          "description": "Skips confirmation for the Install Package code action."
+        },
+        "elmLS.onlyUpdateDiagnosticsOnSave": {
+          "scope": "window",
+          "type": "boolean",
+          "default": false,
+          "description": "Only update compiler diagnostics on save, not on document change."
         }
       }
     }
