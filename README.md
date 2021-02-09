@@ -44,6 +44,7 @@ This extension contributes the following settings:
 - `elmLS.elmTestPath`: The path to your elm-test executable.
 - `elmLS.disableElmLSDiagnostics`: Disable linting diagnostics from the language server.
 - `elmLS.skipInstallPackageConfirmation`: Skip confirmation for the Install Package code action.
+- `elmLS.onlyUpdateDiagnosticsOnSave`: Only update compiler diagnostics on save, not on document change.
 
 ## Configuration
 
