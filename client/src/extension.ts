@@ -44,6 +44,8 @@ export interface IClientSettings {
   elmTestPath: string;
   trace: { server: string };
   disableElmLSDiagnostics: boolean;
+  skipInstallPackageConfirmation: boolean;
+  onlyUpdateDiagnosticsOnSave: boolean;
 }
 
 //Keep this in sync with the server for now
