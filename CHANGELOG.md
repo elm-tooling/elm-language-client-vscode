@@ -1,5 +1,13 @@
 # Change Log
 
+## 2.0.3
+
+- Updated language server
+	- Add setting to disable diagnostics on change
+	- Improve performance of unused diagnostic
+	- Improve completions
+	- Fix problem with type inference caching
+
 ## 2.0.2
 
 - Updated language server
