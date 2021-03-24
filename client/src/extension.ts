@@ -336,10 +336,11 @@ export class CodeLensResolver implements Middleware {
 
           if (success) {
             codeAction.edit = undefined;
-            const renamePostion = codeAction.data.renamePosition as LspPosition;
+            const renamePosition = codeAction.data
+              .renamePosition as LspPosition;
             await commands.executeCommand("editor.action.rename", [
               Uri.parse(codeAction.data.uri),
-              new Position(renamePostion.line, renamePostion.character),
+              new Position(renamePosition.line, renamePosition.character),
             ]);
           }
         }
