@@ -49,7 +49,7 @@ export interface IClientSettings {
 }
 
 //Keep this in sync with the server for now
-export interface IRefactorCodeAction extends CodeAction {
+export interface IRefactorCodeAction extends Omit<CodeAction, "isPreferred"> {
   data: {
     uri: string;
     refactorName: string;
