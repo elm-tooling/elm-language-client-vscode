@@ -5,7 +5,11 @@
     "outDir": "out",
     "strict": true,
     "rootDir": "src",
-    "lib": ["es6", "ES2019"],
+    "lib": [
+      "es6", 
+      "ES2019", 
+      "es2020.string",
+    ],
     "sourceMap": true,
     "composite": true
   },

@@ -37,6 +37,7 @@ import * as Package from "./elmPackage";
 import * as RefactorAction from "./refactorAction";
 import * as ExposeUnexposeAction from "./exposeUnexposeAction";
 import * as Restart from "./restart";
+import * as TestRunner from "./test-runner/extension";
 
 export interface IClientSettings {
   elmFormatPath: string;
@@ -224,6 +225,8 @@ export function activate(context: ExtensionContext): void {
         }
       : {};
   }
+
+  TestRunner.activate(context);
 }
 
 export function deactivate(): Thenable<void> | undefined {
@@ -231,7 +234,9 @@ export function deactivate(): Thenable<void> | undefined {
   for (const client of clients.values()) {
     promises.push(client.stop());
   }
-  return Promise.all(promises).then(() => undefined);
+  return Promise.all(promises)
+    .then(() => TestRunner.deactivate())
+    .then(() => undefined);
 }
 class CachedCodeLensResponse {
   response?: ProviderResult<CodeLens[]>;

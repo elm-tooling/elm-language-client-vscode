@@ -57,7 +57,7 @@ function getInstallPackageCommand(packageToInstall: string): string {
     "elmLS",
   );
   let t: string = config.get("elmPath") as string;
-  
+
   if (t === "") {
     t = "elm";
   }
