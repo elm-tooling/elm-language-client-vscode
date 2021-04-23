@@ -94,8 +94,8 @@ function parseFailure(failure: any): Failure {
     if (data.comparison) {
       return {
         tag: "comparison",
-        actual: evalStringLiteral(String(data.actual)),
-        expected: evalStringLiteral(String(data.expected)),
+        actual: parseInnerJson(String(data.actual)),
+        expected: parseInnerJson(String(data.expected)),
         comparison: String(data.comparison),
       };
     } else {
@@ -233,9 +233,9 @@ export function buildMessage(event: EventTestCompleted): string | undefined {
   return event.messages.join("\n");
 }
 
-function evalStringLiteral(value: string): string {
+function parseInnerJson(value: string): string {
   if (value && value.startsWith('"')) {
-    return String(eval(value));
+    return String(json.parse(value));
   }
   return value;
 }
