@@ -453,10 +453,12 @@ export class ElmTestRunner {
       suite.children.push(testInfo);
       return testInfo.id;
     }
-    if (labels.length === 0) {
-      throw new Error("empy labels?");
+
+    const label = labels.shift();
+
+    if (!label) {
+      throw new Error("empty labels?");
     }
-    const label = labels.shift() ?? "empty?";
 
     const found = suite.children.find((child) => child.label === label);
     if (found && found.type === "suite") {
