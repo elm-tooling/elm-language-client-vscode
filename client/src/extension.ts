@@ -1,4 +1,5 @@
 import * as path from "path";
+import * as fs from "fs";
 import {
   CancellationToken,
   CodeAction,
@@ -37,6 +38,7 @@ import * as Package from "./elmPackage";
 import * as RefactorAction from "./refactorAction";
 import * as ExposeUnexposeAction from "./exposeUnexposeAction";
 import * as Restart from "./restart";
+import * as TestRunner from "./test-runner/extension";
 
 export interface IClientSettings {
   elmFormatPath: string;
@@ -224,6 +226,18 @@ export function activate(context: ExtensionContext): void {
         }
       : {};
   }
+
+  void Workspace.findFiles(
+    "**/elm.json",
+    "**/{node_modules,elm-stuff}/**",
+  ).then((elmJsons) => {
+    elmJsons.forEach((elmJsonPath) => {
+      const elmRootFolder = Uri.parse(path.dirname(elmJsonPath.fsPath));
+      if (fs.existsSync(path.join(elmRootFolder.fsPath, "tests"))) {
+        TestRunner.activate(context, elmRootFolder);
+      }
+    });
+  });
 }
 
 export function deactivate(): Thenable<void> | undefined {
@@ -231,7 +245,9 @@ export function deactivate(): Thenable<void> | undefined {
   for (const client of clients.values()) {
     promises.push(client.stop());
   }
-  return Promise.all(promises).then(() => undefined);
+  return Promise.all(promises)
+    .then(() => TestRunner.deactivate())
+    .then(() => undefined);
 }
 class CachedCodeLensResponse {
   response?: ProviderResult<CodeLens[]>;

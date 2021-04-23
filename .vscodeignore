@@ -20,6 +20,10 @@ HOW_TO_RELEASE.md
 **/tsconfig.json
 **/tsconfig.base.json
 contributing.md
+client/.nyc_output/**
+client/coverage/**
+client/out/test/**
+client/out/test-runner/test/**
 client/.eslintrc.js
 client/tsconfig.tsbuildinfo
 client/node_modules/**
@@ -34,3 +38,6 @@ client/node_modules/**
 !client/node_modules/brace-expansion/**
 !client/node_modules/concat-map/**
 !client/node_modules/balanced-match/**
+!client/node_modules/vscode-test-adapter-util/**
+!client/node_modules/vscode-test-adapter-api/**
+!client/node_modules/jsonc-parser/**
