@@ -73,8 +73,8 @@ describe('Result', () => {
             }
         })
 
-        it('boken json', () => {
-            const line = '{ boken'
+        it('broken json', () => {
+            const line = '{ broken'
             const output = parseOutput(line)
             expect(output?.type).to.eq('message')
             if (output?.type === 'message') {
@@ -213,7 +213,7 @@ describe('Result', () => {
             expect(message).to.eq('broken')
         })
 
-        it('with failure without raeson data', () => {
+        it('with failure without reason data', () => {
             // eslint-disable-next-line @typescript-eslint/no-explicit-any
             const raw: any = {
                 type: 'result',
