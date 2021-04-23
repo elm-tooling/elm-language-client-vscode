@@ -188,13 +188,8 @@
           "default": false,
           "description": "Only update compiler diagnostics on save, not on document change."
         },
-        "elmTestRunner.logpanel": {
-          "description": "write diagnotic logs to an output panel",
-          "type": "boolean",
-          "scope": "resource"
-        },
-        "elmTestRunner.showElmTestOutput": {
-          "description": "show output of elm-test as Terminal Task",
+        "elmLS.elmTestRunner.showElmTestOutput": {
+          "description": "Show output of elm-test as terminal task",
           "type": "boolean",
           "scope": "resource"
         }

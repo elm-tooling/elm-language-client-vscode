@@ -74,7 +74,8 @@ export class ElmTestRunner {
   private pendingMessages: string[] = [];
 
   constructor(
-    private folder: vscode.WorkspaceFolder,
+    private workspaceFolder: vscode.WorkspaceFolder,
+    private readonly elmProjectFolder: vscode.Uri,
     private readonly log: Log,
   ) {}
 
@@ -206,10 +207,16 @@ export class ElmTestRunner {
   async runSomeTests(files?: string[]): Promise<TestLoadFinishedEvent> {
     return new Promise<TestLoadFinishedEvent>((resolve) => {
       this.resolve = resolve;
+      const relativePath = path.relative(
+        this.workspaceFolder.uri.fsPath,
+        this.elmProjectFolder.fsPath,
+      );
+      const name =
+        relativePath.length > 0 ? relativePath : this.workspaceFolder.name;
       this.loadingSuite = {
         type: "suite",
-        id: "root",
-        label: this.folder.name,
+        id: name,
+        label: name,
         children: [],
       };
       this.loadingErrorMessage = undefined;
@@ -220,9 +227,9 @@ export class ElmTestRunner {
 
   private runElmTests(files?: string[]) {
     const withOutput = vscode.workspace
-      .getConfiguration("elmTestRunner", null)
+      .getConfiguration("elmLS.elmTestRunner", null)
       .get("showElmTestOutput");
-    const cwdPath = this.folder.uri.fsPath;
+    const cwdPath = this.elmProjectFolder.fsPath;
     const args = this.elmTestArgs(cwdPath, files);
     if (withOutput) {
       this.runElmTestsWithOutput(cwdPath, args);
@@ -238,10 +245,17 @@ export class ElmTestRunner {
 
     this.log.info("Running Elm Tests as task", args);
 
+    const relativeProjectFolder = path.relative(
+      this.workspaceFolder.uri.fsPath,
+      this.elmProjectFolder.fsPath,
+    );
+
     const task = new vscode.Task(
       kind,
-      this.folder,
-      "Run Elm Test",
+      this.workspaceFolder,
+      relativeProjectFolder.length > 0
+        ? `Run Elm Test (${relativeProjectFolder})`
+        : "Run Elm Test",
       "Elm Test Run",
       new vscode.ShellExecution(args[0], args.slice(1), {
         cwd: cwdPath,
@@ -259,7 +273,7 @@ export class ElmTestRunner {
     void vscode.tasks.executeTask(task);
 
     vscode.tasks.onDidEndTaskProcess((event) => {
-      if (task === event.execution.task) {
+      if (event.execution.task.definition.type == "elm-test") {
         if ((event.exitCode ?? 0) <= 3) {
           this.runElmTestWithReport(cwdPath, args);
         } else {
@@ -270,7 +284,7 @@ export class ElmTestRunner {
             errorMessage: [
               "elm-test failed.",
               "Check for Elm errors,",
-              `find details in the "Task - ${task.name}" terminal.`,
+              `find details in the "Task - ${event.execution.task.name}" terminal.`,
             ].join("\n"),
           });
         }
@@ -462,7 +476,7 @@ export class ElmTestRunner {
 
   private getFilePath(event: EventTestCompleted): string {
     const path = getFilePathUnderTests(event);
-    return `${this.folder.uri.fsPath}/tests/${path}`;
+    return `${this.elmProjectFolder.fsPath}/tests/${path}`;
   }
 }
 

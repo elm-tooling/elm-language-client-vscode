@@ -27,11 +27,26 @@ import * as vscode from "vscode";
 import { Log, TestAdapterRegistrar } from "vscode-test-adapter-util";
 import { TestHub, testExplorerExtensionId } from "vscode-test-adapter-api";
 import { ElmTestAdapter } from "./adapter";
+import path = require("path");
 
-export function activate(context: vscode.ExtensionContext): void {
+export function activate(
+  context: vscode.ExtensionContext,
+  elmProjectFolder: vscode.Uri,
+): void {
   const workspaceFolder = (vscode.workspace.workspaceFolders || [])[0];
 
-  const log = new Log("elmTestRunner", workspaceFolder, "Elm Test Runner Log");
+  const relativeProjectFolder = path.relative(
+    workspaceFolder.uri.fsPath,
+    elmProjectFolder.fsPath,
+  );
+
+  const log = new Log(
+    "elmTestRunner",
+    workspaceFolder,
+    relativeProjectFolder.length > 0
+      ? `Elm Test Runner (${relativeProjectFolder})`
+      : "Elm Test Runner",
+  );
   context.subscriptions.push(log);
 
   const testExplorerExtension = vscode.extensions.getExtension<TestHub>(
@@ -46,7 +61,8 @@ export function activate(context: vscode.ExtensionContext): void {
     context.subscriptions.push(
       new TestAdapterRegistrar(
         testHub,
-        (workspaceFolder) => new ElmTestAdapter(workspaceFolder, log),
+        (workspaceFolder) =>
+          new ElmTestAdapter(workspaceFolder, elmProjectFolder, log),
         log,
       ),
     );

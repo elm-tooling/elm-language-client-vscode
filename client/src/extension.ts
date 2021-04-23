@@ -1,4 +1,5 @@
 import * as path from "path";
+import * as fs from "fs";
 import {
   CancellationToken,
   CodeAction,
@@ -226,7 +227,17 @@ export function activate(context: ExtensionContext): void {
       : {};
   }
 
-  TestRunner.activate(context);
+  void Workspace.findFiles(
+    "**/elm.json",
+    "**/{node_modules,elm-stuff}/**",
+  ).then((elmJsons) => {
+    elmJsons.forEach((elmJsonPath) => {
+      const elmRootFolder = Uri.parse(path.dirname(elmJsonPath.fsPath));
+      if (fs.existsSync(path.join(elmRootFolder.fsPath, "tests"))) {
+        TestRunner.activate(context, elmRootFolder);
+      }
+    });
+  });
 }
 
 export function deactivate(): Thenable<void> | undefined {

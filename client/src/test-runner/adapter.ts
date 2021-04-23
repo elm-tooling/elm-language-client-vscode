@@ -60,7 +60,8 @@ export class ElmTestAdapter implements TestAdapter {
   private runner: ElmTestRunner;
 
   constructor(
-    public readonly workspace: vscode.WorkspaceFolder,
+    private readonly workspace: vscode.WorkspaceFolder,
+    private readonly elmProjectFolder: vscode.Uri,
     private readonly log: Log,
   ) {
     this.log.info("Initializing Elm Test Runner adapter");
@@ -69,7 +70,11 @@ export class ElmTestAdapter implements TestAdapter {
     this.disposables.push(this.testStatesEmitter);
     this.disposables.push(this.autorunEmitter);
 
-    this.runner = new ElmTestRunner(this.workspace, this.log);
+    this.runner = new ElmTestRunner(
+      this.workspace,
+      this.elmProjectFolder,
+      this.log,
+    );
   }
 
   async load(): Promise<void> {
