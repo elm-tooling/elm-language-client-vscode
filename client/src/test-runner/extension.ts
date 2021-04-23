@@ -51,9 +51,8 @@ export function activate(
   const testExplorerExtension = vscode.extensions.getExtension<TestHub>(
     testExplorerExtensionId,
   );
-  if (log.enabled) {
-    log.info(`Test Explorer ${testExplorerExtension ? "" : "not "}found`);
-  }
+
+  log.info(`Test Explorer ${testExplorerExtension ? "" : "not "}found`);
 
   if (testExplorerExtension) {
     const testHub = testExplorerExtension.exports;
