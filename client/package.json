@@ -15,10 +15,11 @@
   "scripts": {
     "compile": "tsc -p ./",
     "lint": "eslint -c .eslintrc.js --ext .ts src",
-    "test": "mocha"
+    "test": "nyc --reporter=lcovonly --reporter=text mocha"
   },
   "dependencies": {
     "jsonc-parser": "^3.0.0",
+    "nyc": "^15.1.0",
     "vscode-languageclient": "^7.0.0",
     "vscode-test-adapter-api": "^1.9.0",
     "vscode-test-adapter-util": "^0.7.1"
@@ -31,7 +32,7 @@
     "@types/chai": "^4.2.16",
     "@types/mocha": "^8.2.2",
     "@types/request": "^2.48.5",
-    "@types/vscode": "^1.55.0",
+    "@types/vscode": "^1.52.0",
     "@typescript-eslint/eslint-plugin": "^4.22.0",
     "@typescript-eslint/parser": "^4.22.0",
     "chai": "^4.3.4",

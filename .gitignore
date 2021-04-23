@@ -2,3 +2,5 @@ out
 node_modules
 client/tsconfig.tsbuildinfo
 .vscode-test
+coverage
+.nyc_output
