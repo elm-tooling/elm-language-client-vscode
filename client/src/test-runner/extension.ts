@@ -27,10 +27,12 @@ import { Log, TestAdapterRegistrar } from "vscode-test-adapter-util";
 import { TestHub, testExplorerExtensionId } from "vscode-test-adapter-api";
 import { ElmTestAdapter } from "./adapter";
 import path = require("path");
+import { IElmBinaries } from "./util";
 
 export function activate(
   context: vscode.ExtensionContext,
   elmProjectFolder: vscode.Uri,
+  configuredElmBinaries: () => IElmBinaries,
 ): void {
   const workspaceFolder = (vscode.workspace.workspaceFolders || [])[0];
 
@@ -60,7 +62,12 @@ export function activate(
       new TestAdapterRegistrar(
         testHub,
         (workspaceFolder) =>
-          new ElmTestAdapter(workspaceFolder, elmProjectFolder, log),
+          new ElmTestAdapter(
+            workspaceFolder,
+            elmProjectFolder,
+            log,
+            configuredElmBinaries,
+          ),
         log,
       ),
     );
