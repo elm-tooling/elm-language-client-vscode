@@ -20,12 +20,13 @@ Supports elm 0.19 and up
 - Errors and informations when changing code and when saving (Control + S)
 - Format on save (Control + S)
 - Suggests completions and snippets (Control + Space)
+- Test explorer integration
 
 ## Additional Features
 
 - Lists all references to a type alias, module, custom type or function (Alt + Shift + F12)
 - Jump to the definition of a type alias, module, custom type or function
-- Shows type annotations and documentation on hover for type alia, module, custom type or function
+- Shows type annotations and documentation on hover for type alias, module, custom type or function
 - Rename a type alias, module, custom type or function (F2)
 - Browse file by symbols (Control + Shift + O)
 - Browse workspace by symbols (Control + Shift + R)
@@ -45,6 +46,7 @@ This extension contributes the following settings:
 - `elmLS.disableElmLSDiagnostics`: Disable linting diagnostics from the language server.
 - `elmLS.skipInstallPackageConfirmation`: Skip confirmation for the Install Package code action.
 - `elmLS.onlyUpdateDiagnosticsOnSave`: Only update compiler diagnostics on save, not on document change.
+- `elmLS.elmTestRunner.showElmTestOutput`: Show output of elm-test as terminal task.
 
 ## Configuration
 
