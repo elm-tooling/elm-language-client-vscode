@@ -30,10 +30,11 @@ import {
   TestRunFinishedEvent,
   TestSuiteEvent,
   TestEvent,
+  RetireEvent,
 } from "vscode-test-adapter-api";
 import { Log } from "vscode-test-adapter-util";
 import { ElmTestRunner } from "./runner";
-import { IElmBinaries } from "./util";
+import { IElmBinaries, walk } from "./util";
 
 export class ElmTestAdapter implements TestAdapter {
   private disposables: { dispose(): void }[] = [];
@@ -44,7 +45,7 @@ export class ElmTestAdapter implements TestAdapter {
   private readonly testStatesEmitter = new vscode.EventEmitter<
     TestRunStartedEvent | TestRunFinishedEvent | TestSuiteEvent | TestEvent
   >();
-  private readonly autorunEmitter = new vscode.EventEmitter<void>();
+  private readonly retireEmitter = new vscode.EventEmitter<RetireEvent>();
 
   get tests(): vscode.Event<TestLoadStartedEvent | TestLoadFinishedEvent> {
     return this.testsEmitter.event;
@@ -54,11 +55,12 @@ export class ElmTestAdapter implements TestAdapter {
   > {
     return this.testStatesEmitter.event;
   }
-  get autorun(): vscode.Event<void> | undefined {
-    return this.autorunEmitter.event;
+  get retire(): vscode.Event<RetireEvent> {
+    return this.retireEmitter.event;
   }
 
   private runner: ElmTestRunner;
+  private watcher?: vscode.Disposable;
 
   constructor(
     private readonly workspace: vscode.WorkspaceFolder,
@@ -70,7 +72,7 @@ export class ElmTestAdapter implements TestAdapter {
 
     this.disposables.push(this.testsEmitter);
     this.disposables.push(this.testStatesEmitter);
-    this.disposables.push(this.autorunEmitter);
+    this.disposables.push(this.retireEmitter);
 
     this.runner = new ElmTestRunner(
       this.workspace,
@@ -83,6 +85,9 @@ export class ElmTestAdapter implements TestAdapter {
   async load(): Promise<void> {
     this.log.info("Loading tests");
 
+    this.watcher?.dispose();
+    this.watcher = undefined;
+
     this.testsEmitter.fire(<TestLoadStartedEvent>{ type: "started" });
 
     try {
@@ -94,6 +99,19 @@ export class ElmTestAdapter implements TestAdapter {
           void this.runner.fireDecorationEvents(suite, this.testStatesEmitter);
           return true;
         });
+
+        this.watcher = vscode.workspace.onDidSaveTextDocument((e) => {
+          if (this.isTestFile(e.fileName)) {
+            const fileName = e.fileName;
+            const tests = Array.from(walk(suite))
+              .filter((test) => test.file === fileName)
+              .map((test) => test.id);
+            this.retireEmitter.fire({ tests });
+            void this.load();
+          } else if (this.isSourceFile(e.fileName)) {
+            this.retireEmitter.fire({});
+          }
+        });
       }
     } catch (error) {
       this.log.info("Failed to load tests", error);
@@ -102,6 +120,14 @@ export class ElmTestAdapter implements TestAdapter {
         errorMessage: String(error),
       });
     }
+  }
+
+  private isTestFile(file: string): boolean {
+    return file.startsWith(`${this.workspace.uri.fsPath}/tests/`);
+  }
+
+  private isSourceFile(file: string): boolean {
+    return file.startsWith(`${this.workspace.uri.fsPath}`);
   }
 
   async run(tests: string[]): Promise<void> {
