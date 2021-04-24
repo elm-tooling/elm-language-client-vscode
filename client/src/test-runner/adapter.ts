@@ -62,7 +62,7 @@ export class ElmTestAdapter implements TestAdapter {
 
   private runner: ElmTestRunner;
   private watcher?: vscode.Disposable;
-  private nextRunLoads: boolean = false;
+  private nextRunLoads = false;
 
   constructor(
     private readonly workspace: vscode.WorkspaceFolder,
@@ -99,14 +99,6 @@ export class ElmTestAdapter implements TestAdapter {
         errorMessage: String(error),
       });
     }
-  }
-
-  private isTestFile(file: string): boolean {
-    return file.startsWith(`${this.workspace.uri.fsPath}/tests/`);
-  }
-
-  private isSourceFile(file: string): boolean {
-    return file.startsWith(`${this.workspace.uri.fsPath}`);
   }
 
   async run(tests: string[]): Promise<void> {
@@ -158,6 +150,14 @@ export class ElmTestAdapter implements TestAdapter {
         this.retireEmitter.fire({});
       }
     });
+  }
+
+  private isTestFile(file: string): boolean {
+    return file.startsWith(`${this.elmProjectFolder.fsPath}/tests/`);
+  }
+
+  private isSourceFile(file: string): boolean {
+    return file.startsWith(`${this.elmProjectFolder.fsPath}`);
   }
 
   cancel(): void {
