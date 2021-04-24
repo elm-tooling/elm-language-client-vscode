@@ -264,6 +264,13 @@ describe("util", () => {
       expect(files).to.eql(["file2"]);
       expect(allIds).to.eql(["a/b", "a/d"]);
     });
+
+    it("unique file names", () => {
+      const ids = ["a/b", "a/d"];
+      const [files, allIds] = getFilesAndAllTestIds(ids, suiteWithFiles);
+      expect(files).to.eql(["file2"]);
+      expect(allIds).to.eql(["a/b", "a/d"]);
+    });
   });
 
   describe("get elm-test args", () => {

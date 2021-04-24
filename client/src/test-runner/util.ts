@@ -109,7 +109,7 @@ export function getFilesAndAllTestIds(
     .filter((node) => node.file && selectedFiles.has(node.file)) // make TS happy
     .map((node) => node.id ?? "?"); // make TS happy
 
-  return [files, allIds];
+  return [Array.from(selectedFiles), allIds];
 }
 
 export interface IElmBinaries {
