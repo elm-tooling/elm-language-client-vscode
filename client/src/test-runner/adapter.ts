@@ -131,10 +131,7 @@ export class ElmTestAdapter implements TestAdapter {
 	*/
 
   cancel(): void {
-    // TODO
-    //this.runner.cancel();
-    // in a "real" TestAdapter this would kill the child process for the current test run (if there is any)
-    throw new Error("Method not implemented.");
+    this.runner.cancel();
   }
 
   dispose(): void {
