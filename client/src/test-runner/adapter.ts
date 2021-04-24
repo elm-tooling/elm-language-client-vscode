@@ -33,6 +33,7 @@ import {
 } from "vscode-test-adapter-api";
 import { Log } from "vscode-test-adapter-util";
 import { ElmTestRunner } from "./runner";
+import { IElmBinaries } from "./util";
 
 export class ElmTestAdapter implements TestAdapter {
   private disposables: { dispose(): void }[] = [];
@@ -63,6 +64,7 @@ export class ElmTestAdapter implements TestAdapter {
     private readonly workspace: vscode.WorkspaceFolder,
     private readonly elmProjectFolder: vscode.Uri,
     private readonly log: Log,
+    configuredElmBinaries: () => IElmBinaries,
   ) {
     this.log.info("Initializing Elm Test Runner adapter");
 
@@ -74,6 +76,7 @@ export class ElmTestAdapter implements TestAdapter {
       this.workspace,
       this.elmProjectFolder,
       this.log,
+      configuredElmBinaries,
     );
   }
 

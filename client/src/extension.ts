@@ -39,6 +39,7 @@ import * as RefactorAction from "./refactorAction";
 import * as ExposeUnexposeAction from "./exposeUnexposeAction";
 import * as Restart from "./restart";
 import * as TestRunner from "./test-runner/extension";
+import { IElmBinaries } from "./test-runner/util";
 
 export interface IClientSettings {
   elmFormatPath: string;
@@ -227,6 +228,14 @@ export function activate(context: ExtensionContext): void {
       : {};
   }
 
+  const configuredElmBinaries = () => {
+    const config = Workspace.getConfiguration().get<IClientSettings>("elmLS");
+    return <IElmBinaries>{
+      elm: nonEmpty(config?.elmPath),
+      elmTest: nonEmpty(config?.elmTestPath),
+    };
+  };
+
   void Workspace.findFiles(
     "**/elm.json",
     "**/{node_modules,elm-stuff}/**",
@@ -234,7 +243,7 @@ export function activate(context: ExtensionContext): void {
     elmJsons.forEach((elmJsonPath) => {
       const elmRootFolder = Uri.parse(path.dirname(elmJsonPath.fsPath));
       if (fs.existsSync(path.join(elmRootFolder.fsPath, "tests"))) {
-        TestRunner.activate(context, elmRootFolder);
+        TestRunner.activate(context, elmRootFolder, configuredElmBinaries);
       }
     });
   });
@@ -365,4 +374,8 @@ export class CodeLensResolver implements Middleware {
       },
     );
   }
+}
+
+function nonEmpty(text: string | undefined): string | undefined {
+  return text && text.length > 0 ? text : undefined;
 }

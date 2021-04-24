@@ -77,6 +77,7 @@ export class ElmTestRunner {
     private workspaceFolder: vscode.WorkspaceFolder,
     private readonly elmProjectFolder: vscode.Uri,
     private readonly log: Log,
+    private readonly configuredElmBinaries: () => IElmBinaries,
   ) {}
 
   async fireEvents(
@@ -229,8 +230,8 @@ export class ElmTestRunner {
     const withOutput = vscode.workspace
       .getConfiguration("elmLS.elmTestRunner", null)
       .get("showElmTestOutput");
+    const args = this.elmTestArgs(files);
     const cwdPath = this.elmProjectFolder.fsPath;
-    const args = this.elmTestArgs(cwdPath, files);
     if (withOutput) {
       this.runElmTestsWithOutput(cwdPath, args);
     } else {
@@ -312,7 +313,7 @@ export class ElmTestRunner {
     elm.stderr.on("data", (chunk) => errChunks.push(Buffer.from(chunk)));
 
     elm.on("error", (err) => {
-      const message = `Failed to run Elm Tests, is elm-test installed at ${args[0]}?`;
+      const message = `Failed to run Elm Tests, is elm-test installed at "${args[0]}"?`;
       this.log.error(message, err);
       this.resolve({
         type: "finished",
@@ -355,24 +356,17 @@ export class ElmTestRunner {
     });
   }
 
-  private elmTestArgs(projectFolder: string, files?: string[]): string[] {
-    return buildElmTestArgs(this.getElmBinaries(projectFolder), files);
+  private elmTestArgs(files?: string[]): string[] {
+    return buildElmTestArgs(this.getElmBinaries(), files);
   }
 
-  private getElmBinaries(projectFolder: string): IElmBinaries {
-    return {
-      elmTest: this.findLocalNpmBinary("elm-test", projectFolder),
-      elmMake: this.findLocalNpmBinary("elm-make", projectFolder),
-      elm: this.findLocalNpmBinary("elm", projectFolder),
-    };
-  }
-
-  private findLocalNpmBinary(
-    binary: string,
-    projectRoot: string,
-  ): string | undefined {
-    const binaryPath = path.join(projectRoot, "node_modules", ".bin", binary);
-    return fs.existsSync(binaryPath) ? binaryPath : undefined;
+  private getElmBinaries(): IElmBinaries {
+    const configured = this.configuredElmBinaries();
+    return resolveElmBinaries(
+      configured,
+      this.elmProjectFolder,
+      this.workspaceFolder.uri,
+    );
   }
 
   private parse(lines: string[]): void {
@@ -556,4 +550,34 @@ function createDecorations(
       }
     }
   });
+}
+
+function resolveElmBinaries(
+  configured: IElmBinaries,
+  ...roots: vscode.Uri[]
+): IElmBinaries {
+  const rootPaths = Array.from(new Set(roots.map((r) => r.fsPath)).values());
+  return <IElmBinaries>{
+    elmTest:
+      configured.elmTest ??
+      rootPaths
+        .map((r) => findLocalNpmBinary("elm-test", r))
+        .filter((p) => p)[0],
+    elmMake:
+      configured.elmMake ??
+      rootPaths
+        .map((r) => findLocalNpmBinary("elm-make", r))
+        .filter((p) => p)[0],
+    elm:
+      configured.elm ??
+      rootPaths.map((r) => findLocalNpmBinary("elm", r)).filter((p) => p)[0],
+  };
+}
+
+function findLocalNpmBinary(
+  binary: string,
+  projectRoot: string,
+): string | undefined {
+  const binaryPath = path.join(projectRoot, "node_modules", ".bin", binary);
+  return fs.existsSync(binaryPath) ? binaryPath : undefined;
 }
