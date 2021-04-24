@@ -114,7 +114,6 @@ export function getFilesAndAllTestIds(
 
 export interface IElmBinaries {
   elmTest?: string;
-  elmMake?: string;
   elm?: string;
 }
 
@@ -122,9 +121,8 @@ export function buildElmTestArgs(
   binaries: IElmBinaries,
   files?: string[],
 ): string[] {
-  const compiler = binaries.elmMake ?? binaries.elm;
   return [binaries.elmTest ?? "elm-test"]
-    .concat((compiler && ["--compiler", compiler]) ?? [])
+    .concat((binaries.elm && ["--compiler", binaries.elm]) ?? [])
     .concat(files ?? []);
 }
 
