@@ -53,7 +53,7 @@ import {
   buildElmTestArgs,
   buildElmTestArgsWithReport,
   oneLine,
-  getFilePathUnderTests,
+  getFilePath,
 } from "./util";
 import { Log } from "vscode-test-adapter-util";
 
@@ -489,7 +489,7 @@ export class ElmTestRunner {
   }
 
   private getFilePath(event: EventTestCompleted): string {
-    const path = getFilePathUnderTests(event);
+    const path = getFilePath(event);
     return `${this.elmProjectFolder.fsPath}/tests/${path}`;
   }
 }

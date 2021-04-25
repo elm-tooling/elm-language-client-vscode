@@ -140,7 +140,7 @@ export function oneLine(text: string): string {
   return text1;
 }
 
-export function getFilePathUnderTests(event: EventTestCompleted): string {
+export function getFilePath(event: EventTestCompleted): string {
   const module = event.labels[0];
   const file = module.split(".").join("/");
   return `${file}.elm`;
