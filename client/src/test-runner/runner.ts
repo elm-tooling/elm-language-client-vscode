@@ -339,7 +339,7 @@ export class ElmTestRunner {
       });
     });
 
-    elm.on("close", () => {
+    elm.once("exit", () => {
       this.process = undefined;
       const data = Buffer.concat(outChunks).toString("utf8");
       const lines = data.split("\n");
@@ -359,7 +359,7 @@ export class ElmTestRunner {
       }
 
       if (this.loadingErrorMessage) {
-        this.resolve({
+        this.resolve(<TestLoadFinishedEvent>{
           type: "finished",
           errorMessage: this.loadingErrorMessage,
         });
@@ -367,7 +367,7 @@ export class ElmTestRunner {
         if (!this.loadedSuite) {
           this.loadedSuite = this.loadingSuite;
         }
-        this.resolve({
+        this.resolve(<TestLoadFinishedEvent>{
           type: "finished",
           suite: this.loadedSuite,
         });
