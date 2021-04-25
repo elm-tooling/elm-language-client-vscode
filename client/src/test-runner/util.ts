@@ -145,3 +145,7 @@ export function getFilePath(event: EventTestCompleted): string {
   const file = module.split(".").join("/");
   return `${file}.elm`;
 }
+
+export function getTestsRoot(elmProjectFolder: string): string {
+  return `${elmProjectFolder}/tests`;
+}

@@ -35,7 +35,7 @@ import {
 } from "vscode-test-adapter-api";
 import { Log } from "vscode-test-adapter-util";
 import { ElmTestRunner } from "./runner";
-import { IElmBinaries, walk } from "./util";
+import { getTestsRoot, IElmBinaries, walk } from "./util";
 
 export class ElmTestAdapter implements TestAdapter {
   private disposables: { dispose(): void }[] = [];
@@ -153,7 +153,8 @@ export class ElmTestAdapter implements TestAdapter {
   }
 
   private isTestFile(file: string): boolean {
-    return file.startsWith(`${this.elmProjectFolder.fsPath}/tests/`);
+    const testsRoot = getTestsRoot(this.elmProjectFolder.fsPath);
+    return file.startsWith(testsRoot);
   }
 
   private isSourceFile(file: string): boolean {
