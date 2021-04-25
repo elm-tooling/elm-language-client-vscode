@@ -34,6 +34,7 @@ import {
   TestSuiteInfo,
 } from "vscode-test-adapter-api";
 import { Log } from "vscode-test-adapter-util";
+import { setTestContent } from "../test/helper";
 import { ElmTestRunner } from "./runner";
 import { getTestsRoot, IElmBinaries, walk } from "./util";
 
@@ -60,9 +61,9 @@ export class ElmTestAdapter implements TestAdapter {
     return this.retireEmitter.event;
   }
 
+  private isLoading = false;
   private runner: ElmTestRunner;
   private watcher?: vscode.Disposable;
-  private nextRunLoads = false;
 
   constructor(
     private readonly workspace: vscode.WorkspaceFolder,
@@ -87,10 +88,15 @@ export class ElmTestAdapter implements TestAdapter {
   async load(): Promise<void> {
     this.log.info("Loading tests");
 
-    this.testsEmitter.fire(<TestLoadStartedEvent>{ type: "started" });
+    if (this.isLoading) {
+      return;
+    }
 
+    this.testsEmitter.fire(<TestLoadStartedEvent>{ type: "started" });
     try {
+      this.isLoading = true;
       const loadedEvent: TestLoadFinishedEvent = await this.runner.runAllTests();
+      this.testsEmitter.fire(loadedEvent);
       void this.fire(loadedEvent);
     } catch (error) {
       this.log.info("Failed to load tests", error);
@@ -98,16 +104,13 @@ export class ElmTestAdapter implements TestAdapter {
         type: "finished",
         errorMessage: String(error),
       });
+    } finally {
+      this.isLoading = false;
     }
   }
 
   async run(tests: string[]): Promise<void> {
     this.log.info("Running tests", tests);
-
-    if (this.nextRunLoads) {
-      this.nextRunLoads = false;
-      return this.load();
-    }
 
     const [files, testIds] = this.runner.getFilesAndAllTestIds(tests);
     this.testStatesEmitter.fire(<TestRunStartedEvent>{
@@ -123,29 +126,23 @@ export class ElmTestAdapter implements TestAdapter {
   }
 
   private async fire(loadedEvent: TestLoadFinishedEvent): Promise<void> {
-    this.testsEmitter.fire(loadedEvent);
     if (!loadedEvent.errorMessage && loadedEvent.suite) {
       const suite = loadedEvent.suite;
       await this.runner.fireEvents(suite, this.testStatesEmitter).then(() => {
         void this.runner.fireDecorationEvents(suite, this.testStatesEmitter);
         return true;
       });
-      this.watch(suite);
+      this.watch();
     }
   }
 
-  private watch(suite: TestSuiteInfo) {
+  private watch() {
     this.watcher?.dispose();
     this.watcher = undefined;
 
     this.watcher = vscode.workspace.onDidSaveTextDocument((e) => {
       if (this.isTestFile(e.fileName)) {
-        const fileName = e.fileName;
-        const tests = Array.from(walk(suite))
-          .filter((test) => test.file === fileName)
-          .map((test) => test.id);
-        this.nextRunLoads = true;
-        this.retireEmitter.fire({ tests });
+        void this.load();
       } else if (this.isSourceFile(e.fileName)) {
         this.retireEmitter.fire({});
       }
