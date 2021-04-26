@@ -109,7 +109,7 @@ export function getFilesAndAllTestIds(
     .filter((node) => node.file && selectedFiles.has(node.file)) // make TS happy
     .map((node) => node.id ?? "?"); // make TS happy
 
-  return [files, allIds];
+  return [Array.from(selectedFiles), allIds];
 }
 
 export interface IElmBinaries {
@@ -138,8 +138,12 @@ export function oneLine(text: string): string {
   return text1;
 }
 
-export function getFilePathUnderTests(event: EventTestCompleted): string {
+export function getFilePath(event: EventTestCompleted): string {
   const module = event.labels[0];
   const file = module.split(".").join("/");
   return `${file}.elm`;
+}
+
+export function getTestsRoot(elmProjectFolder: string): string {
+  return `${elmProjectFolder}/tests`;
 }

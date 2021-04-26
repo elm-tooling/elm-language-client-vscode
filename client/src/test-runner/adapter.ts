@@ -30,10 +30,13 @@ import {
   TestRunFinishedEvent,
   TestSuiteEvent,
   TestEvent,
+  RetireEvent,
+  TestSuiteInfo,
 } from "vscode-test-adapter-api";
 import { Log } from "vscode-test-adapter-util";
+import { setTestContent } from "../test/helper";
 import { ElmTestRunner } from "./runner";
-import { IElmBinaries } from "./util";
+import { getTestsRoot, IElmBinaries, walk } from "./util";
 
 export class ElmTestAdapter implements TestAdapter {
   private disposables: { dispose(): void }[] = [];
@@ -44,7 +47,7 @@ export class ElmTestAdapter implements TestAdapter {
   private readonly testStatesEmitter = new vscode.EventEmitter<
     TestRunStartedEvent | TestRunFinishedEvent | TestSuiteEvent | TestEvent
   >();
-  private readonly autorunEmitter = new vscode.EventEmitter<void>();
+  private readonly retireEmitter = new vscode.EventEmitter<RetireEvent>();
 
   get tests(): vscode.Event<TestLoadStartedEvent | TestLoadFinishedEvent> {
     return this.testsEmitter.event;
@@ -54,11 +57,13 @@ export class ElmTestAdapter implements TestAdapter {
   > {
     return this.testStatesEmitter.event;
   }
-  get autorun(): vscode.Event<void> | undefined {
-    return this.autorunEmitter.event;
+  get retire(): vscode.Event<RetireEvent> {
+    return this.retireEmitter.event;
   }
 
+  private isLoading = false;
   private runner: ElmTestRunner;
+  private watcher?: vscode.Disposable;
 
   constructor(
     private readonly workspace: vscode.WorkspaceFolder,
@@ -70,7 +75,7 @@ export class ElmTestAdapter implements TestAdapter {
 
     this.disposables.push(this.testsEmitter);
     this.disposables.push(this.testStatesEmitter);
-    this.disposables.push(this.autorunEmitter);
+    this.disposables.push(this.retireEmitter);
 
     this.runner = new ElmTestRunner(
       this.workspace,
@@ -83,24 +88,24 @@ export class ElmTestAdapter implements TestAdapter {
   async load(): Promise<void> {
     this.log.info("Loading tests");
 
-    this.testsEmitter.fire(<TestLoadStartedEvent>{ type: "started" });
+    if (this.isLoading) {
+      return;
+    }
 
+    this.testsEmitter.fire(<TestLoadStartedEvent>{ type: "started" });
     try {
-      const loadedEvent = await this.runner.runAllTests();
+      this.isLoading = true;
+      const loadedEvent: TestLoadFinishedEvent = await this.runner.runAllTests();
       this.testsEmitter.fire(loadedEvent);
-      if (!loadedEvent.errorMessage && loadedEvent.suite) {
-        const suite = loadedEvent.suite;
-        await this.runner.fireEvents(suite, this.testStatesEmitter).then(() => {
-          void this.runner.fireDecorationEvents(suite, this.testStatesEmitter);
-          return true;
-        });
-      }
+      void this.fire(loadedEvent);
     } catch (error) {
       this.log.info("Failed to load tests", error);
       this.testsEmitter.fire(<TestLoadFinishedEvent>{
         type: "finished",
         errorMessage: String(error),
       });
+    } finally {
+      this.isLoading = false;
     }
   }
 
@@ -115,26 +120,47 @@ export class ElmTestAdapter implements TestAdapter {
 
     const loadedEvent = await this.runner.runSomeTests(files);
     if (loadedEvent.suite) {
+      void this.fire(loadedEvent);
+    }
+    this.testStatesEmitter.fire(<TestRunFinishedEvent>{ type: "finished" });
+  }
+
+  private async fire(loadedEvent: TestLoadFinishedEvent): Promise<void> {
+    if (!loadedEvent.errorMessage && loadedEvent.suite) {
       const suite = loadedEvent.suite;
       await this.runner.fireEvents(suite, this.testStatesEmitter).then(() => {
         void this.runner.fireDecorationEvents(suite, this.testStatesEmitter);
         return true;
       });
+      this.watch();
     }
-    this.testStatesEmitter.fire(<TestRunFinishedEvent>{ type: "finished" });
   }
 
-  /*	implement this method if your TestAdapter supports debugging tests
-		async debug(tests: string[]): Promise<void> {
-			// start a test run in a child process and attach the debugger to it...
-		}
-	*/
+  private watch() {
+    this.watcher?.dispose();
+    this.watcher = undefined;
+
+    this.watcher = vscode.workspace.onDidSaveTextDocument((e) => {
+      if (this.isTestFile(e.fileName)) {
+        void this.load();
+      } else if (this.isSourceFile(e.fileName)) {
+        this.retireEmitter.fire({});
+      }
+    });
+  }
+
+  private isTestFile(file: string): boolean {
+    const testsRoot = getTestsRoot(this.elmProjectFolder.fsPath);
+    return file.startsWith(testsRoot);
+  }
+
+  private isSourceFile(file: string): boolean {
+    return file.startsWith(`${this.elmProjectFolder.fsPath}`);
+  }
 
   cancel(): void {
-    // TODO
-    //this.runner.cancel();
-    // in a "real" TestAdapter this would kill the child process for the current test run (if there is any)
-    throw new Error("Method not implemented.");
+    this.runner.cancel();
+    this.watcher?.dispose();
   }
 
   dispose(): void {

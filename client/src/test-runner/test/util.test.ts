@@ -32,7 +32,7 @@ import {
   buildElmTestArgs,
   buildElmTestArgsWithReport,
   oneLine,
-  getFilePathUnderTests,
+  getFilePath,
 } from "../util";
 import { expect } from "chai";
 
@@ -264,6 +264,13 @@ describe("util", () => {
       expect(files).to.eql(["file2"]);
       expect(allIds).to.eql(["a/b", "a/d"]);
     });
+
+    it("unique file names", () => {
+      const ids = ["a/b", "a/d"];
+      const [files, allIds] = getFilesAndAllTestIds(ids, suiteWithFiles);
+      expect(files).to.eql(["file2"]);
+      expect(allIds).to.eql(["a/b", "a/d"]);
+    });
   });
 
   describe("get elm-test args", () => {
@@ -338,7 +345,7 @@ describe("util", () => {
 
   describe("getFilePathUnderTests", () => {
     it("top level", () => {
-      const path = getFilePathUnderTests({
+      const path = getFilePath({
         tag: "testCompleted",
         labels: ["Module"],
         messages: [],
@@ -348,7 +355,7 @@ describe("util", () => {
       expect(path).to.eq("Module.elm");
     });
     it("first level", () => {
-      const path = getFilePathUnderTests({
+      const path = getFilePath({
         tag: "testCompleted",
         labels: ["Module.Sub"],
         messages: [],
@@ -358,7 +365,7 @@ describe("util", () => {
       expect(path).to.eq("Module/Sub.elm");
     });
     it("deeper level", () => {
-      const path = getFilePathUnderTests({
+      const path = getFilePath({
         tag: "testCompleted",
         labels: ["Module.Sub.Deep"],
         messages: [],

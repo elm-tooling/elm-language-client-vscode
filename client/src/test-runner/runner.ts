@@ -53,7 +53,8 @@ import {
   buildElmTestArgs,
   buildElmTestArgsWithReport,
   oneLine,
-  getFilePathUnderTests,
+  getFilePath,
+  getTestsRoot,
 } from "./util";
 import { Log } from "vscode-test-adapter-util";
 
@@ -73,12 +74,30 @@ export class ElmTestRunner {
   private loadingErrorMessage?: string = undefined;
   private pendingMessages: string[] = [];
 
+  private taskExecution?: vscode.TaskExecution = undefined;
+  private process?: child_process.ChildProcessWithoutNullStreams = undefined;
+
   constructor(
     private workspaceFolder: vscode.WorkspaceFolder,
     private readonly elmProjectFolder: vscode.Uri,
     private readonly log: Log,
     private readonly configuredElmBinaries: () => IElmBinaries,
   ) {}
+
+  cancel(): void {
+    this.taskExecution?.terminate();
+    this.taskExecution = undefined;
+    this.process?.kill();
+    this.process = undefined;
+    this.log.info("Running Elm Tests cancelled", this.relativeProjectFolder);
+  }
+
+  private get relativeProjectFolder(): string {
+    return path.relative(
+      this.workspaceFolder.uri.fsPath,
+      this.elmProjectFolder.fsPath,
+    );
+  }
 
   async fireEvents(
     node: TestSuiteInfo | TestInfo,
@@ -246,16 +265,11 @@ export class ElmTestRunner {
 
     this.log.info("Running Elm Tests as task", args);
 
-    const relativeProjectFolder = path.relative(
-      this.workspaceFolder.uri.fsPath,
-      this.elmProjectFolder.fsPath,
-    );
-
     const task = new vscode.Task(
       kind,
       this.workspaceFolder,
-      relativeProjectFolder.length > 0
-        ? `Run Elm Test (${relativeProjectFolder})`
+      this.relativeProjectFolder.length > 0
+        ? `Run Elm Test (${this.relativeProjectFolder})`
         : "Run Elm Test",
       "Elm Test Run",
       new vscode.ShellExecution(args[0], args.slice(1), {
@@ -271,10 +285,13 @@ export class ElmTestRunner {
       showReuseMessage: false,
     };
 
-    void vscode.tasks.executeTask(task);
+    void vscode.tasks.executeTask(task).then((taskExecution) => {
+      this.taskExecution = taskExecution;
+    });
 
     vscode.tasks.onDidEndTaskProcess((event) => {
       if (event.execution.task.definition.type == "elm-test") {
+        this.taskExecution = undefined;
         if ((event.exitCode ?? 0) <= 3) {
           this.runElmTestWithReport(cwdPath, args);
         } else {
@@ -313,6 +330,7 @@ export class ElmTestRunner {
     elm.stderr.on("data", (chunk) => errChunks.push(Buffer.from(chunk)));
 
     elm.on("error", (err) => {
+      this.process = undefined;
       const message = `Failed to run Elm Tests, is elm-test installed at "${args[0]}"?`;
       this.log.error(message, err);
       this.resolve({
@@ -321,7 +339,8 @@ export class ElmTestRunner {
       });
     });
 
-    elm.on("close", () => {
+    elm.once("exit", () => {
+      this.process = undefined;
       const data = Buffer.concat(outChunks).toString("utf8");
       const lines = data.split("\n");
       try {
@@ -340,7 +359,7 @@ export class ElmTestRunner {
       }
 
       if (this.loadingErrorMessage) {
-        this.resolve({
+        this.resolve(<TestLoadFinishedEvent>{
           type: "finished",
           errorMessage: this.loadingErrorMessage,
         });
@@ -348,7 +367,7 @@ export class ElmTestRunner {
         if (!this.loadedSuite) {
           this.loadedSuite = this.loadingSuite;
         }
-        this.resolve({
+        this.resolve(<TestLoadFinishedEvent>{
           type: "finished",
           suite: this.loadedSuite,
         });
@@ -471,8 +490,9 @@ export class ElmTestRunner {
   }
 
   private getFilePath(event: EventTestCompleted): string {
-    const path = getFilePathUnderTests(event);
-    return `${this.elmProjectFolder.fsPath}/tests/${path}`;
+    const path = getFilePath(event);
+    const testsRoot = getTestsRoot(this.elmProjectFolder.fsPath);
+    return `${testsRoot}/${path}`;
   }
 }
 
