@@ -290,15 +290,6 @@ describe("util", () => {
       expect(args).to.eql(["local/elm-test", "--compiler", "local/elm"]);
     });
 
-    it("with local elm-make compiler (0.18)", () => {
-      const binaries: IElmBinaries = {
-        elmTest: "local/elm-test",
-        elmMake: "local/elm-make",
-      };
-      const args = buildElmTestArgs(binaries);
-      expect(args).to.eql(["local/elm-test", "--compiler", "local/elm-make"]);
-    });
-
     it("with files", () => {
       const binaries: IElmBinaries = {
         elmTest: "local/elm-test",

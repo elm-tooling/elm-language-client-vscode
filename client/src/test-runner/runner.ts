@@ -563,11 +563,6 @@ function resolveElmBinaries(
       rootPaths
         .map((r) => findLocalNpmBinary("elm-test", r))
         .filter((p) => p)[0],
-    elmMake:
-      configured.elmMake ??
-      rootPaths
-        .map((r) => findLocalNpmBinary("elm-make", r))
-        .filter((p) => p)[0],
     elm:
       configured.elm ??
       rootPaths.map((r) => findLocalNpmBinary("elm", r)).filter((p) => p)[0],
