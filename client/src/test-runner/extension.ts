@@ -28,11 +28,14 @@ import { TestHub, testExplorerExtensionId } from "vscode-test-adapter-api";
 import { ElmTestAdapter } from "./adapter";
 import path = require("path");
 import { IElmBinaries } from "./util";
+import { LanguageClient } from "vscode-languageclient/node";
+import { WorkspaceFolder } from "vscode";
 
 export function activate(
   context: vscode.ExtensionContext,
   elmProjectFolder: vscode.Uri,
   configuredElmBinaries: () => IElmBinaries,
+  getClient: (folder: WorkspaceFolder) => LanguageClient | undefined,
 ): void {
   const workspaceFolder = (vscode.workspace.workspaceFolders || [])[0];
 
@@ -67,6 +70,7 @@ export function activate(
             elmProjectFolder,
             log,
             configuredElmBinaries,
+            getClient,
           ),
         log,
       ),

@@ -24,7 +24,6 @@ SOFTWARE.
 import * as vscode from "vscode";
 import {
   TestSuiteInfo,
-  TestLoadFinishedEvent,
   TestInfo,
   TestRunStartedEvent,
   TestRunFinishedEvent,
@@ -46,8 +45,6 @@ import {
   TestStatus,
 } from "./result";
 import {
-  getTestInfosByFile,
-  findOffsetForTest,
   getFilesAndAllTestIds,
   IElmBinaries,
   buildElmTestArgs,
@@ -59,19 +56,18 @@ import {
 import { Log } from "vscode-test-adapter-util";
 
 export class ElmTestRunner {
-  private loadedSuite?: TestSuiteInfo = undefined;
-
   private eventById: Map<string, EventTestCompleted> = new Map<
     string,
     EventTestCompleted
   >();
 
   private resolve: (
-    value: TestLoadFinishedEvent | PromiseLike<TestLoadFinishedEvent>,
+    value: TestSuiteInfo | string | PromiseLike<TestSuiteInfo | string>,
     // eslint-disable-next-line @typescript-eslint/no-empty-function
   ) => void = () => {};
-  private loadingSuite?: TestSuiteInfo = undefined;
-  private loadingErrorMessage?: string = undefined;
+
+  private currentSuite?: TestSuiteInfo = undefined;
+  private errorMessage?: string = undefined;
   private pendingMessages: string[] = [];
 
   private taskExecution?: vscode.TaskExecution = undefined;
@@ -166,66 +162,59 @@ export class ElmTestRunner {
     return true;
   }
 
-  async fireDecorationEvents(
-    suite: TestSuiteInfo,
-    testStatesEmitter: vscode.EventEmitter<
-      TestRunStartedEvent | TestRunFinishedEvent | TestSuiteEvent | TestEvent
-    >,
-  ): Promise<number> {
-    const testInfosByFile = getTestInfosByFile(suite);
-    return Promise.all(
-      Array.from(testInfosByFile.entries()).map(([file, nodes]) => {
-        return vscode.workspace
-          .openTextDocument(file)
-          .then((doc) => {
-            const text = doc.getText();
-            return nodes.map((node) => {
-              const id = node.id;
-              const event = this.eventById.get(id);
-              if (!event) {
-                throw new Error(`missing event for ${id}`);
-              }
-              const names = event.labels.slice(1);
-              const offset = findOffsetForTest(
-                names,
-                text,
-                (offset) => doc.positionAt(offset).character,
-              );
-              const line = (offset && doc.positionAt(offset).line) ?? 0;
-              const lineOf = (search: string) => {
-                const index = text.indexOf(search, offset);
-                return index >= 0 ? doc.positionAt(index).line : line;
-              };
-              return createTestEvent(id, event, lineOf, line);
-            });
-          })
-          .then(
-            (events) =>
-              events.map((event) => {
-                testStatesEmitter.fire(event);
-                return true;
-              }).length,
-          );
-      }),
-    ).then((counts) =>
-      counts.length > 0 ? counts.reduce((a, b) => a + b) : 0,
-    );
-  }
+  // async fireDecorationEvents(
+  //   suite: TestSuiteInfo,
+  //   testStatesEmitter: vscode.EventEmitter<
+  //     TestRunStartedEvent | TestRunFinishedEvent | TestSuiteEvent | TestEvent
+  //   >,
+  // ): Promise<number> {
+  //   const testInfosByFile = getTestInfosByFile(suite);
+  //   return Promise.all(
+  //     Array.from(testInfosByFile.entries()).map(([file, nodes]) => {
+  //       return vscode.workspace
+  //         .openTextDocument(file)
+  //         .then((doc) => {
+  //           const text = doc.getText();
+  //           return nodes.map((node) => {
+  //             const id = node.id;
+  //             const event = this.eventById.get(id);
+  //             if (!event) {
+  //               throw new Error(`missing event for ${id}`);
+  //             }
+  //             const names = event.labels.slice(1);
+  //             const offset = findOffsetForTest(
+  //               names,
+  //               text,
+  //               (offset) => doc.positionAt(offset).character,
+  //             );
+  //             const line = (offset && doc.positionAt(offset).line) ?? 0;
+  //             const lineOf = (search: string) => {
+  //               const index = text.indexOf(search, offset);
+  //               return index >= 0 ? doc.positionAt(index).line : line;
+  //             };
+  //             return createTestEvent(id, event, lineOf, line);
+  //           });
+  //         })
+  //         .then(
+  //           (events) =>
+  //             events.map((event) => {
+  //               testStatesEmitter.fire(event);
+  //               return true;
+  //             }).length,
+  //         );
+  //     }),
+  //   ).then((counts) =>
+  //     counts.length > 0 ? counts.reduce((a, b) => a + b) : 0,
+  //   );
+  // }
 
-  async runAllTests(): Promise<TestLoadFinishedEvent> {
-    this.loadedSuite = undefined;
-    return this.runSomeTests();
-  }
+  // async runAllTests(): Promise<TestSuiteInfo | string> {
+  //   this.suite = undefined;
+  //   return this.runSomeTests();
+  // }
 
-  getFilesAndAllTestIds(tests: string[]): [string[], string[]] {
-    if (!this.loadedSuite) {
-      throw new Error("not loaded?");
-    }
-    return getFilesAndAllTestIds(tests, this.loadedSuite);
-  }
-
-  async runSomeTests(files?: string[]): Promise<TestLoadFinishedEvent> {
-    return new Promise<TestLoadFinishedEvent>((resolve) => {
+  async runSomeTests(files?: string[]): Promise<TestSuiteInfo | string> {
+    return new Promise<TestSuiteInfo | string>((resolve) => {
       this.resolve = resolve;
       const relativePath = path.relative(
         this.workspaceFolder.uri.fsPath,
@@ -233,13 +222,13 @@ export class ElmTestRunner {
       );
       const name =
         relativePath.length > 0 ? relativePath : this.workspaceFolder.name;
-      this.loadingSuite = {
+      this.currentSuite = {
         type: "suite",
         id: name,
         label: name,
         children: [],
       };
-      this.loadingErrorMessage = undefined;
+      this.errorMessage = undefined;
       this.pendingMessages = [];
       this.runElmTests(files);
     });
@@ -297,14 +286,12 @@ export class ElmTestRunner {
         } else {
           console.error("elm-test failed", event.exitCode, args);
           this.log.info("Running Elm Test task failed", event.exitCode, args);
-          this.resolve({
-            type: "finished",
-            errorMessage: [
-              "elm-test failed.",
-              "Check for Elm errors,",
-              `find details in the "Task - ${event.execution.task.name}" terminal.`,
-            ].join("\n"),
-          });
+          const errorMessage = [
+            "elm-test failed.",
+            "Check for Elm errors,",
+            `find details in the "Task - ${event.execution.task.name}" terminal.`,
+          ].join("\n");
+          this.resolve(errorMessage);
         }
       }
     });
@@ -333,10 +320,7 @@ export class ElmTestRunner {
       this.process = undefined;
       const message = `Failed to run Elm Tests, is elm-test installed at "${args[0]}"?`;
       this.log.error(message, err);
-      this.resolve({
-        type: "finished",
-        errorMessage: message,
-      });
+      this.resolve(message);
     });
 
     elm.once("exit", () => {
@@ -352,25 +336,16 @@ export class ElmTestRunner {
       if (errChunks.length > 0) {
         const data = Buffer.concat(errChunks).toString("utf8");
         const lines = data.split("\n");
-        this.loadingErrorMessage = lines
+        this.errorMessage = lines
           .map(parseErrorOutput)
           .map(buildErrorMessage)
           .join("\n");
       }
 
-      if (this.loadingErrorMessage) {
-        this.resolve(<TestLoadFinishedEvent>{
-          type: "finished",
-          errorMessage: this.loadingErrorMessage,
-        });
-      } else {
-        if (!this.loadedSuite) {
-          this.loadedSuite = this.loadingSuite;
-        }
-        this.resolve(<TestLoadFinishedEvent>{
-          type: "finished",
-          suite: this.loadedSuite,
-        });
+      if (this.errorMessage) {
+        this.resolve(this.errorMessage);
+      } else if (this.currentSuite) {
+        this.resolve(this.currentSuite);
       }
     });
   }
@@ -426,7 +401,7 @@ export class ElmTestRunner {
   private accept(result: Result): void {
     switch (result?.event.tag) {
       case "testCompleted": {
-        if (!this.loadingSuite) {
+        if (!this.currentSuite) {
           throw new Error("not loading?");
         }
         const event: EventTestCompleted = {
@@ -434,7 +409,7 @@ export class ElmTestRunner {
           messages: this.popMessages(),
         };
         const labels: string[] = [...event.labels];
-        const id = this.addEvent(this.loadingSuite, labels, event);
+        const id = this.addEvent(this.currentSuite, labels, event);
         this.eventById.set(id, event);
         break;
       }

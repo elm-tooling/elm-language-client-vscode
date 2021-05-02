@@ -236,6 +236,10 @@ export function activate(context: ExtensionContext): void {
     };
   };
 
+  const getClient: (folder: WorkspaceFolder) => LanguageClient | undefined = (
+    folder,
+  ) => clients.get(folder.uri.toString());
+
   void Workspace.findFiles(
     "**/elm.json",
     "**/{node_modules,elm-stuff}/**",
@@ -243,7 +247,12 @@ export function activate(context: ExtensionContext): void {
     elmJsons.forEach((elmJsonPath) => {
       const elmRootFolder = Uri.parse(path.dirname(elmJsonPath.fsPath));
       if (fs.existsSync(path.join(elmRootFolder.fsPath, "tests"))) {
-        TestRunner.activate(context, elmRootFolder, configuredElmBinaries);
+        TestRunner.activate(
+          context,
+          elmRootFolder,
+          configuredElmBinaries,
+          getClient,
+        );
       }
     });
   });
