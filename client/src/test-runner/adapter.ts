@@ -41,6 +41,12 @@ import { FindTestsRequest, IFindTestsParams, TestSuite } from "../protocol";
 import { ElmTestRunner } from "./runner";
 import { getFilesAndAllTestIds, getTestsRoot, IElmBinaries } from "./util";
 
+/*
+  Integration with Test Explorer UI
+  see https://github.com/hbenl/vscode-test-adapter-api
+  and https://github.com/hbenl/vscode-test-adapter-api/blob/master/src/index.ts
+*/
+
 export class ElmTestAdapter implements TestAdapter {
   private disposables: { dispose(): void }[] = [];
 
@@ -143,6 +149,11 @@ export class ElmTestAdapter implements TestAdapter {
   }
 
   async run(tests: string[]): Promise<void> {
+    if (this.runner.isBusy) {
+      this.log.debug("Already running tests");
+      return;
+    }
+
     this.log.info("Running tests", tests);
 
     if (!this.loadedSuite) {
@@ -161,7 +172,10 @@ export class ElmTestAdapter implements TestAdapter {
       const suiteOrError = await this.runner.runSomeTests(files);
       if (typeof suiteOrError === "string") {
         console.log("Error running tests", suiteOrError);
-        // TODO raise error into UI
+        this.testsEmitter.fire(<TestLoadFinishedEvent>{
+          type: "finished",
+          errorMessage: String(suiteOrError),
+        });
       } else {
         void this.fire(suiteOrError);
       }

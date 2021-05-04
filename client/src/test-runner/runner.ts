@@ -88,6 +88,10 @@ export class ElmTestRunner {
     this.log.info("Running Elm Tests cancelled", this.relativeProjectFolder);
   }
 
+  get isBusy(): boolean {
+    return this.taskExecution !== undefined || this.process !== undefined;
+  }
+
   private get relativeProjectFolder(): string {
     return path.relative(
       this.workspaceFolder.uri.fsPath,
