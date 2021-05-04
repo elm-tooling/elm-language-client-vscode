@@ -143,7 +143,7 @@ export class ElmTestRunner {
     }
   }
 
-  async runSomeTests(files?: string[]): Promise<TestSuiteInfo | string> {
+  async runSomeTests(uris?: string[]): Promise<TestSuiteInfo | string> {
     return new Promise<TestSuiteInfo | string>((resolve) => {
       this.resolve = resolve;
       const relativePath = path.relative(
@@ -160,15 +160,15 @@ export class ElmTestRunner {
       };
       this.errorMessage = undefined;
       this.pendingMessages = [];
-      this.runElmTests(files);
+      this.runElmTests(uris);
     });
   }
 
-  private runElmTests(files?: string[]) {
+  private runElmTests(uris?: string[]) {
     const withOutput = vscode.workspace
       .getConfiguration("elmLS.elmTestRunner", null)
       .get("showElmTestOutput");
-    const args = this.elmTestArgs(files);
+    const args = this.elmTestArgs(uris);
     const cwdPath = this.elmProjectFolder.fsPath;
     if (withOutput) {
       this.runElmTestsWithOutput(cwdPath, args);
@@ -282,7 +282,8 @@ export class ElmTestRunner {
     });
   }
 
-  private elmTestArgs(files?: string[]): string[] {
+  private elmTestArgs(uris?: string[]): string[] {
+    const files = uris?.map((uri) => vscode.Uri.parse(uri).fsPath);
     return buildElmTestArgs(this.getElmBinaries(), files);
   }
 

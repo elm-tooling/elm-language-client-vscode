@@ -168,14 +168,14 @@ export class ElmTestAdapter implements TestAdapter {
       return;
     }
 
-    const [files, testIds] = getFilesAndAllTestIds(tests, this.loadedSuite);
+    const [uris, testIds] = getFilesAndAllTestIds(tests, this.loadedSuite);
     this.testStatesEmitter.fire(<TestRunStartedEvent>{
       type: "started",
       tests: testIds,
     });
 
     try {
-      const suiteOrError = await this.runner.runSomeTests(files);
+      const suiteOrError = await this.runner.runSomeTests(uris);
       if (typeof suiteOrError === "string") {
         console.log("Error running tests", suiteOrError);
         this.testsEmitter.fire(<TestLoadFinishedEvent>{
