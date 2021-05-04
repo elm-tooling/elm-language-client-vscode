@@ -397,7 +397,7 @@ describe("util", () => {
         },
       ],
     };
-    test("mismatched", () => {
+    it("mismatched", () => {
       const from: TestSuiteInfo = {
         type: "suite",
         id: "another-top",
@@ -411,7 +411,114 @@ describe("util", () => {
           },
         ],
       };
-      expect(mergeTopLevelSuites(from, to)).to.be.eql({});
+      expect(mergeTopLevelSuites(from, to)).to.eql({
+        type: "suite",
+        id: "top",
+        label: "top",
+        children: [
+          {
+            type: "suite",
+            id: "a/b",
+            label: "b",
+            children: [],
+          },
+          {
+            type: "suite",
+            id: "a/e",
+            label: "e",
+            children: [],
+          },
+          {
+            type: "suite",
+            id: "another-top",
+            label: "another top",
+            children: [
+              {
+                type: "suite",
+                id: "c",
+                label: "c",
+                children: [],
+              },
+            ],
+          },
+        ],
+      });
+    });
+
+    it("replace one", () => {
+      const from: TestSuiteInfo = {
+        type: "suite",
+        id: "top",
+        label: "top",
+        children: [
+          {
+            type: "suite",
+            id: "a/b",
+            label: "new b",
+            children: [],
+          },
+        ],
+      };
+      expect(mergeTopLevelSuites(from, to)).to.eql({
+        type: "suite",
+        id: "top",
+        label: "top",
+        children: [
+          {
+            type: "suite",
+            id: "a/b",
+            label: "new b",
+            children: [],
+          },
+          {
+            type: "suite",
+            id: "a/e",
+            label: "e",
+            children: [],
+          },
+        ],
+      });
+    });
+
+    it("append one", () => {
+      const from: TestSuiteInfo = {
+        type: "suite",
+        id: "top",
+        label: "top",
+        children: [
+          {
+            type: "suite",
+            id: "a/d",
+            label: "new d",
+            children: [],
+          },
+        ],
+      };
+      expect(mergeTopLevelSuites(from, to)).to.eql({
+        type: "suite",
+        id: "top",
+        label: "top",
+        children: [
+          {
+            type: "suite",
+            id: "a/b",
+            label: "b",
+            children: [],
+          },
+          {
+            type: "suite",
+            id: "a/e",
+            label: "e",
+            children: [],
+          },
+          {
+            type: "suite",
+            id: "a/d",
+            label: "new d",
+            children: [],
+          },
+        ],
+      });
     });
   });
 });
