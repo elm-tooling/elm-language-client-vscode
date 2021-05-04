@@ -23,7 +23,7 @@ SOFTWARE.
 */
 import { TestSuiteInfo, TestInfo } from "vscode-test-adapter-api";
 import { EventTestCompleted } from "./result";
-import * as vscode from "vscode";
+// import * as vscode from "vscode";
 
 export function* walk(
   node: TestSuiteInfo | TestInfo,
@@ -122,10 +122,10 @@ export function buildElmTestArgs(
   binaries: IElmBinaries,
   files?: string[],
 ): string[] {
-  const fs = files?.map((f) => vscode.Uri.parse(f).fsPath);
+  // const fs = files?.map((f) => vscode.Uri.parse(f).fsPath);
   return [binaries.elmTest ?? "elm-test"]
     .concat((binaries.elm && ["--compiler", binaries.elm]) ?? [])
-    .concat(fs ?? []);
+    .concat(files ?? []);
 }
 
 export function buildElmTestArgsWithReport(args: string[]): string[] {
