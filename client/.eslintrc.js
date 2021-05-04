@@ -20,7 +20,6 @@ module.exports = {
     project: ["./tsconfig.json"],
   },
   plugins: ["@typescript-eslint", "prettier"],
-  ignorePatterns: ["*.test.ts"],
   rules: {
     "prettier/prettier": "error",
     "@typescript-eslint/no-unsafe-member-access": "warn",
