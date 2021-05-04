@@ -21,20 +21,9 @@ LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
 OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.
 */
-import { Test } from "mocha";
-import { toUnicode } from "punycode";
 import * as vscode from "vscode";
 import { WorkspaceFolder } from "vscode";
-import {
-  ExecuteCommandParams,
-  ExecuteCommandRequest,
-  LanguageClient,
-  Position,
-  ReferenceParams,
-  ReferencesRequest,
-  WorkspaceSymbolParams,
-  WorkspaceSymbolRequest,
-} from "vscode-languageclient/node";
+import { LanguageClient } from "vscode-languageclient/node";
 import {
   TestAdapter,
   TestLoadStartedEvent,
@@ -48,12 +37,7 @@ import {
   TestInfo,
 } from "vscode-test-adapter-api";
 import { Log } from "vscode-test-adapter-util";
-import {
-  FindTestsRequest,
-  IFindTestsParams,
-  IFindTestsResponse,
-  TestSuite,
-} from "../protocol";
+import { FindTestsRequest, IFindTestsParams, TestSuite } from "../protocol";
 import { ElmTestRunner } from "./runner";
 import { getFilesAndAllTestIds, getTestsRoot, IElmBinaries } from "./util";
 
@@ -94,7 +78,11 @@ export class ElmTestAdapter implements TestAdapter {
       folder: WorkspaceFolder,
     ) => LanguageClient | undefined,
   ) {
-    this.log.info("Initializing Elm Test Runner adapter");
+    this.log.info(
+      "Initializing Elm Test Runner adapter",
+      workspace,
+      elmProjectFolder,
+    );
 
     this.disposables.push(this.testsEmitter);
     this.disposables.push(this.testStatesEmitter);
@@ -124,18 +112,10 @@ export class ElmTestAdapter implements TestAdapter {
         };
         try {
           const response = await client.sendRequest(FindTestsRequest, input);
+
           const id = this.workspace.name;
           const children =
-            response.suites?.map((s) => {
-              // TODO move into LSP
-              const modulePath = vscode.Uri.parse(s.file).fsPath.split("/");
-              const moduleFile = modulePath[modulePath.length - 1];
-              const module = moduleFile.substring(
-                0,
-                moduleFile.indexOf(".elm"),
-              );
-              return toTestSuiteInfo(s, id + "/" + module);
-            }) ?? [];
+            response.suites?.map((s) => toTestSuiteInfo(s, id)) ?? [];
           const suite: TestSuiteInfo = {
             type: "suite",
             label: id,
@@ -150,7 +130,6 @@ export class ElmTestAdapter implements TestAdapter {
           this.testsEmitter.fire(loadedEvent);
           this.log.info("Loaded tests");
         } catch (error) {
-          console.log("Failed to load tests", error);
           this.log.info("Failed to load tests", error);
           this.testsEmitter.fire(<TestLoadFinishedEvent>{
             type: "finished",
@@ -171,7 +150,7 @@ export class ElmTestAdapter implements TestAdapter {
       return;
     }
 
-    console.log("FW loaded", this.loadedSuite);
+    console.debug("loaded suite", this.loadedSuite);
     const [files, testIds] = getFilesAndAllTestIds(tests, this.loadedSuite);
     this.testStatesEmitter.fire(<TestRunStartedEvent>{
       type: "started",
@@ -194,8 +173,7 @@ export class ElmTestAdapter implements TestAdapter {
   }
 
   private async fire(suite: TestSuiteInfo): Promise<void> {
-    console.log("FW run", suite);
-    // TODO fire events directly out of runner
+    console.debug("run suite", suite);
     await this.runner.fireEvents(suite, this.testStatesEmitter);
     this.watch();
   }
@@ -238,9 +216,9 @@ export class ElmTestAdapter implements TestAdapter {
 
 function toTestSuiteInfo(
   suite: TestSuite,
-  parentId: string,
+  prefixId: string,
 ): TestSuiteInfo | TestInfo {
-  const id = toId(parentId, suite);
+  const id = toId(prefixId, suite);
   return suite.tests && suite.tests.length > 0
     ? {
         type: "suite",
@@ -263,9 +241,8 @@ function toLabel(suite: TestSuite): string {
   return typeof suite.label === "string" ? suite.label : suite.label.join("..");
 }
 
-function toId(parentId: string, suite: TestSuite): string {
-  // TODO push into LSP?
+function toId(prefix: string, suite: TestSuite): string {
   return typeof suite.label === "string"
-    ? parentId + "/" + JSON.parse(suite.label)
-    : parentId + "/" + suite.label.map((l) => JSON.parse(l)).join("-");
+    ? `${prefix}/${suite.label}`
+    : `${prefix}/${suite.label.join("-")}`;
 }
