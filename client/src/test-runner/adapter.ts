@@ -104,6 +104,8 @@ export class ElmTestAdapter implements TestAdapter {
       this.log,
       configuredElmBinaries,
     );
+
+    this.watch();
   }
 
   // eslint-disable-next-line @typescript-eslint/require-await
@@ -166,7 +168,6 @@ export class ElmTestAdapter implements TestAdapter {
       return;
     }
 
-    console.debug("loaded suite", this.loadedSuite);
     const [files, testIds] = getFilesAndAllTestIds(tests, this.loadedSuite);
     this.testStatesEmitter.fire(<TestRunStartedEvent>{
       type: "started",
@@ -182,8 +183,9 @@ export class ElmTestAdapter implements TestAdapter {
           errorMessage: String(suiteOrError),
         });
       } else {
-        this.loadedSuite = this.fireNew(this.loadedSuite, suiteOrError);
-        void this.fire(suiteOrError);
+        this.loadedSuite = mergeTopLevelSuites(suiteOrError, this.loadedSuite);
+        this.fireLoaded(this.loadedSuite);
+        this.fireRun(suiteOrError);
       }
     } catch (err) {
       console.log("Error running tests", err);
@@ -192,22 +194,15 @@ export class ElmTestAdapter implements TestAdapter {
     }
   }
 
-  private fireNew(loaded: TestSuiteInfo, suite: TestSuiteInfo): TestSuiteInfo {
-    const suite1 = mergeTopLevelSuites(loaded, suite);
-    console.debug("reconcile suite", suite1, loaded, suite);
+  private fireLoaded(suite: TestSuiteInfo): void {
     this.testsEmitter.fire(<TestLoadFinishedEvent>{
       type: "finished",
-      suite: suite1,
+      suite,
     });
-    // await this.runner.fireNewEvents(loaded, suite, this.testStatesEmitter);
-    this.watch();
-    return suite1;
   }
 
-  private async fire(suite: TestSuiteInfo): Promise<void> {
-    console.debug("run suite", suite);
-    await this.runner.fireEvents(suite, this.testStatesEmitter);
-    this.watch();
+  private fireRun(suite: TestSuiteInfo): void {
+    this.runner.fireEvents(suite, this.testStatesEmitter);
   }
 
   private watch() {

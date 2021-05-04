@@ -29,7 +29,6 @@ import {
   TestRunFinishedEvent,
   TestSuiteEvent,
   TestEvent,
-  TestDecoration,
 } from "vscode-test-adapter-api";
 import path = require("path");
 import * as child_process from "child_process";
@@ -42,14 +41,11 @@ import {
   parseErrorOutput,
   buildErrorMessage,
   EventTestCompleted,
-  TestStatus,
 } from "./result";
 import {
-  getFilesAndAllTestIds,
   IElmBinaries,
   buildElmTestArgs,
   buildElmTestArgsWithReport,
-  oneLine,
   getFilePath,
   getTestsRoot,
 } from "./util";
@@ -99,35 +95,17 @@ export class ElmTestRunner {
     );
   }
 
-  async fireEvents(
+  fireEvents(
     node: TestSuiteInfo | TestInfo,
     testStatesEmitter: vscode.EventEmitter<
       TestRunStartedEvent | TestRunFinishedEvent | TestSuiteEvent | TestEvent
     >,
-  ): Promise<boolean> {
+  ): void {
     if (node.type === "suite") {
-      // testStatesEmitter.fire(<TestSuiteEvent>{
-      //   type: "suite",
-      //   suite: node.id,
-      //   state: "running",
-      // });
-
       for (const child of node.children) {
-        await this.fireEvents(child, testStatesEmitter);
+        this.fireEvents(child, testStatesEmitter);
       }
-
-      // testStatesEmitter.fire(<TestSuiteEvent>{
-      //   type: "suite",
-      //   suite: node.id,
-      //   state: "completed",
-      // });
     } else {
-      // testStatesEmitter.fire(<TestEvent>{
-      //   type: "test",
-      //   test: node.id,
-      //   state: "running",
-      // });
-
       const event = this.eventById.get(node.id);
       if (!event) {
         throw new Error(`result for ${node.id}?`);
@@ -163,59 +141,7 @@ export class ElmTestRunner {
           break;
       }
     }
-    return true;
   }
-
-  // async fireDecorationEvents(
-  //   suite: TestSuiteInfo,
-  //   testStatesEmitter: vscode.EventEmitter<
-  //     TestRunStartedEvent | TestRunFinishedEvent | TestSuiteEvent | TestEvent
-  //   >,
-  // ): Promise<number> {
-  //   const testInfosByFile = getTestInfosByFile(suite);
-  //   return Promise.all(
-  //     Array.from(testInfosByFile.entries()).map(([file, nodes]) => {
-  //       return vscode.workspace
-  //         .openTextDocument(file)
-  //         .then((doc) => {
-  //           const text = doc.getText();
-  //           return nodes.map((node) => {
-  //             const id = node.id;
-  //             const event = this.eventById.get(id);
-  //             if (!event) {
-  //               throw new Error(`missing event for ${id}`);
-  //             }
-  //             const names = event.labels.slice(1);
-  //             const offset = findOffsetForTest(
-  //               names,
-  //               text,
-  //               (offset) => doc.positionAt(offset).character,
-  //             );
-  //             const line = (offset && doc.positionAt(offset).line) ?? 0;
-  //             const lineOf = (search: string) => {
-  //               const index = text.indexOf(search, offset);
-  //               return index >= 0 ? doc.positionAt(index).line : line;
-  //             };
-  //             return createTestEvent(id, event, lineOf, line);
-  //           });
-  //         })
-  //         .then(
-  //           (events) =>
-  //             events.map((event) => {
-  //               testStatesEmitter.fire(event);
-  //               return true;
-  //             }).length,
-  //         );
-  //     }),
-  //   ).then((counts) =>
-  //     counts.length > 0 ? counts.reduce((a, b) => a + b) : 0,
-  //   );
-  // }
-
-  // async runAllTests(): Promise<TestSuiteInfo | string> {
-  //   this.suite = undefined;
-  //   return this.runSomeTests();
-  // }
 
   async runSomeTests(files?: string[]): Promise<TestSuiteInfo | string> {
     return new Promise<TestSuiteInfo | string>((resolve) => {
@@ -476,82 +402,6 @@ export class ElmTestRunner {
     return `${testsRoot}/${path}`;
   }
 }
-
-// function createTestEvent(
-//   id: string,
-//   event: EventTestCompleted,
-//   lineOf: (text: string) => number,
-//   line: number,
-// ): TestEvent {
-//   switch (event.status.tag) {
-//     case "pass":
-//       return <TestEvent>{
-//         type: "test",
-//         test: id,
-//         state: "passed",
-//         line,
-//       };
-//     case "todo":
-//       return <TestEvent>{
-//         type: "test",
-//         test: id,
-//         state: "skipped",
-//         line,
-//       };
-//     case "fail": {
-//       const decorations: TestDecoration[] = createDecorations(
-//         event.status,
-//         lineOf,
-//         line,
-//       );
-//       return <TestEvent>{
-//         type: "test",
-//         test: id,
-//         state: "failed",
-//         line,
-//         decorations,
-//       };
-//     }
-//   }
-// }
-
-// function createDecorations(
-//   status: TestStatus,
-//   lineOf: (text: string) => number,
-//   line?: number,
-// ): TestDecoration[] {
-//   if (status.tag !== "fail") {
-//     return [];
-//   }
-//   return status.failures.map((failure) => {
-//     switch (failure.tag) {
-//       case "comparison": {
-//         const expected = oneLine(failure.expected);
-//         const lineOfExpected = lineOf(failure.expected);
-//         const actual = oneLine(failure.actual);
-//         return <TestDecoration>{
-//           line: lineOfExpected,
-//           message: `${failure.comparison} ${expected} ${actual}`,
-//         };
-//       }
-//       case "message": {
-//         return <TestDecoration>{
-//           line,
-//           message: `${failure.message}`,
-//         };
-//       }
-//       case "data": {
-//         const message = Object.keys(failure.data)
-//           .map((key) => `$(key): ${failure.data[key]}`)
-//           .join("\n");
-//         return <TestDecoration>{
-//           line,
-//           message,
-//         };
-//       }
-//     }
-//   });
-// }
 
 function resolveElmBinaries(
   configured: IElmBinaries,
