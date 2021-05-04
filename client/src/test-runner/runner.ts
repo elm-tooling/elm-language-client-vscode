@@ -106,27 +106,27 @@ export class ElmTestRunner {
     >,
   ): Promise<boolean> {
     if (node.type === "suite") {
-      testStatesEmitter.fire(<TestSuiteEvent>{
-        type: "suite",
-        suite: node.id,
-        state: "running",
-      });
+      // testStatesEmitter.fire(<TestSuiteEvent>{
+      //   type: "suite",
+      //   suite: node.id,
+      //   state: "running",
+      // });
 
       for (const child of node.children) {
         await this.fireEvents(child, testStatesEmitter);
       }
 
-      testStatesEmitter.fire(<TestSuiteEvent>{
-        type: "suite",
-        suite: node.id,
-        state: "completed",
-      });
+      // testStatesEmitter.fire(<TestSuiteEvent>{
+      //   type: "suite",
+      //   suite: node.id,
+      //   state: "completed",
+      // });
     } else {
-      testStatesEmitter.fire(<TestEvent>{
-        type: "test",
-        test: node.id,
-        state: "running",
-      });
+      // testStatesEmitter.fire(<TestEvent>{
+      //   type: "test",
+      //   test: node.id,
+      //   state: "running",
+      // });
 
       const event = this.eventById.get(node.id);
       if (!event) {
@@ -304,6 +304,8 @@ export class ElmTestRunner {
   private runElmTestWithReport(cwdPath: string, args: string[]) {
     this.log.info("Running Elm Tests", args);
 
+    this.eventById.clear();
+
     const argsWithReport = buildElmTestArgsWithReport(args);
     const elm = child_process.spawn(
       argsWithReport[0],
@@ -475,81 +477,81 @@ export class ElmTestRunner {
   }
 }
 
-function createTestEvent(
-  id: string,
-  event: EventTestCompleted,
-  lineOf: (text: string) => number,
-  line: number,
-): TestEvent {
-  switch (event.status.tag) {
-    case "pass":
-      return <TestEvent>{
-        type: "test",
-        test: id,
-        state: "passed",
-        line,
-      };
-    case "todo":
-      return <TestEvent>{
-        type: "test",
-        test: id,
-        state: "skipped",
-        line,
-      };
-    case "fail": {
-      const decorations: TestDecoration[] = createDecorations(
-        event.status,
-        lineOf,
-        line,
-      );
-      return <TestEvent>{
-        type: "test",
-        test: id,
-        state: "failed",
-        line,
-        decorations,
-      };
-    }
-  }
-}
+// function createTestEvent(
+//   id: string,
+//   event: EventTestCompleted,
+//   lineOf: (text: string) => number,
+//   line: number,
+// ): TestEvent {
+//   switch (event.status.tag) {
+//     case "pass":
+//       return <TestEvent>{
+//         type: "test",
+//         test: id,
+//         state: "passed",
+//         line,
+//       };
+//     case "todo":
+//       return <TestEvent>{
+//         type: "test",
+//         test: id,
+//         state: "skipped",
+//         line,
+//       };
+//     case "fail": {
+//       const decorations: TestDecoration[] = createDecorations(
+//         event.status,
+//         lineOf,
+//         line,
+//       );
+//       return <TestEvent>{
+//         type: "test",
+//         test: id,
+//         state: "failed",
+//         line,
+//         decorations,
+//       };
+//     }
+//   }
+// }
 
-function createDecorations(
-  status: TestStatus,
-  lineOf: (text: string) => number,
-  line?: number,
-): TestDecoration[] {
-  if (status.tag !== "fail") {
-    return [];
-  }
-  return status.failures.map((failure) => {
-    switch (failure.tag) {
-      case "comparison": {
-        const expected = oneLine(failure.expected);
-        const lineOfExpected = lineOf(failure.expected);
-        const actual = oneLine(failure.actual);
-        return <TestDecoration>{
-          line: lineOfExpected,
-          message: `${failure.comparison} ${expected} ${actual}`,
-        };
-      }
-      case "message": {
-        return <TestDecoration>{
-          line,
-          message: `${failure.message}`,
-        };
-      }
-      case "data": {
-        const message = Object.keys(failure.data)
-          .map((key) => `$(key): ${failure.data[key]}`)
-          .join("\n");
-        return <TestDecoration>{
-          line,
-          message,
-        };
-      }
-    }
-  });
-}
+// function createDecorations(
+//   status: TestStatus,
+//   lineOf: (text: string) => number,
+//   line?: number,
+// ): TestDecoration[] {
+//   if (status.tag !== "fail") {
+//     return [];
+//   }
+//   return status.failures.map((failure) => {
+//     switch (failure.tag) {
+//       case "comparison": {
+//         const expected = oneLine(failure.expected);
+//         const lineOfExpected = lineOf(failure.expected);
+//         const actual = oneLine(failure.actual);
+//         return <TestDecoration>{
+//           line: lineOfExpected,
+//           message: `${failure.comparison} ${expected} ${actual}`,
+//         };
+//       }
+//       case "message": {
+//         return <TestDecoration>{
+//           line,
+//           message: `${failure.message}`,
+//         };
+//       }
+//       case "data": {
+//         const message = Object.keys(failure.data)
+//           .map((key) => `$(key): ${failure.data[key]}`)
+//           .join("\n");
+//         return <TestDecoration>{
+//           line,
+//           message,
+//         };
+//       }
+//     }
+//   });
+// }
 
 function resolveElmBinaries(
   configured: IElmBinaries,

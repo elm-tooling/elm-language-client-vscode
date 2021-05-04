@@ -149,3 +149,25 @@ export function getFilePath(event: EventTestCompleted): string {
 export function getTestsRoot(elmProjectFolder: string): string {
   return `${elmProjectFolder}/tests`;
 }
+
+export function mergeTopLevelSuites(
+  from: TestSuiteInfo,
+  to: TestSuiteInfo,
+): TestSuiteInfo {
+  if (to.id === from.id) {
+    const byId: Map<string, TestSuiteInfo | TestInfo> = new Map(
+      from.children.map((node) => [node.id, node]),
+    );
+    const ids: Set<string> = new Set(to.children.map((c) => c.id));
+    const children = to.children.map((c) => byId.get(c.id) ?? c);
+    const news = Array.from(byId.values()).filter((e) => !ids.has(e.id));
+    return <TestSuiteInfo>{
+      ...to,
+      children: [...children, ...news],
+    };
+  }
+  return <TestSuiteInfo>{
+    ...to,
+    children: [...to.children, from],
+  };
+}

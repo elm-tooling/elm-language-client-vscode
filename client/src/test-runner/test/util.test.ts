@@ -33,6 +33,7 @@ import {
   buildElmTestArgsWithReport,
   oneLine,
   getFilePath,
+  mergeTopLevelSuites,
 } from "../util";
 import { expect } from "chai";
 
@@ -373,6 +374,44 @@ describe("util", () => {
         duration: 13,
       });
       expect(path).to.eq("Module/Sub/Deep.elm");
+    });
+  });
+
+  describe("merge test suites", () => {
+    const to: TestSuiteInfo = {
+      type: "suite",
+      id: "top",
+      label: "top",
+      children: [
+        {
+          type: "suite",
+          id: "a/b",
+          label: "b",
+          children: [],
+        },
+        {
+          type: "suite",
+          id: "a/e",
+          label: "e",
+          children: [],
+        },
+      ],
+    };
+    test("mismatched", () => {
+      const from: TestSuiteInfo = {
+        type: "suite",
+        id: "another-top",
+        label: "another top",
+        children: [
+          {
+            type: "suite",
+            id: "c",
+            label: "c",
+            children: [],
+          },
+        ],
+      };
+      expect(mergeTopLevelSuites(from, to)).to.be.eql({});
     });
   });
 });

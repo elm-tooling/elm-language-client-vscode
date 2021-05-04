@@ -39,7 +39,12 @@ import {
 import { Log } from "vscode-test-adapter-util";
 import { FindTestsRequest, IFindTestsParams, TestSuite } from "../protocol";
 import { ElmTestRunner } from "./runner";
-import { getFilesAndAllTestIds, getTestsRoot, IElmBinaries } from "./util";
+import {
+  getFilesAndAllTestIds,
+  getTestsRoot,
+  IElmBinaries,
+  mergeTopLevelSuites,
+} from "./util";
 
 /*
   Integration with Test Explorer UI
@@ -177,6 +182,7 @@ export class ElmTestAdapter implements TestAdapter {
           errorMessage: String(suiteOrError),
         });
       } else {
+        this.loadedSuite = this.fireNew(this.loadedSuite, suiteOrError);
         void this.fire(suiteOrError);
       }
     } catch (err) {
@@ -184,6 +190,18 @@ export class ElmTestAdapter implements TestAdapter {
     } finally {
       this.testStatesEmitter.fire(<TestRunFinishedEvent>{ type: "finished" });
     }
+  }
+
+  private fireNew(loaded: TestSuiteInfo, suite: TestSuiteInfo): TestSuiteInfo {
+    const suite1 = mergeTopLevelSuites(loaded, suite);
+    console.debug("reconcile suite", suite1, loaded, suite);
+    this.testsEmitter.fire(<TestLoadFinishedEvent>{
+      type: "finished",
+      suite: suite1,
+    });
+    // await this.runner.fireNewEvents(loaded, suite, this.testStatesEmitter);
+    this.watch();
+    return suite1;
   }
 
   private async fire(suite: TestSuiteInfo): Promise<void> {
