@@ -22,7 +22,6 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.
 */
 import * as vscode from "vscode";
-import { WorkspaceFolder } from "vscode";
 import { LanguageClient } from "vscode-languageclient/node";
 import {
   TestAdapter,
@@ -86,7 +85,7 @@ export class ElmTestAdapter implements TestAdapter {
     private readonly log: Log,
     configuredElmBinaries: () => IElmBinaries,
     private readonly getClient: (
-      folder: WorkspaceFolder,
+      folder: vscode.WorkspaceFolder,
     ) => LanguageClient | undefined,
   ) {
     this.log.info(
@@ -107,6 +106,7 @@ export class ElmTestAdapter implements TestAdapter {
     );
   }
 
+  // eslint-disable-next-line @typescript-eslint/require-await
   async load(): Promise<void> {
     if (this.isLoading) {
       return;

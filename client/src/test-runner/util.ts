@@ -21,9 +21,9 @@ LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
 OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.
 */
-import { Uri } from "vscode";
 import { TestSuiteInfo, TestInfo } from "vscode-test-adapter-api";
 import { EventTestCompleted } from "./result";
+import * as vscode from "vscode";
 
 export function* walk(
   node: TestSuiteInfo | TestInfo,
@@ -122,7 +122,7 @@ export function buildElmTestArgs(
   binaries: IElmBinaries,
   files?: string[],
 ): string[] {
-  const fs = files?.map((f) => Uri.parse(f).fsPath);
+  const fs = files?.map((f) => vscode.Uri.parse(f).fsPath);
   return [binaries.elmTest ?? "elm-test"]
     .concat((binaries.elm && ["--compiler", binaries.elm]) ?? [])
     .concat(fs ?? []);
