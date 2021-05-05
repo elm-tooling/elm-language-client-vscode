@@ -50,6 +50,7 @@ import {
   getTestsRoot,
 } from "./util";
 import { Log } from "vscode-test-adapter-util";
+import { IClientSettings } from "../extension";
 
 export class ElmTestRunner {
   private eventById: Map<string, EventTestCompleted> = new Map<
@@ -73,7 +74,6 @@ export class ElmTestRunner {
     private workspaceFolder: vscode.WorkspaceFolder,
     private readonly elmProjectFolder: vscode.Uri,
     private readonly log: Log,
-    private readonly configuredElmBinaries: () => IElmBinaries,
   ) {}
 
   cancel(): void {
@@ -287,8 +287,18 @@ export class ElmTestRunner {
     return buildElmTestArgs(this.getElmBinaries(), files);
   }
 
+  private getConfiguredElmBinaries(): IElmBinaries {
+    const config = vscode.workspace
+      .getConfiguration()
+      .get<IClientSettings>("elmLS");
+    return <IElmBinaries>{
+      elm: nonEmpty(config?.elmPath),
+      elmTest: nonEmpty(config?.elmTestPath),
+    };
+  }
+
   private getElmBinaries(): IElmBinaries {
-    const configured = this.configuredElmBinaries();
+    const configured = this.getConfiguredElmBinaries();
     return resolveElmBinaries(
       configured,
       this.elmProjectFolder,
@@ -427,4 +437,8 @@ function findLocalNpmBinary(
 ): string | undefined {
   const binaryPath = path.join(projectRoot, "node_modules", ".bin", binary);
   return fs.existsSync(binaryPath) ? binaryPath : undefined;
+}
+
+function nonEmpty(text: string | undefined): string | undefined {
+  return text && text.length > 0 ? text : undefined;
 }

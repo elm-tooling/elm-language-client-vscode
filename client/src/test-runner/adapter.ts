@@ -22,6 +22,8 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.
 */
 import * as vscode from "vscode";
+import * as path from "path";
+
 import { LanguageClient } from "vscode-languageclient/node";
 import {
   TestAdapter,
@@ -41,7 +43,6 @@ import { ElmTestRunner } from "./runner";
 import {
   getFilesAndAllTestIds,
   getTestsRoot,
-  IElmBinaries,
   mergeTopLevelSuites,
 } from "./util";
 
@@ -82,11 +83,8 @@ export class ElmTestAdapter implements TestAdapter {
   constructor(
     private readonly workspace: vscode.WorkspaceFolder,
     private readonly elmProjectFolder: vscode.Uri,
+    private readonly client: LanguageClient,
     private readonly log: Log,
-    configuredElmBinaries: () => IElmBinaries,
-    private readonly getClient: (
-      folder: vscode.WorkspaceFolder,
-    ) => LanguageClient | undefined,
   ) {
     this.log.info(
       "Initializing Elm Test Runner adapter",
@@ -102,7 +100,6 @@ export class ElmTestAdapter implements TestAdapter {
       this.workspace,
       this.elmProjectFolder,
       this.log,
-      configuredElmBinaries,
     );
 
     this.watch();
@@ -115,43 +112,39 @@ export class ElmTestAdapter implements TestAdapter {
     }
 
     this.log.info("Loading tests");
+    this.isLoading = true;
 
-    const client = this.getClient(this.workspace);
-    if (client) {
-      this.isLoading = true;
-      void client.onReady().then(async () => {
-        const input: IFindTestsParams = {
-          workspaceRoot: this.workspace.uri.toString(),
-        };
-        try {
-          const response = await client.sendRequest(FindTestsRequest, input);
+    const input: IFindTestsParams = {
+      // workspaceRoot: this.workspace.uri.toString(),
+      workspaceRoot: this.elmProjectFolder.toString(),
+    };
+    try {
+      const response = await this.client.sendRequest(FindTestsRequest, input);
 
-          const id = this.workspace.name;
-          const children =
-            response.suites?.map((s) => toTestSuiteInfo(s, id)) ?? [];
-          const suite: TestSuiteInfo = {
-            type: "suite",
-            label: id,
-            id,
-            children,
-          };
-          const loadedEvent: TestLoadFinishedEvent = {
-            type: "finished",
-            suite,
-          };
-          this.loadedSuite = suite;
-          this.testsEmitter.fire(loadedEvent);
-          this.log.info("Loaded tests");
-        } catch (error) {
-          this.log.info("Failed to load tests", error);
-          this.testsEmitter.fire(<TestLoadFinishedEvent>{
-            type: "finished",
-            errorMessage: String(error),
-          });
-        } finally {
-          this.isLoading = false;
-        }
+      const id = path.basename(this.elmProjectFolder.fsPath);
+      const children =
+        response.suites?.map((s) => toTestSuiteInfo(s, id)) ?? [];
+      const suite: TestSuiteInfo = {
+        type: "suite",
+        label: id,
+        id,
+        children,
+      };
+      const loadedEvent: TestLoadFinishedEvent = {
+        type: "finished",
+        suite,
+      };
+      this.loadedSuite = suite;
+      this.testsEmitter.fire(loadedEvent);
+      this.log.info("Loaded tests");
+    } catch (error) {
+      this.log.info("Failed to load tests", error);
+      this.testsEmitter.fire(<TestLoadFinishedEvent>{
+        type: "finished",
+        errorMessage: String(error),
       });
+    } finally {
+      this.isLoading = false;
     }
   }
 

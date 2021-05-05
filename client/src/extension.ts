@@ -1,5 +1,4 @@
 import * as path from "path";
-import * as fs from "fs";
 import {
   CancellationToken,
   CodeAction,
@@ -39,7 +38,6 @@ import * as RefactorAction from "./refactorAction";
 import * as ExposeUnexposeAction from "./exposeUnexposeAction";
 import * as Restart from "./restart";
 import * as TestRunner from "./test-runner/extension";
-import { IElmBinaries } from "./test-runner/util";
 
 export interface IClientSettings {
   elmFormatPath: string;
@@ -179,6 +177,8 @@ export function activate(context: ExtensionContext): void {
 
       RefactorAction.registerCommands(client, context);
       ExposeUnexposeAction.registerCommands(client, context);
+
+      TestRunner.activate(context, folder, client);
     }
   }
 
@@ -188,6 +188,7 @@ export function activate(context: ExtensionContext): void {
     for (const folder of event.removed) {
       const client = clients.get(folder.uri.toString());
       if (client) {
+        TestRunner.deactivate(folder);
         clients.delete(folder.uri.toString());
         await client.stop();
       }
@@ -227,35 +228,6 @@ export function activate(context: ExtensionContext): void {
         }
       : {};
   }
-
-  const configuredElmBinaries = () => {
-    const config = Workspace.getConfiguration().get<IClientSettings>("elmLS");
-    return <IElmBinaries>{
-      elm: nonEmpty(config?.elmPath),
-      elmTest: nonEmpty(config?.elmTestPath),
-    };
-  };
-
-  const getClient: (folder: WorkspaceFolder) => LanguageClient | undefined = (
-    folder,
-  ) => clients.get(folder.uri.toString());
-
-  void Workspace.findFiles(
-    "**/elm.json",
-    "**/{node_modules,elm-stuff}/**",
-  ).then((elmJsons) => {
-    elmJsons.forEach((elmJsonPath) => {
-      const elmRootFolder = Uri.parse(path.dirname(elmJsonPath.fsPath));
-      if (fs.existsSync(path.join(elmRootFolder.fsPath, "tests"))) {
-        TestRunner.activate(
-          context,
-          elmRootFolder,
-          configuredElmBinaries,
-          getClient,
-        );
-      }
-    });
-  });
 }
 
 export function deactivate(): Thenable<void> | undefined {
@@ -263,9 +235,7 @@ export function deactivate(): Thenable<void> | undefined {
   for (const client of clients.values()) {
     promises.push(client.stop());
   }
-  return Promise.all(promises)
-    .then(() => TestRunner.deactivate())
-    .then(() => undefined);
+  return Promise.all(promises).then(() => undefined);
 }
 class CachedCodeLensResponse {
   response?: ProviderResult<CodeLens[]>;
@@ -383,8 +353,4 @@ export class CodeLensResolver implements Middleware {
       },
     );
   }
-}
-
-function nonEmpty(text: string | undefined): string | undefined {
-  return text && text.length > 0 ? text : undefined;
 }
