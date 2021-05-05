@@ -115,8 +115,7 @@ export class ElmTestAdapter implements TestAdapter {
     this.isLoading = true;
 
     const input: IFindTestsParams = {
-      // workspaceRoot: this.workspace.uri.toString(),
-      workspaceRoot: this.elmProjectFolder.toString(),
+      projectFolder: this.elmProjectFolder.toString(),
     };
     try {
       const response = await this.client.sendRequest(FindTestsRequest, input);

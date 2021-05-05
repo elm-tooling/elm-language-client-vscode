@@ -113,6 +113,13 @@ class ElmTestAdapterRegister {
       return;
     }
     value.set(subKey, adapter);
+
+    // TODO observe when elmProjectFolder gets deleted
+    // vscode.workspace.onDidDeleteFiles((e) => {
+    // });
+    // TODO observe when a new elmProjectFolder gets added
+    // vscode.workspace.onDidCreateFiles((e) => {
+    // });
   }
 
   deactivate(workspaceFolder: vscode.WorkspaceFolder): void {
