@@ -162,8 +162,9 @@ export function mergeTopLevelSuites(
   to: TestSuiteInfo,
 ): TestSuiteInfo {
   if (to.id === from.id) {
+    const from1 = copyLocations(to, from);
     const byId: Map<string, TestSuiteInfo | TestInfo> = new Map(
-      from.children.map((node) => [node.id, node]),
+      from1.children.map((node) => [node.id, node]),
     );
     const ids: Set<string> = new Set(to.children.map((c) => c.id));
     const children = to.children.map((c) => byId.get(c.id) ?? c);
@@ -177,4 +178,27 @@ export function mergeTopLevelSuites(
     ...to,
     children: [...to.children, from],
   };
+}
+
+export function copyLocations(
+  source: TestSuiteInfo,
+  dest: TestSuiteInfo,
+): TestSuiteInfo {
+  const byId = new Map(Array.from(walk(source)).map((node) => [node.id, node]));
+
+  const go = (node: TestSuiteInfo | TestInfo): TestSuiteInfo | TestInfo => {
+    const found = byId.get(node.id);
+    if (node.type === "suite") {
+      const children = node.children.map(go);
+      return found
+        ? { ...node, children, file: found.file, line: found.line }
+        : { ...node, children };
+    }
+    return found ? { ...node, file: found?.file, line: found?.line } : node;
+  };
+  const found = byId.get(dest.id);
+  const children = dest.children.map(go);
+  return found
+    ? { ...dest, children, file: found.file, line: found.line }
+    : { ...dest, children };
 }

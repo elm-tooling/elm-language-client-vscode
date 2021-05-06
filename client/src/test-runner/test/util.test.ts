@@ -382,17 +382,32 @@ describe("util", () => {
       type: "suite",
       id: "top",
       label: "top",
+      file: "file1",
+      line: 1,
       children: [
         {
           type: "suite",
           id: "a/b",
           label: "b",
-          children: [],
+          file: "file2",
+          line: 2,
+          children: [
+            {
+              type: "suite",
+              id: "a/b/deep",
+              label: "deep",
+              file: "file2",
+              line: 22,
+              children: [],
+            },
+          ],
         },
         {
           type: "suite",
           id: "a/e",
           label: "e",
+          file: "file3",
+          line: 3,
           children: [],
         },
       ],
@@ -415,17 +430,32 @@ describe("util", () => {
         type: "suite",
         id: "top",
         label: "top",
+        file: "file1",
+        line: 1,
         children: [
           {
             type: "suite",
             id: "a/b",
             label: "b",
-            children: [],
+            file: "file2",
+            line: 2,
+            children: [
+              {
+                type: "suite",
+                id: "a/b/deep",
+                label: "deep",
+                file: "file2",
+                line: 22,
+                children: [],
+              },
+            ],
           },
           {
             type: "suite",
             id: "a/e",
             label: "e",
+            file: "file3",
+            line: 3,
             children: [],
           },
           {
@@ -463,17 +493,80 @@ describe("util", () => {
         type: "suite",
         id: "top",
         label: "top",
+        file: "file1",
+        line: 1,
         children: [
           {
             type: "suite",
             id: "a/b",
             label: "new b",
+            file: "file2",
+            line: 2,
             children: [],
           },
           {
             type: "suite",
             id: "a/e",
             label: "e",
+            file: "file3",
+            line: 3,
+            children: [],
+          },
+        ],
+      });
+    });
+
+    it("replace one and keep deep location", () => {
+      const from: TestSuiteInfo = {
+        type: "suite",
+        id: "top",
+        label: "top",
+        children: [
+          {
+            type: "suite",
+            id: "a/b",
+            label: "new b",
+            children: [
+              {
+                type: "suite",
+                id: "a/b/deep",
+                label: "new deep",
+                children: [],
+              },
+            ],
+          },
+        ],
+      };
+      expect(mergeTopLevelSuites(from, to)).to.eql({
+        type: "suite",
+        id: "top",
+        label: "top",
+        file: "file1",
+        line: 1,
+        children: [
+          {
+            type: "suite",
+            id: "a/b",
+            label: "new b",
+            file: "file2",
+            line: 2,
+            children: [
+              {
+                type: "suite",
+                id: "a/b/deep",
+                label: "new deep",
+                file: "file2",
+                line: 22,
+                children: [],
+              },
+            ],
+          },
+          {
+            type: "suite",
+            id: "a/e",
+            label: "e",
+            file: "file3",
+            line: 3,
             children: [],
           },
         ],
@@ -498,17 +591,32 @@ describe("util", () => {
         type: "suite",
         id: "top",
         label: "top",
+        file: "file1",
+        line: 1,
         children: [
           {
             type: "suite",
             id: "a/b",
             label: "b",
-            children: [],
+            file: "file2",
+            line: 2,
+            children: [
+              {
+                type: "suite",
+                id: "a/b/deep",
+                label: "deep",
+                file: "file2",
+                line: 22,
+                children: [],
+              },
+            ],
           },
           {
             type: "suite",
             id: "a/e",
             label: "e",
+            file: "file3",
+            line: 3,
             children: [],
           },
           {
