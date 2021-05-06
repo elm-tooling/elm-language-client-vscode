@@ -42,6 +42,7 @@ import { FindTestsRequest, IFindTestsParams, TestSuite } from "../protocol";
 import { ElmTestRunner } from "./runner";
 import {
   getFilesAndAllTestIds,
+  getTestIdsForFile,
   getTestsRoot,
   mergeTopLevelSuites,
 } from "./util";
@@ -118,11 +119,15 @@ export class ElmTestAdapter implements TestAdapter {
       projectFolder: this.elmProjectFolder.toString(),
     };
     try {
+      this.testsEmitter.fire({ type: "started" });
+
       const response = await this.client.sendRequest(FindTestsRequest, input);
 
       const id = path.basename(this.elmProjectFolder.fsPath);
       const children =
-        response.suites?.map((s) => toTestSuiteInfo(s, id)) ?? [];
+        response.suites
+          ?.map((s) => toTestSuiteInfo(s, id))
+          .filter(notUndefined) ?? [];
       const suite: TestSuiteInfo = {
         type: "suite",
         label: id,
@@ -203,7 +208,13 @@ export class ElmTestAdapter implements TestAdapter {
 
     this.watcher = vscode.workspace.onDidSaveTextDocument((e) => {
       if (this.isTestFile(e.fileName)) {
-        void this.load();
+        if (this.loadedSuite) {
+          const ids = getTestIdsForFile(e.fileName, this.loadedSuite);
+          this.retireEmitter.fire({ tests: ids });
+          // Do not reload, that will confuse the UI if the user has dynamic tests suites.
+          // Users will reload manually, if desired.
+          // void this.load();
+        }
       } else if (this.isSourceFile(e.fileName)) {
         this.retireEmitter.fire({});
       }
@@ -236,21 +247,27 @@ export class ElmTestAdapter implements TestAdapter {
 function toTestSuiteInfo(
   suite: TestSuite,
   prefixId: string,
-): TestSuiteInfo | TestInfo {
+): TestSuiteInfo | TestInfo | undefined {
   const id = toId(prefixId, suite);
+  const label = toLabel(suite);
+  if (!label || !id) {
+    return undefined;
+  }
   return suite.tests && suite.tests.length > 0
     ? {
         type: "suite",
         id,
-        label: toLabel(suite),
+        label,
         file: suite.file,
         line: suite.position.line,
-        children: suite.tests.map((s) => toTestSuiteInfo(s, id)),
+        children: suite.tests
+          .map((s) => toTestSuiteInfo(s, id))
+          .filter(notUndefined),
       }
     : {
         type: "test",
         id,
-        label: toLabel(suite),
+        label,
         file: suite.file,
         line: suite.position.line,
       };
@@ -260,8 +277,14 @@ function toLabel(suite: TestSuite): string {
   return typeof suite.label === "string" ? suite.label : suite.label.join("..");
 }
 
-function toId(prefix: string, suite: TestSuite): string {
+function toId(prefix: string, suite: TestSuite): string | undefined {
   return typeof suite.label === "string"
     ? `${prefix}/${suite.label}`
-    : `${prefix}/${suite.label.join("-")}`;
+    : // : `${prefix}/${suite.label.join("-")}`;
+      undefined;
+}
+
+// TODO share?
+function notUndefined<T>(x: T | undefined): x is T {
+  return x !== undefined;
 }

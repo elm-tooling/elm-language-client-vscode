@@ -112,6 +112,15 @@ export function getFilesAndAllTestIds(
   return [Array.from(selectedFiles), allIds];
 }
 
+export function getTestIdsForFile(
+  fileName: string,
+  suite: TestSuiteInfo,
+): string[] {
+  return Array.from(walk(suite))
+    .filter((node) => node.file === fileName)
+    .map((node) => node.id);
+}
+
 export interface IElmBinaries {
   elmTest?: string;
   elm?: string;
