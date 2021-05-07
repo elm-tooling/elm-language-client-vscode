@@ -41,6 +41,7 @@ import { Log } from "vscode-test-adapter-util";
 import { FindTestsRequest, IFindTestsParams, TestSuite } from "../protocol";
 import { ElmTestRunner } from "./runner";
 import {
+  copyLocations,
   getFilesAndAllTestIds,
   getTestIdsForFile,
   getTestsRoot,
@@ -111,6 +112,14 @@ export class ElmTestAdapter implements TestAdapter {
     if (this.isLoading) {
       return;
     }
+    this.loadedSuite = undefined;
+    return this.doLoad();
+  }
+
+  private async doLoad(): Promise<void> {
+    if (this.isLoading) {
+      return;
+    }
 
     this.log.info("Loading tests");
     this.isLoading = true;
@@ -138,7 +147,11 @@ export class ElmTestAdapter implements TestAdapter {
         type: "finished",
         suite,
       };
-      this.loadedSuite = suite;
+      if (this.loadedSuite) {
+        copyLocations(suite, this.loadedSuite);
+      } else {
+        this.loadedSuite = suite;
+      }
       this.testsEmitter.fire(loadedEvent);
       this.log.info("Loaded tests");
     } catch (error) {
@@ -206,14 +219,12 @@ export class ElmTestAdapter implements TestAdapter {
     this.watcher?.dispose();
     this.watcher = undefined;
 
-    this.watcher = vscode.workspace.onDidSaveTextDocument((e) => {
+    this.watcher = vscode.workspace.onDidSaveTextDocument(async (e) => {
       if (this.isTestFile(e.fileName)) {
         if (this.loadedSuite) {
+          await this.doLoad();
           const ids = getTestIdsForFile(e.fileName, this.loadedSuite);
           this.retireEmitter.fire({ tests: ids });
-          // Do not reload, that will confuse the UI if the user has dynamic tests suites.
-          // Users will reload manually, if desired.
-          // void this.load();
         }
       } else if (this.isSourceFile(e.fileName)) {
         this.retireEmitter.fire({});

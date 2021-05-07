@@ -185,7 +185,6 @@ export function copyLocations(
   dest: TestSuiteInfo,
 ): TestSuiteInfo {
   const byId = new Map(Array.from(walk(source)).map((node) => [node.id, node]));
-
   const go = (node: TestSuiteInfo | TestInfo): TestSuiteInfo | TestInfo => {
     const found = byId.get(node.id);
     if (node.type === "suite") {
