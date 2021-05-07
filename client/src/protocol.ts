@@ -54,7 +54,7 @@ export interface IFindTestsResponse {
 }
 
 export type TestSuite = {
-  label: string | string[];
+  label: string;
   tests?: TestSuite[];
   file: string;
   position: { line: number; character: number };

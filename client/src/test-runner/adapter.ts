@@ -260,7 +260,7 @@ function toTestSuiteInfo(
   prefixId: string,
 ): TestSuiteInfo | TestInfo | undefined {
   const id = toId(prefixId, suite);
-  const label = toLabel(suite);
+  const label = suite.label;
   if (!label || !id) {
     return undefined;
   }
@@ -284,15 +284,8 @@ function toTestSuiteInfo(
       };
 }
 
-function toLabel(suite: TestSuite): string {
-  return typeof suite.label === "string" ? suite.label : suite.label.join("..");
-}
-
 function toId(prefix: string, suite: TestSuite): string | undefined {
-  return typeof suite.label === "string"
-    ? `${prefix}/${suite.label}`
-    : // : `${prefix}/${suite.label.join("-")}`;
-      undefined;
+  return `${prefix}/${suite.label}`;
 }
 
 // TODO share?
