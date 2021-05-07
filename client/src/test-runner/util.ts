@@ -37,62 +37,6 @@ export function* walk(
   }
 }
 
-export function getTestInfosByFile(
-  suite: TestSuiteInfo,
-): Readonly<Map<string, TestInfo[]>> {
-  const testInfosByFile = new Map<string, TestInfo[]>();
-  Array.from(walk(suite))
-    .filter((node) => node.file !== undefined)
-    .filter((node) => node.type === "test")
-    .forEach((node) => {
-      const file = node.file ?? "?"; // make TS happy
-      const testInfo = node as TestInfo;
-      const infos = testInfosByFile.get(file);
-      if (!infos) {
-        testInfosByFile.set(file, [testInfo]);
-      } else {
-        testInfosByFile.set(file, [...infos, testInfo]);
-      }
-    });
-  return Object.freeze(testInfosByFile);
-}
-
-export function findOffsetForTest(
-  names: string[],
-  text: string,
-  getIndent: (index: number) => number,
-): number | undefined {
-  const topLevel = names[0];
-  const matches = Array.from(
-    text.matchAll(
-      new RegExp(`(describe|test|fuzz\\s+.*?)\\s+"${topLevel}"`, "g"),
-    ),
-  );
-  if (matches.length === 0) {
-    return undefined;
-  }
-  const leftMostTopLevelOffset = matches
-    .map((match) => match.index)
-    .filter((index) => index !== undefined)
-    .map((v) => v ?? 1313) // make TS happy
-    .map((index) => [index, getIndent(index)])
-    .filter((t) => t[0] !== undefined)
-    .reduce((acc, next) => {
-      const accIndent = acc[1];
-      const indent = next[1];
-      return indent < accIndent ? next : acc;
-    })[0];
-
-  if (leftMostTopLevelOffset) {
-    const offset = names.reduce(
-      (acc: number, name: string) => text.indexOf(`"${name}"`, acc),
-      leftMostTopLevelOffset,
-    );
-    return offset >= 0 ? offset : undefined;
-  }
-  return undefined;
-}
-
 export function getFilesAndAllTestIds(
   ids: string[],
   suite: TestSuiteInfo,
@@ -137,14 +81,6 @@ export function buildElmTestArgs(
 
 export function buildElmTestArgsWithReport(args: string[]): string[] {
   return args.concat(["--report", "json"]);
-}
-
-export function oneLine(text: string): string {
-  const text1 = text.split("\n").join(" ");
-  if (text1.length > 20) {
-    return text1.substr(0, 20) + " ...";
-  }
-  return text1;
 }
 
 export function getFilePath(event: EventTestCompleted): string {

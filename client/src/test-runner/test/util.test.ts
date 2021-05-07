@@ -25,13 +25,10 @@ SOFTWARE.
 import { TestSuiteInfo } from "vscode-test-adapter-api";
 import {
   walk,
-  getTestInfosByFile,
-  findOffsetForTest,
   getFilesAndAllTestIds,
   IElmBinaries,
   buildElmTestArgs,
   buildElmTestArgsWithReport,
-  oneLine,
   getFilePath,
   mergeTopLevelSuites,
 } from "../util";
@@ -114,141 +111,6 @@ describe("util", () => {
     });
   });
 
-  describe("get test infos by file", () => {
-    it("no children", () => {
-      const testInfosByFiles = getTestInfosByFile(suiteWithoutChildren);
-      // eslint-disable-next-line @typescript-eslint/no-unused-expressions
-      expect(testInfosByFiles).to.be.empty;
-    });
-
-    it("no files", () => {
-      const suite: TestSuiteInfo = {
-        type: "suite",
-        id: "a",
-        label: "a",
-        children: [
-          {
-            type: "test",
-            id: "a/b/c",
-            label: "c",
-          },
-        ],
-      };
-      const testInfosByFiles = getTestInfosByFile(suite);
-      // eslint-disable-next-line @typescript-eslint/no-unused-expressions
-      expect(testInfosByFiles).to.be.empty;
-    });
-
-    it("two files", () => {
-      const testInfosByFiles = getTestInfosByFile(suiteWithFiles);
-      expect(Array.from(testInfosByFiles.keys())).to.eql(["file2", "file1"]);
-      expect(testInfosByFiles.get("file1")?.map((n) => n.label)).to.eql(["c"]);
-      expect(testInfosByFiles.get("file2")?.map((n) => n.label)).to.eql([
-        "b",
-        "d",
-      ]);
-    });
-  });
-
-  describe("find lines for tests", () => {
-    it("no match", () => {
-      const text = `
-            some thing else
-            `;
-      const offset = findOffsetForTest(["first"], text, getIndent(text));
-      // eslint-disable-next-line @typescript-eslint/no-unused-expressions
-      expect(offset).to.be.undefined;
-    });
-
-    it("match path", () => {
-      const text = `
-            suite1: Test
-            describe "first"
-                test "nested"
-            suite1: Test
-            describe "second"
-            `;
-      const offset = findOffsetForTest(
-        ["first", "nested"],
-        text,
-        getIndent(text),
-      );
-      expect(offset !== undefined && text.substr(offset - 5, 13)).to.be.eq(
-        'test "nested"',
-      );
-    });
-
-    it("match full path", () => {
-      const text = `
-            suite1: Test
-            describe "first"
-                test "nested"
-            suite1: Test
-            describe "second"
-                describe "first"
-                    fuzz "nested"
-            `;
-      const offset = findOffsetForTest(
-        ["second", "first", "nested"],
-        text,
-        getIndent(text),
-      );
-      expect(offset !== undefined && text.substr(offset - 5, 13)).to.be.eq(
-        'fuzz "nested"',
-      );
-    });
-
-    it("do not match 'wrong' path", () => {
-      const text = `
-            suite1: Test
-            describe "second"
-                describe "first"
-                    test "nested"
-            suite2: Test
-            describe "first"
-                describe "nested"
-           `;
-      const offset = findOffsetForTest(
-        ["first", "nested"],
-        text,
-        getIndent(text),
-      );
-      expect(offset !== undefined && text.substr(offset - 9, 17)).to.be.eq(
-        'describe "nested"',
-      );
-    });
-
-    function getIndent(text: string): (offset: number) => number {
-      return (offset: number) => {
-        const lastLineOffset = text.lastIndexOf("\n", offset);
-        return offset - lastLineOffset;
-      };
-    }
-
-    it("with stuff in between", () => {
-      const text = `
-            suite1: Test
-            describe "second"
-                describe "first"
-                    test "nested"
-
-            suite2: Test
-            suite2 =
-            describe "first"
-                [ fuzz (stuff) "nested"
-                ]
-           `;
-      const offset = findOffsetForTest(
-        ["first", "nested"],
-        text,
-        getIndent(text),
-      );
-      expect(offset !== undefined && text.substr(offset - 13, 21)).to.be.eq(
-        'fuzz (stuff) "nested"',
-      );
-    });
-  });
-
   describe("find files for tests", () => {
     it("empty", () => {
       const ids = ["x"];
@@ -318,29 +180,6 @@ describe("util", () => {
       const args: string[] = ["path/elm-test", "file"];
       const withReport = buildElmTestArgsWithReport(args);
       expect(withReport).to.eql(["path/elm-test", "file", "--report", "json"]);
-    });
-  });
-
-  describe("one line", () => {
-    it("single line", () => {
-      const text = "short text";
-      expect(oneLine(text)).to.eq(text);
-    });
-
-    it("long line", () => {
-      const text =
-        "long text long long long long long long long long long long";
-      expect(oneLine(text)).to.eq("long text long long  ...");
-    });
-
-    it("short multi line", () => {
-      const text = "short\nmulti\nline";
-      expect(oneLine(text)).to.eq("short multi line");
-    });
-
-    it("long multi line", () => {
-      const text = "long\nmulti\nline\nlong\nlong\nlong\nlong\nlong";
-      expect(oneLine(text)).to.eq("long multi line long ...");
     });
   });
 
