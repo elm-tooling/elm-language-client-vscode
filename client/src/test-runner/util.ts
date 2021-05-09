@@ -104,10 +104,10 @@ export function mergeTopLevelSuites(
     );
     const ids: Set<string> = new Set(to.children.map((c) => c.id));
     const children = to.children.map((c) => byId.get(c.id) ?? c);
-    const news = Array.from(byId.values()).filter((e) => !ids.has(e.id));
+    const newSuites = Array.from(byId.values()).filter((e) => !ids.has(e.id));
     return <TestSuiteInfo>{
       ...to,
-      children: [...children, ...news],
+      children: [...children, ...newSuites],
     };
   }
   return <TestSuiteInfo>{
