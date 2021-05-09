@@ -127,9 +127,6 @@ function parseFailure(failure: any): Failure {
 export function parseErrorOutput(line: string): ErrorOutput {
   const errors: json.ParseError[] = [];
   const output: CompileErrors = json.parse(line, errors);
-  // const nojson = errors.find(
-  //   (e) => e.error === json.ParseErrorCode.InvalidSymbol,
-  // );
   if (output) {
     return output;
   }
