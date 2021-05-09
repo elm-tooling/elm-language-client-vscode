@@ -21,58 +21,141 @@ LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
 OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.
 */
-
 import * as vscode from "vscode";
-import { Log, TestAdapterRegistrar } from "vscode-test-adapter-util";
+import * as path from "path";
+import * as fs from "fs";
+
+import { Log } from "vscode-test-adapter-util";
 import { TestHub, testExplorerExtensionId } from "vscode-test-adapter-api";
 import { ElmTestAdapter } from "./adapter";
-import path = require("path");
-import { IElmBinaries } from "./util";
+
+import { LanguageClient } from "vscode-languageclient/node";
+
+class ElmTestAdapterRegister {
+  private readonly adapters: Map<string, Map<string, ElmTestAdapter>> = new Map(
+    [],
+  );
+
+  dispose(): void {
+    const adapters = Array.from(this.adapters.values()).flatMap((value) =>
+      Array.from(value.values()),
+    );
+    this.adapters.clear();
+    this.disposeAdapters(adapters);
+  }
+
+  private disposeAdapters(adapters: ElmTestAdapter[]): void {
+    const testHub = this.getTestHub();
+    if (testHub) {
+      adapters.forEach((adapter) => testHub.unregisterTestAdapter(adapter));
+    }
+    adapters.forEach((adapter) => adapter.dispose());
+  }
+
+  private getTestHub(): TestHub | undefined {
+    const testExplorerExtension = vscode.extensions.getExtension<TestHub>(
+      testExplorerExtensionId,
+    );
+    return testExplorerExtension ? testExplorerExtension.exports : undefined;
+  }
+
+  activate(
+    workspaceFolder: vscode.WorkspaceFolder,
+    client: LanguageClient,
+    log: Log,
+  ): void {
+    void client.onReady().then(() => {
+      const testHub = this.getTestHub();
+      log.info(`Test Explorer ${testHub ? "" : "not "}found`);
+
+      if (testHub) {
+        void vscode.workspace
+          .findFiles(
+            new vscode.RelativePattern(workspaceFolder, "**/elm.json"),
+            new vscode.RelativePattern(
+              workspaceFolder,
+              "**/{node_modules,elm-stuff}/**",
+            ),
+          )
+          .then((elmJsons) => {
+            elmJsons.forEach((elmJsonPath) => {
+              const elmProjectFolder = vscode.Uri.parse(
+                path.dirname(elmJsonPath.fsPath),
+              );
+              if (fs.existsSync(path.join(elmProjectFolder.fsPath, "tests"))) {
+                log.info(`Elm Test Runner for ${elmProjectFolder.fsPath}`);
+                const adapter = new ElmTestAdapter(
+                  workspaceFolder,
+                  elmProjectFolder,
+                  client,
+                  log,
+                );
+                this.add(workspaceFolder, elmProjectFolder, adapter);
+                testHub.registerTestAdapter(adapter);
+              }
+            });
+          });
+      }
+    });
+  }
+
+  private add(
+    workspaceFolder: vscode.WorkspaceFolder,
+    elmProjectFolder: vscode.Uri,
+    adapter: ElmTestAdapter,
+  ): void {
+    const key = workspaceFolder.uri.fsPath;
+    const subKey = elmProjectFolder.fsPath;
+    const value = this.adapters.get(key);
+    if (!value) {
+      const newValue = new Map<string, ElmTestAdapter>([[subKey, adapter]]);
+      this.adapters.set(key, newValue);
+      return;
+    }
+    value.set(subKey, adapter);
+
+    // TODO observe when elmProjectFolder gets deleted
+    // vscode.workspace.onDidDeleteFiles((e) => {
+    // });
+    // TODO observe when a new elmProjectFolder gets added
+    // vscode.workspace.onDidCreateFiles((e) => {
+    // });
+  }
+
+  deactivate(workspaceFolder: vscode.WorkspaceFolder): void {
+    const key = workspaceFolder.uri.fsPath;
+    const value = this.adapters.get(key);
+    if (value) {
+      this.disposeAdapters(Array.from(value.values()));
+      this.adapters.delete(key);
+    }
+  }
+}
+
+let register: ElmTestAdapterRegister;
 
 export function activate(
   context: vscode.ExtensionContext,
-  elmProjectFolder: vscode.Uri,
-  configuredElmBinaries: () => IElmBinaries,
+  workspaceFolder: vscode.WorkspaceFolder,
+  client: LanguageClient,
 ): void {
-  const workspaceFolder = (vscode.workspace.workspaceFolders || [])[0];
-
-  const relativeProjectFolder = path.relative(
-    workspaceFolder.uri.fsPath,
-    elmProjectFolder.fsPath,
-  );
+  if (!register) {
+    register = new ElmTestAdapterRegister();
+    context.subscriptions.push(register);
+  }
 
   const log = new Log(
     "elmTestRunner",
     workspaceFolder,
-    relativeProjectFolder.length > 0
-      ? `Elm Test Runner (${relativeProjectFolder})`
-      : "Elm Test Runner",
+    `Elm Test Runner (${workspaceFolder.name})`,
   );
   context.subscriptions.push(log);
 
-  const testExplorerExtension = vscode.extensions.getExtension<TestHub>(
-    testExplorerExtensionId,
-  );
-
-  log.info(`Test Explorer ${testExplorerExtension ? "" : "not "}found`);
-
-  if (testExplorerExtension) {
-    const testHub = testExplorerExtension.exports;
-    context.subscriptions.push(
-      new TestAdapterRegistrar(
-        testHub,
-        (workspaceFolder) =>
-          new ElmTestAdapter(
-            workspaceFolder,
-            elmProjectFolder,
-            log,
-            configuredElmBinaries,
-          ),
-        log,
-      ),
-    );
-  }
+  register.activate(workspaceFolder, client, log);
 }
 
-// eslint-disable-next-line @typescript-eslint/no-empty-function
-export function deactivate(): void {}
+export function deactivate(workspaceFolder: vscode.WorkspaceFolder): void {
+  if (register) {
+    register.deactivate(workspaceFolder);
+  }
+}

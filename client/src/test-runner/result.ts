@@ -127,13 +127,10 @@ function parseFailure(failure: any): Failure {
 export function parseErrorOutput(line: string): ErrorOutput {
   const errors: json.ParseError[] = [];
   const output: CompileErrors = json.parse(line, errors);
-  const nojson = errors.find(
-    (e) => e.error === json.ParseErrorCode.InvalidSymbol,
-  );
-  if (errors.length > 0 && nojson) {
-    return { type: "message", line };
+  if (output) {
+    return output;
   }
-  return output;
+  return { type: "message", line };
 }
 
 export type Output = Message | Result;
@@ -245,11 +242,11 @@ export function buildErrorMessage(output: ErrorOutput): string {
     case "message":
       return output.line;
     case "compile-errors":
-      return buildCompileErrorsMessage(output.errors);
+      return buildCompileErrorsMessages(output.errors);
   }
 }
 
-function buildCompileErrorsMessage(errors: Error[]): string {
+function buildCompileErrorsMessages(errors: Error[]): string {
   return errors.map(buildCompileErrorMessage).join("\n\n");
 }
 

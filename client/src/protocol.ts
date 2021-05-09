@@ -1,4 +1,4 @@
-import { CodeActionParams, RequestType } from "vscode-languageclient";
+import { CodeActionParams, RequestType, URI } from "vscode-languageclient";
 
 export const GetMoveDestinationRequest = new RequestType<
   IMoveParams,
@@ -38,3 +38,24 @@ export const UnexposeRequest = new RequestType<
   void,
   void
 >("elm/unexpose");
+
+export const FindTestsRequest = new RequestType<
+  IFindTestsParams,
+  IFindTestsResponse,
+  void
+>("elm/findTests");
+
+export interface IFindTestsParams {
+  projectFolder: URI;
+}
+
+export interface IFindTestsResponse {
+  suites?: TestSuite[];
+}
+
+export type TestSuite = {
+  label: string;
+  tests?: TestSuite[];
+  file: string;
+  position: { line: number; character: number };
+};
