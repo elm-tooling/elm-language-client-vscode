@@ -92,46 +92,7 @@
         "category": "Elm"
       }
     ],
-    "problemMatchers": [
-      {
-        "name": "elm-review",
-        "owner": "elm",
-        "severity": "error",
-        "fileLocation": [
-          "relative",
-          "${workspaceFolder}"
-        ],
-        "pattern": [
-          {
-            "regexp": "^────────────────────────────────────────────────── (.*):(\\d+):(\\d+)$",
-            "file": 1,
-            "line": 2,
-            "column": 3
-          },
-          {
-            "regexp": ".*"
-          },
-          {
-            "regexp": "(.*)",
-            "message": 1,
-            "loop": true
-          }
-        ]
-      }
-    ],
     "taskDefinitions": [
-      {
-        "type": "elm-review",
-        "required": [
-          "script"
-        ],
-        "properties": {
-          "script": {
-            "type": "string",
-            "description": "The script to execute"
-          }
-        }
-      },
       {
         "type": "elm-test",
         "properties": {}
