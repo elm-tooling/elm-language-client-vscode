@@ -1,4 +1,3 @@
 [submodule "server"]
 	path = server
-	url = git@github.com:frawa/elm-language-server.git
-	branch = find-tests
+	url = https://github.com/elm-tooling/elm-language-server.git
