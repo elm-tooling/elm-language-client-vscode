@@ -29,6 +29,7 @@ import {
   TestRunFinishedEvent,
   TestSuiteEvent,
   TestEvent,
+  TestDecoration,
 } from "vscode-test-adapter-api";
 import path = require("path");
 import * as child_process from "child_process";
@@ -41,6 +42,7 @@ import {
   parseErrorOutput,
   buildErrorMessage,
   EventTestCompleted,
+  TestStatus,
 } from "./result";
 import {
   IElmBinaries,
@@ -48,6 +50,7 @@ import {
   buildElmTestArgsWithReport,
   getFilePath,
   getTestsRoot,
+  oneLine,
 } from "./util";
 import { Log } from "vscode-test-adapter-util";
 import { IClientSettings } from "../extension";
@@ -100,10 +103,11 @@ export class ElmTestRunner {
     testStatesEmitter: vscode.EventEmitter<
       TestRunStartedEvent | TestRunFinishedEvent | TestSuiteEvent | TestEvent
     >,
+    getLine: (id: string) => number | undefined,
   ): void {
     if (node.type === "suite") {
       for (const child of node.children) {
-        this.fireEvents(child, testStatesEmitter);
+        this.fireEvents(child, testStatesEmitter, getLine);
       }
     } else {
       const event = this.eventById.get(node.id);
@@ -131,14 +135,22 @@ export class ElmTestRunner {
           });
           break;
         }
-        case "fail":
+        case "fail": {
+          const line = getLine(node.id);
+          const decorations: TestDecoration[] | undefined =
+            line !== undefined
+              ? createDecorations(event.status, line)
+              : undefined;
           testStatesEmitter.fire(<TestEvent>{
             type: "test",
             test: node.id,
+            file: node.file,
             state: "failed",
             message,
+            decorations,
           });
           break;
+        }
       }
     }
   }
@@ -435,4 +447,37 @@ function findLocalNpmBinary(
 
 function nonEmpty(text: string | undefined): string | undefined {
   return text && text.length > 0 ? text : undefined;
+}
+
+function createDecorations(status: TestStatus, line: number): TestDecoration[] {
+  if (status.tag !== "fail") {
+    return [];
+  }
+  return status.failures.map((failure) => {
+    switch (failure.tag) {
+      case "comparison": {
+        const expected = oneLine(failure.expected);
+        const actual = oneLine(failure.actual);
+        return <TestDecoration>{
+          line: line,
+          message: `${failure.comparison} ${expected} ${actual}`,
+        };
+      }
+      case "message": {
+        return <TestDecoration>{
+          line,
+          message: `${failure.message}`,
+        };
+      }
+      case "data": {
+        const message = Object.keys(failure.data)
+          .map((key) => `$(key): ${failure.data[key]}`)
+          .join("\n");
+        return <TestDecoration>{
+          line,
+          message,
+        };
+      }
+    }
+  });
 }

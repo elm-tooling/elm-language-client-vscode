@@ -43,6 +43,7 @@ import { ElmTestRunner } from "./runner";
 import {
   copyLocations,
   getFilesAndAllTestIds,
+  getLineFun,
   getTestIdsForFile,
   getTestsRoot,
   mergeTopLevelSuites,
@@ -187,8 +188,8 @@ export class ElmTestAdapter implements TestAdapter {
         const suites = suiteOrError.children;
         const suite = this.getRootSuite(suites);
         this.loadedSuite = mergeTopLevelSuites(suite, this.loadedSuite);
-        this.fireRun(suiteOrError);
         this.fireLoaded(this.loadedSuite);
+        this.fireRun(suiteOrError, getLineFun(this.loadedSuite));
       }
     } catch (err) {
       console.log("Error running tests", err);
@@ -212,8 +213,11 @@ export class ElmTestAdapter implements TestAdapter {
     });
   }
 
-  private fireRun(suite: TestSuiteInfo): void {
-    this.runner.fireEvents(suite, this.testStatesEmitter);
+  private fireRun(
+    suite: TestSuiteInfo,
+    getLine: (id: string) => number | undefined,
+  ): void {
+    this.runner.fireEvents(suite, this.testStatesEmitter, getLine);
   }
 
   private watch() {

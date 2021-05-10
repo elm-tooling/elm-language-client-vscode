@@ -137,3 +137,22 @@ export function copyLocations(
     ? { ...dest, children, file: found.file, line: found.line }
     : { ...dest, children };
 }
+
+export function getLineFun(
+  suite: TestSuiteInfo,
+): (id: string) => number | undefined {
+  const byId = new Map(
+    Array.from(walk(suite))
+      .filter((node) => node.line !== undefined)
+      .map((node) => [node.id, node.line]),
+  );
+  return (id: string) => byId.get(id);
+}
+
+export function oneLine(text: string): string {
+  const text1 = text.split("\n").join(" ");
+  if (text1.length > 20) {
+    return text1.substr(0, 20) + " ...";
+  }
+  return text1;
+}
