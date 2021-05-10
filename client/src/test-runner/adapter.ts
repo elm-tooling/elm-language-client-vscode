@@ -132,17 +132,11 @@ export class ElmTestAdapter implements TestAdapter {
 
       const response = await this.client.sendRequest(FindTestsRequest, input);
 
-      const id = path.basename(this.elmProjectFolder.fsPath);
       const children =
         response.suites
-          ?.map((s) => toTestSuiteInfo(s, id))
+          ?.map((s) => toTestSuiteInfo(s, ""))
           .filter(notUndefined) ?? [];
-      const suite: TestSuiteInfo = {
-        type: "suite",
-        label: id,
-        id,
-        children,
-      };
+      const suite: TestSuiteInfo = this.getRootSuite(children);
       const loadedEvent: TestLoadFinishedEvent = {
         type: "finished",
         suite,
@@ -184,23 +178,30 @@ export class ElmTestAdapter implements TestAdapter {
       tests: testIds,
     });
 
+    let errorMessage = undefined;
     try {
       const suiteOrError = await this.runner.runSomeTests(uris);
       if (typeof suiteOrError === "string") {
-        console.log("Error running tests", suiteOrError);
-        this.testsEmitter.fire(<TestLoadFinishedEvent>{
-          type: "finished",
-          errorMessage: String(suiteOrError),
-        });
+        errorMessage = suiteOrError;
       } else {
-        this.loadedSuite = mergeTopLevelSuites(suiteOrError, this.loadedSuite);
-        this.fireLoaded(this.loadedSuite);
+        const suites = suiteOrError.children;
+        const suite = this.getRootSuite(suites);
+        this.loadedSuite = mergeTopLevelSuites(suite, this.loadedSuite);
         this.fireRun(suiteOrError);
+        this.fireLoaded(this.loadedSuite);
       }
     } catch (err) {
       console.log("Error running tests", err);
+      errorMessage = String(err);
     } finally {
       this.testStatesEmitter.fire(<TestRunFinishedEvent>{ type: "finished" });
+      if (errorMessage) {
+        this.log.error("Error running tests", errorMessage);
+        this.testsEmitter.fire(<TestLoadFinishedEvent>{
+          type: "finished",
+          errorMessage,
+        });
+      }
     }
   }
 
@@ -239,6 +240,22 @@ export class ElmTestAdapter implements TestAdapter {
 
   private isSourceFile(file: string): boolean {
     return file.startsWith(`${this.elmProjectFolder.fsPath}`);
+  }
+
+  private getRootSuite(suites: (TestSuiteInfo | TestInfo)[]): TestSuiteInfo {
+    const relativePath = path.relative(
+      this.workspace.uri.fsPath,
+      this.elmProjectFolder.fsPath,
+    );
+    const id = relativePath.length > 0 ? relativePath : this.workspace.name;
+
+    const root: TestSuiteInfo = {
+      type: "suite",
+      label: id,
+      id,
+      children: suites,
+    };
+    return root;
   }
 
   cancel(): void {
