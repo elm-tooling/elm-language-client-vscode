@@ -146,16 +146,10 @@ export class ElmTestRunner {
   async runSomeTests(uris?: string[]): Promise<TestSuiteInfo | string> {
     return new Promise<TestSuiteInfo | string>((resolve) => {
       this.resolve = resolve;
-      const relativePath = path.relative(
-        this.workspaceFolder.uri.fsPath,
-        this.elmProjectFolder.fsPath,
-      );
-      const name =
-        relativePath.length > 0 ? relativePath : this.workspaceFolder.name;
       this.currentSuite = {
         type: "suite",
-        id: name,
-        label: name,
+        id: "",
+        label: "root",
         children: [],
       };
       this.errorMessage = undefined;
