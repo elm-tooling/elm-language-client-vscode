@@ -50,7 +50,7 @@ import {
   buildElmTestArgsWithReport,
   getFilePath,
   getTestsRoot,
-  oneLine,
+  abreviateToOneLine,
 } from "./util";
 import { Log } from "vscode-test-adapter-util";
 import { IClientSettings } from "../extension";
@@ -456,8 +456,8 @@ function createDecorations(status: TestStatus, line: number): TestDecoration[] {
   return status.failures.map((failure) => {
     switch (failure.tag) {
       case "comparison": {
-        const expected = oneLine(failure.expected);
-        const actual = oneLine(failure.actual);
+        const expected = abreviateToOneLine(failure.expected);
+        const actual = abreviateToOneLine(failure.actual);
         return <TestDecoration>{
           line: line,
           message: `${failure.comparison} ${expected} ${actual}`,
