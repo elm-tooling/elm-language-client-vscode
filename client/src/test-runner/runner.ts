@@ -61,10 +61,11 @@ export class ElmTestRunner {
     EventTestCompleted
   >();
 
-  private resolve: (
+  private running = false;
+  private resolve?: (
     value: TestSuiteInfo | string | PromiseLike<TestSuiteInfo | string>,
     // eslint-disable-next-line @typescript-eslint/no-empty-function
-  ) => void = () => {};
+  ) => void = undefined;
 
   private currentSuite?: TestSuiteInfo = undefined;
   private errorMessage?: string = undefined;
@@ -72,6 +73,7 @@ export class ElmTestRunner {
 
   private taskExecution?: vscode.TaskExecution = undefined;
   private process?: child_process.ChildProcessWithoutNullStreams = undefined;
+  private disposables: vscode.Disposable[] = [];
 
   constructor(
     private workspaceFolder: vscode.WorkspaceFolder,
@@ -80,15 +82,29 @@ export class ElmTestRunner {
   ) {}
 
   cancel(): void {
+    this.resolve?.("cancelled");
+    this.stopIt();
+    this.log.info("Running Elm Tests cancelled", this.relativeProjectFolder);
+  }
+
+  get isRunning(): boolean {
+    return this.running;
+  }
+
+  private finish(result: TestSuiteInfo | string): void {
+    this.log.debug("Running Elm Tests finished");
+    this.resolve?.(result);
+    this.stopIt();
+  }
+
+  private stopIt(): void {
+    this.running = false;
+    this.resolve = undefined;
     this.taskExecution?.terminate();
     this.taskExecution = undefined;
     this.process?.kill();
     this.process = undefined;
-    this.log.info("Running Elm Tests cancelled", this.relativeProjectFolder);
-  }
-
-  get isBusy(): boolean {
-    return this.taskExecution !== undefined || this.process !== undefined;
+    this.disposables.forEach((d) => void d.dispose());
   }
 
   private get relativeProjectFolder(): string {
@@ -156,6 +172,10 @@ export class ElmTestRunner {
   }
 
   async runSomeTests(uris?: string[]): Promise<TestSuiteInfo | string> {
+    if (this.running) {
+      return Promise.reject("already running");
+    }
+    this.running = true;
     return new Promise<TestSuiteInfo | string>((resolve) => {
       this.resolve = resolve;
       this.currentSuite = {
@@ -214,23 +234,25 @@ export class ElmTestRunner {
       this.taskExecution = taskExecution;
     });
 
-    vscode.tasks.onDidEndTaskProcess((event) => {
-      if (event.execution.task.definition.type == "elm-test") {
-        this.taskExecution = undefined;
-        if ((event.exitCode ?? 0) <= 3) {
-          this.runElmTestWithReport(cwdPath, args);
-        } else {
-          console.error("elm-test failed", event.exitCode, args);
-          this.log.info("Running Elm Test task failed", event.exitCode, args);
-          const errorMessage = [
-            "elm-test failed.",
-            "Check for Elm errors,",
-            `find details in the "Task - ${event.execution.task.name}" terminal.`,
-          ].join("\n");
-          this.resolve(errorMessage);
+    this.disposables.push(
+      vscode.tasks.onDidEndTaskProcess((event) => {
+        if (event.execution === this.taskExecution) {
+          this.taskExecution = undefined;
+          if ((event.exitCode ?? 0) <= 3) {
+            this.runElmTestWithReport(cwdPath, args);
+          } else {
+            console.error("elm-test failed", event.exitCode, args);
+            this.log.info("Running Elm Test task failed", event.exitCode, args);
+            const errorMessage = [
+              "elm-test failed.",
+              "Check for Elm errors,",
+              `find details in the "Task - ${event.execution.task.name}" terminal.`,
+            ].join("\n");
+            this.finish(errorMessage);
+          }
         }
-      }
-    });
+      }),
+    );
   }
 
   private runElmTestWithReport(cwdPath: string, args: string[]) {
@@ -247,6 +269,7 @@ export class ElmTestRunner {
         env: process.env,
       },
     );
+    this.process = elm;
 
     const outChunks: Buffer[] = [];
     elm.stdout.on("data", (chunk) => outChunks.push(Buffer.from(chunk)));
@@ -258,7 +281,7 @@ export class ElmTestRunner {
       this.process = undefined;
       const message = `Failed to run Elm Tests, is elm-test installed at "${args[0]}"?`;
       this.log.error(message, err);
-      this.resolve(message);
+      this.finish(message);
     });
 
     elm.once("exit", () => {
@@ -281,9 +304,9 @@ export class ElmTestRunner {
       }
 
       if (this.errorMessage) {
-        this.resolve(this.errorMessage);
+        this.finish(this.errorMessage);
       } else if (this.currentSuite) {
-        this.resolve(this.currentSuite);
+        this.finish(this.currentSuite);
       }
     });
   }
