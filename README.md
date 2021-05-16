@@ -41,6 +41,8 @@ This extension contributes the following settings:
 
 - `elmLS.trace.server`: Enable/disable trace logging of client and server communication
 - `elmLS.elmPath`: The path to your elm executable.
+- `elmLS.elmReviewPath`: The path to your elm-review executable.
+- `elmLS.elmReviewDiagnostics`: Configure linting diagnostics from elm-review. Possible values: `off`, `warning`, `error`.
 - `elmLS.elmFormatPath`: The path to your elm-format executable.
 - `elmLS.elmTestPath`: The path to your elm-test executable.
 - `elmLS.disableElmLSDiagnostics`: Disable linting diagnostics from the language server.
