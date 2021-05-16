@@ -161,7 +161,7 @@ export class ElmTestAdapter implements TestAdapter {
   }
 
   async run(tests: string[]): Promise<void> {
-    if (this.runner.isBusy) {
+    if (this.runner.isRunning) {
       this.log.debug("Already running tests");
       return;
     }
@@ -196,7 +196,7 @@ export class ElmTestAdapter implements TestAdapter {
       errorMessage = String(err);
     } finally {
       this.testStatesEmitter.fire(<TestRunFinishedEvent>{ type: "finished" });
-      if (errorMessage) {
+      if (errorMessage && errorMessage != "cancelled") {
         this.log.error("Error running tests", errorMessage);
         this.testsEmitter.fire(<TestLoadFinishedEvent>{
           type: "finished",
