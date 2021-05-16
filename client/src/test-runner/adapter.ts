@@ -36,11 +36,13 @@ import {
   RetireEvent,
   TestSuiteInfo,
   TestInfo,
+  TestDecoration,
 } from "vscode-test-adapter-api";
 import { Log } from "vscode-test-adapter-util";
 import { FindTestsRequest, IFindTestsParams, TestSuite } from "../protocol";
 import { ElmTestRunner } from "./runner";
 import {
+  abreviateToOneLine,
   copyLocations,
   getFilesAndAllTestIds,
   getLineFun,
@@ -48,6 +50,8 @@ import {
   getTestsRoot,
   mergeTopLevelSuites,
 } from "./util";
+import { RunTestItem, RunTestSuite } from "./runTestSuite";
+import { buildMessage, TestStatus } from "./result";
 
 /*
   Integration with Test Explorer UI
@@ -181,7 +185,9 @@ export class ElmTestAdapter implements TestAdapter {
 
     let errorMessage = undefined;
     try {
-      const suiteOrError = await this.runner.runSomeTests(uris);
+      const suiteOrError:
+        | RunTestSuite
+        | string = await this.runner.runSomeTests(uris);
       if (typeof suiteOrError === "string") {
         errorMessage = suiteOrError;
       } else {
@@ -214,10 +220,51 @@ export class ElmTestAdapter implements TestAdapter {
   }
 
   private fireRun(
-    suite: TestSuiteInfo,
+    item: RunTestItem,
     getLine: (id: string) => number | undefined,
   ): void {
-    this.runner.fireEvents(suite, this.testStatesEmitter, getLine);
+    if (item.type === "suite") {
+      item.children.forEach((child) => this.fireRun(child, getLine));
+    } else {
+      const data = item.data;
+      const message = buildMessage(data);
+      switch (data.status.tag) {
+        case "pass": {
+          this.testStatesEmitter.fire(<TestEvent>{
+            type: "test",
+            test: item.id,
+            state: "passed",
+            message,
+            description: `${data.duration}s`,
+          });
+          break;
+        }
+        case "todo": {
+          this.testStatesEmitter.fire(<TestEvent>{
+            type: "test",
+            test: item.id,
+            state: "skipped",
+            message,
+          });
+          break;
+        }
+        case "fail": {
+          const line = getLine(item.id);
+          const decorations: TestDecoration[] | undefined =
+            line !== undefined
+              ? createDecorations(data.status, line)
+              : undefined;
+          this.testStatesEmitter.fire(<TestEvent>{
+            type: "test",
+            test: item.id,
+            state: "failed",
+            message,
+            decorations,
+          });
+          break;
+        }
+      }
+    }
   }
 
   private watch() {
@@ -312,4 +359,37 @@ function toId(prefix: string, suite: TestSuite): string | undefined {
 // TODO share?
 function notUndefined<T>(x: T | undefined): x is T {
   return x !== undefined;
+}
+
+function createDecorations(status: TestStatus, line: number): TestDecoration[] {
+  if (status.tag !== "fail") {
+    return [];
+  }
+  return status.failures.map((failure) => {
+    switch (failure.tag) {
+      case "comparison": {
+        const expected = abreviateToOneLine(failure.expected);
+        const actual = abreviateToOneLine(failure.actual);
+        return <TestDecoration>{
+          line: line,
+          message: `${failure.comparison} ${expected} ${actual}`,
+        };
+      }
+      case "message": {
+        return <TestDecoration>{
+          line,
+          message: `${failure.message}`,
+        };
+      }
+      case "data": {
+        const message = Object.keys(failure.data)
+          .map((key) => `$(key): ${failure.data[key]}`)
+          .join("\n");
+        return <TestDecoration>{
+          line,
+          message,
+        };
+      }
+    }
+  });
 }
