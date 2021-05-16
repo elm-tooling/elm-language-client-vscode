@@ -41,6 +41,8 @@ import * as TestRunner from "./test-runner/extension";
 
 export interface IClientSettings {
   elmFormatPath: string;
+  elmReviewPath: string;
+  elmReviewDiagnostics: "off" | "warning" | "error";
   elmPath: string;
   elmTestPath: string;
   trace: { server: string };
@@ -215,6 +217,8 @@ export function activate(context: ExtensionContext): void {
     return config
       ? {
           elmFormatPath: config.elmFormatPath,
+          elmReviewPath: config.elmReviewPath,
+          elmReviewDiagnostics: config.elmReviewDiagnostics,
           elmPath: config.elmPath,
           elmTestPath: config.elmTestPath,
           trace: {
