@@ -43,11 +43,6 @@ import { IClientSettings } from "../extension";
 import { insertRunTestData, RunTestSuite } from "./runTestSuite";
 
 export class ElmTestRunner {
-  private eventById: Map<string, TestCompleted> = new Map<
-    string,
-    TestCompleted
-  >();
-
   private running = false;
   private resolve?: (
     value: RunTestSuite | string | PromiseLike<RunTestSuite | string>,
@@ -188,8 +183,6 @@ export class ElmTestRunner {
 
   private runElmTestWithReport(cwdPath: string, args: string[]) {
     this.log.info("Running Elm Tests", args);
-
-    this.eventById.clear();
 
     const argsWithReport = buildElmTestArgsWithReport(args);
     const elm = child_process.spawn(

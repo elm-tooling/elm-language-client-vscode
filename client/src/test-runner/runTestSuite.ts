@@ -70,10 +70,12 @@ function doInsertRunTestData(
       throw new Error(`duplicate id '${testData.id}'`);
     }
   }
+
   const labels1 = [...labels];
   const label = labels1.shift();
   if (label === undefined) {
-    throw new Error("???");
+    // this cannot happen, but it makes TS happy
+    return suite;
   }
 
   const exists = suite.children.some((child) => child.label === label);
