@@ -105,6 +105,7 @@ export class ElmTestRunner {
     this.process?.kill();
     this.process = undefined;
     this.disposables.forEach((d) => void d.dispose());
+    this.disposables = [];
   }
 
   private get relativeProjectFolder(): string {
