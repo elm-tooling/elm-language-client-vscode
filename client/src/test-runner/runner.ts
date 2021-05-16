@@ -41,7 +41,7 @@ import {
   parseOutput,
   parseErrorOutput,
   buildErrorMessage,
-  EventTestCompleted,
+  TestCompleted,
   TestStatus,
 } from "./result";
 import {
@@ -56,9 +56,9 @@ import { Log } from "vscode-test-adapter-util";
 import { IClientSettings } from "../extension";
 
 export class ElmTestRunner {
-  private eventById: Map<string, EventTestCompleted> = new Map<
+  private eventById: Map<string, TestCompleted> = new Map<
     string,
-    EventTestCompleted
+    TestCompleted
   >();
 
   private running = false;
@@ -377,7 +377,7 @@ export class ElmTestRunner {
         if (!this.currentSuite) {
           throw new Error("not loading?");
         }
-        const event: EventTestCompleted = {
+        const event: TestCompleted = {
           ...result.event,
           messages: this.popMessages(),
         };
@@ -396,7 +396,7 @@ export class ElmTestRunner {
   private addEvent(
     suite: TestSuiteInfo,
     labels: string[],
-    event: EventTestCompleted,
+    event: TestCompleted,
   ): string {
     if (labels.length === 1) {
       let testInfo: TestInfo = {
@@ -437,7 +437,7 @@ export class ElmTestRunner {
     return this.addEvent(newSuite, labels, event);
   }
 
-  private getFilePath(event: EventTestCompleted): string {
+  private getFilePath(event: TestCompleted): string {
     const path = getFilePath(event);
     const testsRoot = getTestsRoot(this.elmProjectFolder.fsPath);
     return `${testsRoot}/${path}`;
