@@ -15,7 +15,8 @@
   "scripts": {
     "compile": "tsc -p ./",
     "lint": "eslint -c .eslintrc.js --ext .ts src",
-    "test": "nyc --reporter=lcovonly --reporter=text mocha"
+    "test": "nyc --reporter=lcovonly --reporter=text mocha",
+    "test:watch": "mocha --watch"
   },
   "dependencies": {
     "jsonc-parser": "^3.0.0",
