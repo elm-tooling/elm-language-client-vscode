@@ -40,16 +40,10 @@ export type RunTestData = {
   data: TestCompleted;
 };
 
-export type RunTestError = {
-  type: "error";
-  message: string;
-  id: string;
-};
-
 export function insertRunTestData(
   suite: RunTestSuite,
   data: TestCompleted,
-): RunTestSuite | RunTestError {
+): RunTestSuite {
   return doInsertRunTestData(suite, [...data.labels], data);
 }
 
