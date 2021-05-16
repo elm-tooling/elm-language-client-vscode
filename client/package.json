@@ -27,7 +27,8 @@
   },
   "mocha": {
     "require": "ts-node/register",
-    "spec": "src/**/*.test.ts"
+    "spec": "src/**/*.test.ts",
+    "watch-files": "src/**/*.ts"
   },
   "devDependencies": {
     "@types/chai": "^4.2.16",
