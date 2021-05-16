@@ -83,7 +83,7 @@ export class ElmTestAdapter implements TestAdapter {
   }
 
   private isLoading = false;
-  private runner: ElmTestRunner;
+  private runner?: ElmTestRunner;
   private loadedSuite?: TestSuiteInfo;
   private watcher?: vscode.Disposable;
 
@@ -102,12 +102,6 @@ export class ElmTestAdapter implements TestAdapter {
     this.disposables.push(this.testsEmitter);
     this.disposables.push(this.testStatesEmitter);
     this.disposables.push(this.retireEmitter);
-
-    this.runner = new ElmTestRunner(
-      this.workspace,
-      this.elmProjectFolder,
-      this.log,
-    );
 
     this.watch();
   }
@@ -165,10 +159,16 @@ export class ElmTestAdapter implements TestAdapter {
   }
 
   async run(tests: string[]): Promise<void> {
-    if (this.runner.isRunning) {
+    if (this.runner) {
       this.log.debug("Already running tests");
       return;
     }
+
+    this.runner = new ElmTestRunner(
+      this.workspace,
+      this.elmProjectFolder,
+      this.log,
+    );
 
     this.log.info("Running tests", tests);
 
@@ -201,6 +201,7 @@ export class ElmTestAdapter implements TestAdapter {
       console.log("Error running tests", err);
       errorMessage = String(err);
     } finally {
+      this.runner = undefined;
       this.testStatesEmitter.fire(<TestRunFinishedEvent>{ type: "finished" });
       if (errorMessage && errorMessage != "cancelled") {
         this.log.error("Error running tests", errorMessage);
@@ -310,7 +311,7 @@ export class ElmTestAdapter implements TestAdapter {
   }
 
   cancel(): void {
-    this.runner.cancel();
+    this.runner?.dispose();
     this.watcher?.dispose();
   }
 
