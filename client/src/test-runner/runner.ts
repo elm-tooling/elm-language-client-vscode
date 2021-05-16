@@ -42,11 +42,9 @@ import { Log } from "vscode-test-adapter-util";
 import { IClientSettings } from "../extension";
 import { insertRunTestData, RunTestSuite } from "./runTestSuite";
 
-export class ElmTestRunner {
-  private running = false;
+export class ElmTestRunner implements vscode.Disposable {
   private resolve?: (
     value: RunTestSuite | string | PromiseLike<RunTestSuite | string>,
-    // eslint-disable-next-line @typescript-eslint/no-empty-function
   ) => void = undefined;
 
   private currentSuite?: RunTestSuite = undefined;
@@ -63,14 +61,14 @@ export class ElmTestRunner {
     private readonly log: Log,
   ) {}
 
+  dispose(): void {
+    this.stopIt();
+  }
+
   cancel(): void {
     this.resolve?.("cancelled");
     this.stopIt();
     this.log.info("Running Elm Tests cancelled", this.relativeProjectFolder);
-  }
-
-  get isRunning(): boolean {
-    return this.running;
   }
 
   private finish(result: RunTestSuite | string): void {
@@ -80,14 +78,9 @@ export class ElmTestRunner {
   }
 
   private stopIt(): void {
-    this.running = false;
-    this.resolve = undefined;
     this.taskExecution?.terminate();
-    this.taskExecution = undefined;
     this.process?.kill();
-    this.process = undefined;
     this.disposables.forEach((d) => void d.dispose());
-    this.disposables = [];
   }
 
   private get relativeProjectFolder(): string {
@@ -98,10 +91,9 @@ export class ElmTestRunner {
   }
 
   async runSomeTests(uris?: string[]): Promise<RunTestSuite | string> {
-    if (this.running) {
+    if (this.resolve) {
       return Promise.reject("already running");
     }
-    this.running = true;
     return new Promise<RunTestSuite | string>((resolve) => {
       this.resolve = resolve;
       this.currentSuite = {
