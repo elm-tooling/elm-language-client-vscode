@@ -133,7 +133,7 @@ export class ElmTestAdapter implements TestAdapter {
 
       const children =
         response.suites
-          ?.map((s) => toTestSuiteInfo(s, ""))
+          ?.map((s) => fromTestSuite(s, ""))
           .filter(notUndefined) ?? [];
       const suite: TestSuiteInfo = this.getRootSuite(children);
       const loadedEvent: TestLoadFinishedEvent = {
@@ -191,7 +191,9 @@ export class ElmTestAdapter implements TestAdapter {
       if (typeof suiteOrError === "string") {
         errorMessage = suiteOrError;
       } else {
-        const suites = suiteOrError.children;
+        const suites = suiteOrError.children
+          .map((s) => fromRunTestItem(s, ""))
+          .filter(notUndefined);
         const suite = this.getRootSuite(suites);
         this.loadedSuite = mergeTopLevelSuites(suite, this.loadedSuite);
         this.fireLoaded(this.loadedSuite);
@@ -324,7 +326,7 @@ export class ElmTestAdapter implements TestAdapter {
   }
 }
 
-function toTestSuiteInfo(
+function fromTestSuite(
   suite: TestSuite,
   prefixId: string,
 ): TestSuiteInfo | TestInfo | undefined {
@@ -341,7 +343,7 @@ function toTestSuiteInfo(
         file: suite.file,
         line: suite.position.line,
         children: suite.tests
-          .map((s) => toTestSuiteInfo(s, id))
+          .map((s) => fromTestSuite(s, id))
           .filter(notUndefined),
       }
     : {
@@ -353,7 +355,36 @@ function toTestSuiteInfo(
       };
 }
 
-function toId(prefix: string, suite: TestSuite): string | undefined {
+function fromRunTestItem(
+  suite: RunTestItem,
+  prefixId: string,
+): TestSuiteInfo | TestInfo | undefined {
+  const id = toId(prefixId, suite);
+  const label = suite.label;
+  if (!label || !id) {
+    return undefined;
+  }
+
+  return suite.type === "suite"
+    ? {
+        type: "suite",
+        id,
+        label: suite.label,
+        children: suite.children
+          .map((s) => fromRunTestItem(s, id))
+          .filter(notUndefined),
+      }
+    : {
+        type: "test",
+        id,
+        label,
+      };
+}
+
+function toId(
+  prefix: string,
+  suite: TestSuite | RunTestItem,
+): string | undefined {
   return `${prefix}/${suite.label}`;
 }
 

@@ -27,17 +27,17 @@ import { TestCompleted } from "./result";
 export type RunTestItem = RunTestSuite | RunTestData;
 
 export type RunTestSuite = {
-  type: "suite";
-  id: string;
-  label: string;
-  children: RunTestItem[];
+  readonly type: "suite";
+  readonly id: string;
+  readonly label: string;
+  readonly children: readonly RunTestItem[];
 };
 
 export type RunTestData = {
-  type: "test";
-  id: string;
-  label: string;
-  data: TestCompleted;
+  readonly type: "test";
+  readonly id: string;
+  readonly label: string;
+  readonly data: TestCompleted;
 };
 
 export function insertRunTestData(
