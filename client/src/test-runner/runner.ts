@@ -62,25 +62,24 @@ export class ElmTestRunner implements vscode.Disposable {
   ) {}
 
   dispose(): void {
-    this.stopIt();
+    this.cancel();
   }
 
-  cancel(): void {
-    this.resolve?.("cancelled");
-    this.stopIt();
-    this.log.info("Running Elm Tests cancelled", this.relativeProjectFolder);
+  private cancel(): void {
+    if (this.resolve) {
+      this.log.info("Running Elm Tests cancelled", this.relativeProjectFolder);
+      this.resolve("cancelled");
+    }
+    this.taskExecution?.terminate();
+    this.process?.kill();
+    this.disposables.forEach((d) => void d.dispose());
   }
 
   private finish(result: RunTestSuite | string): void {
     this.log.debug("Running Elm Tests finished");
     this.resolve?.(result);
-    this.stopIt();
-  }
-
-  private stopIt(): void {
-    this.taskExecution?.terminate();
-    this.process?.kill();
-    this.disposables.forEach((d) => void d.dispose());
+    this.resolve = undefined;
+    this.cancel();
   }
 
   private get relativeProjectFolder(): string {
