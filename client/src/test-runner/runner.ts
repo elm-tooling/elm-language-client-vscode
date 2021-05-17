@@ -296,9 +296,7 @@ export class ElmTestRunner implements vscode.Disposable {
           ...result.event,
           messages: this.popMessages(),
         };
-        // const labels: string[] = [...event.labels];
         this.currentSuite = insertRunTestData(this.currentSuite, event);
-        // this.eventById.set(id, event);
         break;
       }
       case "runStart":
