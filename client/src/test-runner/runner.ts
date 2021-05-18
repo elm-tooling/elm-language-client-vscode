@@ -22,52 +22,32 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.
 */
 import * as vscode from "vscode";
-import {
-  TestSuiteInfo,
-  TestInfo,
-  TestRunStartedEvent,
-  TestRunFinishedEvent,
-  TestSuiteEvent,
-  TestEvent,
-  TestDecoration,
-} from "vscode-test-adapter-api";
 import path = require("path");
 import * as child_process from "child_process";
 import * as fs from "fs";
 
 import {
   Result,
-  buildMessage,
   parseOutput,
   parseErrorOutput,
   buildErrorMessage,
-  EventTestCompleted,
-  TestStatus,
+  TestCompleted,
 } from "./result";
 import {
   IElmBinaries,
   buildElmTestArgs,
   buildElmTestArgsWithReport,
-  getFilePath,
-  getTestsRoot,
-  abreviateToOneLine,
 } from "./util";
 import { Log } from "vscode-test-adapter-util";
 import { IClientSettings } from "../extension";
+import { insertRunTestData, RunTestSuite } from "./runTestSuite";
 
-export class ElmTestRunner {
-  private eventById: Map<string, EventTestCompleted> = new Map<
-    string,
-    EventTestCompleted
-  >();
-
-  private running = false;
+export class ElmTestRunner implements vscode.Disposable {
   private resolve?: (
-    value: TestSuiteInfo | string | PromiseLike<TestSuiteInfo | string>,
-    // eslint-disable-next-line @typescript-eslint/no-empty-function
+    value: RunTestSuite | string | PromiseLike<RunTestSuite | string>,
   ) => void = undefined;
 
-  private currentSuite?: TestSuiteInfo = undefined;
+  private currentSuite?: RunTestSuite = undefined;
   private errorMessage?: string = undefined;
   private pendingMessages: string[] = [];
 
@@ -81,31 +61,25 @@ export class ElmTestRunner {
     private readonly log: Log,
   ) {}
 
-  cancel(): void {
-    this.resolve?.("cancelled");
-    this.stopIt();
-    this.log.info("Running Elm Tests cancelled", this.relativeProjectFolder);
+  dispose(): void {
+    this.cancel();
   }
 
-  get isRunning(): boolean {
-    return this.running;
+  private cancel(): void {
+    if (this.resolve) {
+      this.log.info("Running Elm Tests cancelled", this.relativeProjectFolder);
+      this.resolve("cancelled");
+    }
+    this.taskExecution?.terminate();
+    this.process?.kill();
+    this.disposables.forEach((d) => void d.dispose());
   }
 
-  private finish(result: TestSuiteInfo | string): void {
+  private finish(result: RunTestSuite | string): void {
     this.log.debug("Running Elm Tests finished");
     this.resolve?.(result);
-    this.stopIt();
-  }
-
-  private stopIt(): void {
-    this.running = false;
     this.resolve = undefined;
-    this.taskExecution?.terminate();
-    this.taskExecution = undefined;
-    this.process?.kill();
-    this.process = undefined;
-    this.disposables.forEach((d) => void d.dispose());
-    this.disposables = [];
+    this.cancel();
   }
 
   private get relativeProjectFolder(): string {
@@ -115,69 +89,11 @@ export class ElmTestRunner {
     );
   }
 
-  fireEvents(
-    node: TestSuiteInfo | TestInfo,
-    testStatesEmitter: vscode.EventEmitter<
-      TestRunStartedEvent | TestRunFinishedEvent | TestSuiteEvent | TestEvent
-    >,
-    getLine: (id: string) => number | undefined,
-  ): void {
-    if (node.type === "suite") {
-      for (const child of node.children) {
-        this.fireEvents(child, testStatesEmitter, getLine);
-      }
-    } else {
-      const event = this.eventById.get(node.id);
-      if (!event) {
-        throw new Error(`result for ${node.id}?`);
-      }
-      const message = buildMessage(event);
-      switch (event.status.tag) {
-        case "pass": {
-          testStatesEmitter.fire(<TestEvent>{
-            type: "test",
-            test: node.id,
-            state: "passed",
-            message,
-            description: `${event.duration}s`,
-          });
-          break;
-        }
-        case "todo": {
-          testStatesEmitter.fire(<TestEvent>{
-            type: "test",
-            test: node.id,
-            state: "skipped",
-            message,
-          });
-          break;
-        }
-        case "fail": {
-          const line = getLine(node.id);
-          const decorations: TestDecoration[] | undefined =
-            line !== undefined
-              ? createDecorations(event.status, line)
-              : undefined;
-          testStatesEmitter.fire(<TestEvent>{
-            type: "test",
-            test: node.id,
-            file: node.file,
-            state: "failed",
-            message,
-            decorations,
-          });
-          break;
-        }
-      }
-    }
-  }
-
-  async runSomeTests(uris?: string[]): Promise<TestSuiteInfo | string> {
-    if (this.running) {
+  async runSomeTests(uris?: string[]): Promise<RunTestSuite | string> {
+    if (this.resolve) {
       return Promise.reject("already running");
     }
-    this.running = true;
-    return new Promise<TestSuiteInfo | string>((resolve) => {
+    return new Promise<RunTestSuite | string>((resolve) => {
       this.resolve = resolve;
       this.currentSuite = {
         type: "suite",
@@ -258,8 +174,6 @@ export class ElmTestRunner {
 
   private runElmTestWithReport(cwdPath: string, args: string[]) {
     this.log.info("Running Elm Tests", args);
-
-    this.eventById.clear();
 
     const argsWithReport = buildElmTestArgsWithReport(args);
     const elm = child_process.spawn(
@@ -377,13 +291,11 @@ export class ElmTestRunner {
         if (!this.currentSuite) {
           throw new Error("not loading?");
         }
-        const event: EventTestCompleted = {
+        const event: TestCompleted = {
           ...result.event,
           messages: this.popMessages(),
         };
-        const labels: string[] = [...event.labels];
-        const id = this.addEvent(this.currentSuite, labels, event);
-        this.eventById.set(id, event);
+        this.currentSuite = insertRunTestData(this.currentSuite, event);
         break;
       }
       case "runStart":
@@ -391,56 +303,6 @@ export class ElmTestRunner {
       case "runComplete":
         break;
     }
-  }
-
-  private addEvent(
-    suite: TestSuiteInfo,
-    labels: string[],
-    event: EventTestCompleted,
-  ): string {
-    if (labels.length === 1) {
-      let testInfo: TestInfo = {
-        type: "test",
-        id: suite.id + "/" + labels[0],
-        label: labels[0],
-        file: this.getFilePath(event),
-      };
-      if (event.status.tag === "todo") {
-        testInfo = {
-          ...testInfo,
-          skipped: true,
-        };
-      }
-      suite.children.push(testInfo);
-      return testInfo.id;
-    }
-
-    const label = labels.shift();
-
-    if (!label) {
-      throw new Error("empty labels?");
-    }
-
-    const found = suite.children.find((child) => child.label === label);
-    if (found && found.type === "suite") {
-      return this.addEvent(found, labels, event);
-    }
-
-    const newSuite: TestSuiteInfo = {
-      type: "suite",
-      id: suite.id + "/" + label,
-      label: label,
-      children: [],
-      file: this.getFilePath(event),
-    };
-    suite.children.push(newSuite);
-    return this.addEvent(newSuite, labels, event);
-  }
-
-  private getFilePath(event: EventTestCompleted): string {
-    const path = getFilePath(event);
-    const testsRoot = getTestsRoot(this.elmProjectFolder.fsPath);
-    return `${testsRoot}/${path}`;
   }
 }
 
@@ -471,37 +333,4 @@ function findLocalNpmBinary(
 
 function nonEmpty(text: string | undefined): string | undefined {
   return text && text.length > 0 ? text : undefined;
-}
-
-function createDecorations(status: TestStatus, line: number): TestDecoration[] {
-  if (status.tag !== "fail") {
-    return [];
-  }
-  return status.failures.map((failure) => {
-    switch (failure.tag) {
-      case "comparison": {
-        const expected = abreviateToOneLine(failure.expected);
-        const actual = abreviateToOneLine(failure.actual);
-        return <TestDecoration>{
-          line: line,
-          message: `${failure.comparison} ${expected} ${actual}`,
-        };
-      }
-      case "message": {
-        return <TestDecoration>{
-          line,
-          message: `${failure.message}`,
-        };
-      }
-      case "data": {
-        const message = Object.keys(failure.data)
-          .map((key) => `$(key): ${failure.data[key]}`)
-          .join("\n");
-        return <TestDecoration>{
-          line,
-          message,
-        };
-      }
-    }
-  });
 }

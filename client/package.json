@@ -15,7 +15,8 @@
   "scripts": {
     "compile": "tsc -p ./",
     "lint": "eslint -c .eslintrc.js --ext .ts src",
-    "test": "nyc --reporter=lcovonly --reporter=text mocha"
+    "test": "nyc --reporter=lcovonly --reporter=text mocha",
+    "test:watch": "mocha --watch"
   },
   "dependencies": {
     "jsonc-parser": "^3.0.0",
@@ -26,7 +27,8 @@
   },
   "mocha": {
     "require": "ts-node/register",
-    "spec": "src/**/*.test.ts"
+    "spec": "src/**/*.test.ts",
+    "watch-files": "src/**/*.ts"
   },
   "devDependencies": {
     "@types/chai": "^4.2.16",

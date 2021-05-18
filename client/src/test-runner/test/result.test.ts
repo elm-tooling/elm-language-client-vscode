@@ -29,7 +29,7 @@ import {
   buildMessage,
   parseErrorOutput,
   Output,
-  EventTestCompleted,
+  TestCompleted,
   parseResult,
 } from "../result";
 
@@ -156,7 +156,7 @@ describe("result", () => {
         messages: ["hello", "world"],
         duration: "13",
       };
-      const event: EventTestCompleted = {
+      const event: TestCompleted = {
         tag: "testCompleted",
         labels: ["suite", "test"],
         messages: ["hello", "world"],
@@ -189,7 +189,7 @@ describe("result", () => {
         messages: [],
         duration: "0",
       };
-      const event: EventTestCompleted = {
+      const event: TestCompleted = {
         tag: "testCompleted",
         labels: ["suite", "test"],
         messages: [],
@@ -231,7 +231,7 @@ describe("result", () => {
         messages: [],
         duration: "0",
       };
-      const event: EventTestCompleted = {
+      const event: TestCompleted = {
         tag: "testCompleted",
         labels: ["suite", "test"],
         messages: [],
@@ -276,7 +276,7 @@ describe("result", () => {
         messages: [],
         duration: "0",
       };
-      const event: EventTestCompleted = {
+      const event: TestCompleted = {
         tag: "testCompleted",
         labels: ["suite", "test"],
         messages: [],
@@ -323,7 +323,7 @@ describe("result", () => {
         messages: [],
         duration: "0",
       };
-      const event: EventTestCompleted = {
+      const event: TestCompleted = {
         tag: "testCompleted",
         labels: ["suite", "test"],
         messages: [],
@@ -373,7 +373,7 @@ describe("result", () => {
         messages: [],
         duration: "0",
       };
-      const event: EventTestCompleted = {
+      const event: TestCompleted = {
         tag: "testCompleted",
         labels: ["suite", "test"],
         messages: [],
@@ -422,7 +422,7 @@ describe("result", () => {
       messages: ["broken"],
       duration: "0",
     };
-    const event: EventTestCompleted = {
+    const event: TestCompleted = {
       tag: "testCompleted",
       labels: ["suite", "test"],
       messages: ["broken"],
@@ -458,7 +458,7 @@ function expectResult(output: Output, fun: (result: Result) => void) {
   }
 }
 
-function expectEvent(result: Result, fun: (event: EventTestCompleted) => void) {
+function expectEvent(result: Result, fun: (event: TestCompleted) => void) {
   expect(result.event.tag).to.eq("testCompleted");
   if (result?.event.tag === "testCompleted") {
     fun(result.event);

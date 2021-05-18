@@ -42,14 +42,14 @@ export function parseOutput(line: string): Output {
 
 export function parseResult(parsed: any): Result {
   if ((parsed.event as string) === "runStart") {
-    const event: Event = {
+    const event: RunEvent = {
       tag: "runStart",
       testCount: Number.parseInt(parsed.testCount),
     };
     return { type: "result", event };
   }
   if (parsed.event === "runComplete") {
-    const event: Event = {
+    const event: RunEvent = {
       tag: "runComplete",
       passed: Number.parseInt(parsed.passed),
       failed: Number.parseInt(parsed.failed),
@@ -62,7 +62,7 @@ export function parseResult(parsed: any): Result {
     if (status) {
       const messages: string[] =
         (parsed.messages as string[])?.map((m: string) => String(m)) ?? [];
-      const event: Event = {
+      const event: RunEvent = {
         tag: "testCompleted",
         labels: parsed.labels as string[],
         messages,
@@ -144,15 +144,15 @@ export type Message = {
 
 export type Result = {
   type: "result";
-  event: Event;
+  event: RunEvent;
 };
 
-export type Event =
+export type RunEvent =
   | { tag: "runStart"; testCount: number }
-  | EventTestCompleted
+  | TestCompleted
   | { tag: "runComplete"; passed: number; failed: number; duration: number };
 
-export type EventTestCompleted = {
+export type TestCompleted = {
   tag: "testCompleted";
   labels: string[];
   messages: string[];
@@ -211,7 +211,7 @@ export type StyledString = {
   string: string;
 };
 
-export function buildMessage(event: EventTestCompleted): string | undefined {
+export function buildMessage(event: TestCompleted): string | undefined {
   if (event.status.tag === "fail") {
     const lines = event.status.failures.flatMap((failure) => {
       switch (failure.tag) {

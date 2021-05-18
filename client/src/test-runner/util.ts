@@ -22,7 +22,7 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.
 */
 import { TestSuiteInfo, TestInfo } from "vscode-test-adapter-api";
-import { EventTestCompleted } from "./result";
+import { TestCompleted } from "./result";
 
 export function* walk(
   node: TestSuiteInfo | TestInfo,
@@ -83,7 +83,7 @@ export function buildElmTestArgsWithReport(args: string[]): string[] {
   return args.concat(["--report", "json"]);
 }
 
-export function getFilePath(event: EventTestCompleted): string {
+export function getFilePath(event: TestCompleted): string {
   const module = event.labels[0];
   const file = module.split(".").join("/");
   return `${file}.elm`;
