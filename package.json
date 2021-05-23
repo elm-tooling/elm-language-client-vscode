@@ -23,7 +23,6 @@
     "vscode": "^1.52.0"
   },
   "activationEvents": [
-    "onLanguage:elm",
     "workspaceContains:**/elm.json"
   ],
   "main": "./client/out/extension",
