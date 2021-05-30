@@ -6,10 +6,11 @@ import { GetMoveDestinationRequest, MoveRequest } from "./protocol";
 export function registerCommands(
   languageClient: LanguageClient,
   context: ExtensionContext,
+  workspaceId: string,
 ): void {
   context.subscriptions.push(
     commands.registerCommand(
-      "elm.refactor",
+      `elm.refactor-${workspaceId}`,
       async (
         command: string,
         params: CodeActionParams,

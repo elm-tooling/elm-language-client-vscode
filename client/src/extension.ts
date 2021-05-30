@@ -122,10 +122,11 @@ export function activate(context: ExtensionContext): void {
           clientOptions,
         );
         client.start();
-        clients.set(workspaceFolder.uri.toString(), client);
+        const workspaceId = workspaceFolder.uri.toString();
+        clients.set(workspaceId, client);
 
-        RefactorAction.registerCommands(client, context);
-        ExposeUnexposeAction.registerCommands(client, context);
+        RefactorAction.registerCommands(client, context, workspaceId);
+        ExposeUnexposeAction.registerCommands(client, context, workspaceId);
 
         TestRunner.activate(context, workspaceFolder, client);
       }
