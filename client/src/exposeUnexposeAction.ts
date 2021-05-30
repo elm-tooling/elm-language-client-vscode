@@ -9,10 +9,11 @@ import {
 export function registerCommands(
   languageClient: LanguageClient,
   context: ExtensionContext,
+  workspaceId: string,
 ): void {
   context.subscriptions.push(
     commands.registerCommand(
-      "elm.expose",
+      `elm.expose-${workspaceId}`,
       async (params: IExposeUnexposeParams) => {
         await expose(languageClient, params);
       },
@@ -21,7 +22,7 @@ export function registerCommands(
 
   context.subscriptions.push(
     commands.registerCommand(
-      "elm.unexpose",
+      `elm.unexpose-${workspaceId}`,
       async (params: IExposeUnexposeParams) => {
         await unexpose(languageClient, params);
       },
