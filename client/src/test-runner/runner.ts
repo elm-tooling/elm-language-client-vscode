@@ -24,7 +24,7 @@ SOFTWARE.
 import * as vscode from "vscode";
 import path = require("path");
 import * as child_process from "child_process";
-import * as fs from "fs";
+import * as utils from "../utils";
 
 import {
   Result,
@@ -33,13 +33,8 @@ import {
   buildErrorMessage,
   TestCompleted,
 } from "./result";
-import {
-  IElmBinaries,
-  buildElmTestArgs,
-  buildElmTestArgsWithReport,
-} from "./util";
+import { buildElmTestArgs, buildElmTestArgsWithReport } from "./util";
 import { Log } from "vscode-test-adapter-util";
-import { IClientSettings } from "../extension";
 import { insertRunTestData, RunTestSuite } from "./runTestSuite";
 
 export class ElmTestRunner implements vscode.Disposable {
@@ -228,25 +223,9 @@ export class ElmTestRunner implements vscode.Disposable {
 
   private elmTestArgs(uris?: string[]): string[] {
     const files = uris?.map((uri) => vscode.Uri.parse(uri).fsPath);
-    return buildElmTestArgs(this.getElmBinaries(), files);
-  }
-
-  private getConfiguredElmBinaries(): IElmBinaries {
-    const config = vscode.workspace
-      .getConfiguration()
-      .get<IClientSettings>("elmLS");
-    return <IElmBinaries>{
-      elm: nonEmpty(config?.elmPath),
-      elmTest: nonEmpty(config?.elmTestPath),
-    };
-  }
-
-  private getElmBinaries(): IElmBinaries {
-    const configured = this.getConfiguredElmBinaries();
-    return resolveElmBinaries(
-      configured,
-      this.elmProjectFolder,
-      this.workspaceFolder.uri,
+    return buildElmTestArgs(
+      utils.getElmBinaries(this.elmProjectFolder, this.workspaceFolder.uri),
+      files,
     );
   }
 
@@ -304,33 +283,4 @@ export class ElmTestRunner implements vscode.Disposable {
         break;
     }
   }
-}
-
-function resolveElmBinaries(
-  configured: IElmBinaries,
-  ...roots: vscode.Uri[]
-): IElmBinaries {
-  const rootPaths = Array.from(new Set(roots.map((r) => r.fsPath)).values());
-  return <IElmBinaries>{
-    elmTest:
-      configured.elmTest ??
-      rootPaths
-        .map((r) => findLocalNpmBinary("elm-test", r))
-        .filter((p) => p)[0],
-    elm:
-      configured.elm ??
-      rootPaths.map((r) => findLocalNpmBinary("elm", r)).filter((p) => p)[0],
-  };
-}
-
-function findLocalNpmBinary(
-  binary: string,
-  projectRoot: string,
-): string | undefined {
-  const binaryPath = path.join(projectRoot, "node_modules", ".bin", binary);
-  return fs.existsSync(binaryPath) ? binaryPath : undefined;
-}
-
-function nonEmpty(text: string | undefined): string | undefined {
-  return text && text.length > 0 ? text : undefined;
 }

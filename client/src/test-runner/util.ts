@@ -22,6 +22,7 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.
 */
 import { TestSuiteInfo, TestInfo } from "vscode-test-adapter-api";
+import { IElmBinaries } from "../utils";
 import { TestCompleted } from "./result";
 
 export function* walk(
@@ -63,11 +64,6 @@ export function getTestIdsForFile(
   return Array.from(walk(suite))
     .filter((node) => node.file === fileName)
     .map((node) => node.id);
-}
-
-export interface IElmBinaries {
-  elmTest?: string;
-  elm?: string;
 }
 
 export function buildElmTestArgs(

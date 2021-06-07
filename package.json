@@ -6,7 +6,7 @@
   "icon": "images/elm.png",
   "author": "Kolja Lampe",
   "license": "MIT",
-  "version": "2.1.0",
+  "version": "2.2.0-RC1",
   "repository": {
     "type": "git",
     "url": "https://github.com/elm-tooling/elm-language-client-vscode"
@@ -23,7 +23,12 @@
     "vscode": "^1.52.0"
   },
   "activationEvents": [
-    "workspaceContains:**/elm.json"
+    "workspaceContains:**/elm.json",
+    "onCommand:elm.replStart",
+    "onCommand:elm.replStop",
+    "onCommand:elm.replSendLine",
+    "onCommand:elm.replSendSelection",
+    "onCommand:elm.replSendFile"
   ],
   "main": "./client/out/extension",
   "bin": {
@@ -89,6 +94,43 @@
         "command": "elm.commands.restart",
         "title": "Restart Elm Language Server",
         "category": "Elm"
+      },
+      {
+        "command": "elm.replStart",
+        "title": "REPL - Start",
+        "category": "Elm"
+      },
+      {
+        "command": "elm.replSendLine",
+        "title": "REPL - Send Line",
+        "category": "Elm"
+      },
+      {
+        "command": "elm.replSendSelection",
+        "title": "REPL - Send Selection",
+        "category": "Elm"
+      },
+      {
+        "command": "elm.replSendFile",
+        "title": "REPL - Send File",
+        "category": "Elm"
+      }
+    ],
+    "outputChannels": [
+      "Elm REPL"
+    ],
+    "keybindings": [
+      {
+        "command": "elm.replSendLine",
+        "key": "alt+/",
+        "mac": "alt+/",
+        "when": "editorFocus && !findWidgetVisible && editorLangId == 'elm'"
+      },
+      {
+        "command": "elm.replSendSelection",
+        "key": "alt+Enter",
+        "mac": "alt+Enter",
+        "when": "editorFocus && !findWidgetVisible && editorLangId == 'elm'"
       }
     ],
     "taskDefinitions": [

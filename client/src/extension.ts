@@ -38,6 +38,7 @@ import * as RefactorAction from "./refactorAction";
 import * as ExposeUnexposeAction from "./exposeUnexposeAction";
 import * as Restart from "./restart";
 import * as TestRunner from "./test-runner/extension";
+import { ElmRepl } from "./elmRepl";
 
 export interface IClientSettings {
   elmFormatPath: string;
@@ -127,6 +128,8 @@ export function activate(context: ExtensionContext): void {
 
         RefactorAction.registerCommands(client, context, workspaceId);
         ExposeUnexposeAction.registerCommands(client, context, workspaceId);
+
+        new ElmRepl(workspaceFolder.uri).activateRepl();
 
         TestRunner.activate(context, workspaceFolder, client);
       }
