@@ -18,7 +18,7 @@ Supports elm 0.19 and up
 ## Highlighted Features
 
 - Errors and informations when changing code and when saving (Control + S)
-- Format on save (Control + S)
+- Format on save (Control + S) (Make sure you also enable the "Editor: Format on Save" setting for this to work).
 - Suggests completions and snippets (Control + Space)
 - Test explorer integration
 
