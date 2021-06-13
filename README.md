@@ -13,7 +13,8 @@ Supports elm 0.19 and up
 2. Follow [this link](https://marketplace.visualstudio.com/items?itemName=Elmtooling.elm-ls-vscode) to install the plugin
 3. Make sure you have [nodejs](https://nodejs.org/) and therefore npm installed
 4. Make sure you have [Elm](https://guide.elm-lang.org/install/elm.html) installed
-5. Install elm-test and elm-format by running `npm install -g elm-test elm-format` in a terminal
+5. Install `elm-test` and `elm-format` by running `npm install -g elm-test elm-format` in a terminal
+6. (Optional) Install `elm-review` via `npm install -g elm-review` in a terminal and enable it in your settings
 
 ## Highlighted Features
 
