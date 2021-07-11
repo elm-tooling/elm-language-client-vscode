@@ -4,6 +4,7 @@
 [![Downloads](https://vsmarketplacebadge.apphb.com/downloads-short/Elmtooling.elm-ls-vscode.svg)](https://marketplace.visualstudio.com/items?itemName=Elmtooling.elm-ls-vscode)
 [![Rating](https://vsmarketplacebadge.apphb.com/rating-star/Elmtooling.elm-ls-vscode.svg)](https://marketplace.visualstudio.com/items?itemName=Elmtooling.elm-ls-vscode)
 ![Compile](https://github.com/elm-tooling/elm-language-client-vscode/workflows/Compile/badge.svg)
+[![Open in Visual Studio Code](https://open.vscode.dev/badges/open-in-vscode.svg)](https://open.vscode.dev/elm-tooling/elm-language-client-vscode)
 
 Supports elm 0.19 and up
 
