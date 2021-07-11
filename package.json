@@ -54,6 +54,10 @@
       {
         "fileMatch": "elm-tooling.json",
         "url": "./schemas/elm-tooling.schema.json"
+      },
+      {
+        "fileMatch": "elm-analyse.json",
+        "url": "./schemas/elm-analyse.schema.json"
       }
     ],
     "grammars": [

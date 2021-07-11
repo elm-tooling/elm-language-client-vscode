@@ -1,0 +1,74 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "title": "JSON schema for elm-analyse.json configuration files",
+  "type": "object",
+  "properties": {
+    "checks": {
+      "description": "Configure which checks should be run.",
+      "type": "object",
+      "properties": {
+        "BooleanCase": {
+          "type": "boolean"
+        },
+        "DropConcatOfLists": {
+          "type": "boolean"
+        },
+        "DropConsOfItemAndList": {
+          "type": "boolean"
+        },
+        "NoUncurriedPrefix": {
+          "type": "boolean"
+        },
+        "MapNothingToNothing": {
+          "type": "boolean"
+        },
+        "SingleFieldRecord": {
+          "type": "boolean"
+        },
+        "UnnecessaryListConcat": {
+          "type": "boolean"
+        },
+        "UnnecessaryPortModule": {
+          "type": "boolean"
+        },
+        "UnusedImport": {
+          "type": "boolean"
+        },
+        "UnusedImportAlias": {
+          "type": "boolean"
+        },
+        "UnusedImportedVariable": {
+          "type": "boolean"
+        },
+        "UnusedPatternVariable": {
+          "type": "boolean"
+        },
+        "UnusedTopLevel": {
+          "type": "boolean"
+        },
+        "UnusedTypeAlias": {
+          "type": "boolean"
+        },
+        "UnusedValueConstructor": {
+          "type": "boolean"
+        },
+        "UnusedVariable": {
+          "type": "boolean"
+        },
+        "UseConsOverConcat": {
+          "type": "boolean"
+        },
+        "MissingTypeAnnotation": {
+          "type": "boolean"
+        }
+      }
+    },
+    "excludedPaths": {
+      "description": "A list of directories to exclude from scanning.",
+      "type": "array",
+      "items": {
+        "type": "string"
+      }
+    }
+  }
+}
