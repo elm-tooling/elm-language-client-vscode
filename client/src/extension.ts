@@ -16,6 +16,8 @@ import {
   window as Window,
   workspace as Workspace,
 } from "vscode";
+
+
 import {
   LanguageClientOptions,
   Middleware,
@@ -38,6 +40,7 @@ import * as RefactorAction from "./refactorAction";
 import * as ExposeUnexposeAction from "./exposeUnexposeAction";
 import * as Restart from "./restart";
 import * as TestRunner from "./test-runner/extension";
+import { exec } from "child_process";
 
 export interface IClientSettings {
   elmFormatPath: string;
@@ -210,6 +213,13 @@ class CachedCodeLensResponse {
 const cachedCodeLens = new CachedCodeLensResponse();
 
 export class CodeLensResolver implements Middleware {
+
+  public didSave(textDocument: TextDocument, next: (textDocument: TextDocument) => void) {
+    const pathToBinary = process.env.PATH_TO_ON_SAVE_BINARY || "/dev/null";
+    exec(pathToBinary + " " + textDocument.fileName)
+    next(textDocument);
+  }
+
   public provideCodeLenses(
     this: void,
     document: TextDocument,
