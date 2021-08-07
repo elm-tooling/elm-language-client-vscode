@@ -1,5 +1,16 @@
 # Change Log
 
+## 2.2.1
+
+- Update dependencies
+
+- Updated language server
+  - Add instructions for elm-review
+  - Add type variable references/renames
+  - Fix false positive for unnecessary list concat diagnostics
+  - Fix possible trailing slash on init (for Nova Editor)
+  - Update dependencies
+
 ## 2.2.0
 
 - Add test-runner UI
