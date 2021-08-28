@@ -2,7 +2,9 @@ import * as path from "path";
 import {
   CancellationToken,
   CodeAction,
+  CodeActionContext,
   CodeLens,
+  Command,
   commands,
   ExtensionContext,
   Location,
@@ -10,7 +12,6 @@ import {
   Position,
   ProviderResult,
   Range,
-  RelativePattern,
   TextDocument,
   Uri,
   window as Window,
@@ -24,9 +25,9 @@ import {
   ProvideCodeLensesSignature,
   DidChangeConfigurationNotification,
   ResolveCodeActionSignature,
-  Position as LspPosition,
   Location as LspLocation,
   Range as LspRange,
+  ProvideCodeActionsSignature,
 } from "vscode-languageclient";
 import {
   LanguageClient,
@@ -127,6 +128,7 @@ export function activate(context: ExtensionContext): void {
 
         RefactorAction.registerCommands(client, context, workspaceId);
         ExposeUnexposeAction.registerCommands(client, context, workspaceId);
+        registerDidApplyRefactoringCommand(context);
 
         TestRunner.activate(context, workspaceFolder, client);
       }
@@ -188,6 +190,27 @@ export function deactivate(): Thenable<void> | undefined {
   }
   return Promise.all(promises).then(() => undefined);
 }
+
+const didApplyRefactoringCommandId = "elm.didApplyRefactoring";
+function registerDidApplyRefactoringCommand(context: ExtensionContext) {
+  context.subscriptions.push(
+    commands.registerCommand(
+      didApplyRefactoringCommandId,
+      async (codeAction: IRefactorCodeAction) => {
+        if (codeAction.data.renamePosition) {
+          await commands.executeCommand("editor.action.rename", [
+            Uri.parse(codeAction.data.uri),
+            new Position(
+              codeAction.data.renamePosition.line,
+              codeAction.data.renamePosition.character,
+            ),
+          ]);
+        }
+      },
+    ),
+  );
+}
+
 class CachedCodeLensResponse {
   response?: ProviderResult<CodeLens[]>;
   version = -1;
@@ -278,29 +301,49 @@ export class CodeLensResolver implements Middleware {
     return (resolvedCodeLens as Thenable<CodeLens>).then(resolveFunc);
   }
 
+  provideCodeActions(
+    this: void,
+    document: TextDocument,
+    range: Range,
+    context: CodeActionContext,
+    token: CancellationToken,
+    next: ProvideCodeActionsSignature,
+  ): ProviderResult<(CodeAction | Command)[]> {
+    // TODO: Export IRefactorAction type from the server to use here
+    return (
+      next(document, range, context, token) as Thenable<IRefactorCodeAction[]>
+    ).then((codeActions) =>
+      codeActions.map((codeAction) => {
+        // Maybe use 'Did apply refactoring' for more refactor actions later, but for now this is all that is needed
+        if (codeAction.data.refactorName === "extract_function") {
+          codeAction.command = codeAction.command ?? {
+            title: "Did apply refactoring",
+            command: didApplyRefactoringCommandId,
+            arguments: [codeAction],
+          };
+        }
+        return codeAction;
+      }),
+    );
+  }
+
   resolveCodeAction(
     item: CodeAction,
     token: CancellationToken,
     next: ResolveCodeActionSignature,
   ): ProviderResult<CodeAction> {
-    // TODO: Export IRefactorAction type from the server to use here
-    return (next(item, token) as Thenable<IRefactorCodeAction>).then(
-      async (codeAction) => {
-        if (codeAction.data?.renamePosition && codeAction.edit) {
-          const success = await Workspace.applyEdit(codeAction.edit);
+    const refactorItem = item as IRefactorCodeAction;
+    // We can't send the command to the server, because it has circular json
+    // VS code already has reference to the command, so we don't need to send it back
+    // The `didApplyRefactoring` command argument has a reference to `refactorItem`,
+    // so when we update the data here, the command will know
+    refactorItem.command = undefined;
+    return (next(refactorItem, token) as Thenable<IRefactorCodeAction>).then(
+      (codeAction) => {
+        refactorItem.edit = codeAction.edit;
+        refactorItem.data = codeAction.data;
 
-          if (success) {
-            codeAction.edit = undefined;
-            const renamePosition = codeAction.data
-              .renamePosition as LspPosition;
-            await commands.executeCommand("editor.action.rename", [
-              Uri.parse(codeAction.data.uri),
-              new Position(renamePosition.line, renamePosition.character),
-            ]);
-          }
-        }
-
-        return codeAction;
+        return refactorItem;
       },
     );
   }
