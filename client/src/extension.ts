@@ -66,6 +66,7 @@ export interface IRefactorCodeAction extends Omit<CodeAction, "isPreferred"> {
 const clients: Map<string, LanguageClient> = new Map<string, LanguageClient>();
 
 export function activate(context: ExtensionContext): void {
+  let isRegistered = false;
   const module = context.asAbsolutePath(path.join("server", "out", "index.js"));
 
   const config = Workspace.getConfiguration().get<IClientSettings>("elmLS");
@@ -128,7 +129,10 @@ export function activate(context: ExtensionContext): void {
 
         RefactorAction.registerCommands(client, context, workspaceId);
         ExposeUnexposeAction.registerCommands(client, context, workspaceId);
-        registerDidApplyRefactoringCommand(context);
+        if (!isRegistered) {
+          registerDidApplyRefactoringCommand(context);
+          isRegistered = true;
+        }
 
         TestRunner.activate(context, workspaceFolder, client);
       }
@@ -192,7 +196,7 @@ export function deactivate(): Thenable<void> | undefined {
 }
 
 const didApplyRefactoringCommandId = "elm.didApplyRefactoring";
-function registerDidApplyRefactoringCommand(context: ExtensionContext) {
+function registerDidApplyRefactoringCommand(context: ExtensionContext): void {
   context.subscriptions.push(
     commands.registerCommand(
       didApplyRefactoringCommandId,
