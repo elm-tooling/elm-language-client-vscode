@@ -66,7 +66,6 @@ export interface IRefactorCodeAction extends Omit<CodeAction, "isPreferred"> {
 const clients: Map<string, LanguageClient> = new Map<string, LanguageClient>();
 
 export function activate(context: ExtensionContext): void {
-  let isRegistered = false;
   const module = context.asAbsolutePath(path.join("server", "out", "index.js"));
 
   const config = Workspace.getConfiguration().get<IClientSettings>("elmLS");
@@ -129,14 +128,12 @@ export function activate(context: ExtensionContext): void {
 
         RefactorAction.registerCommands(client, context, workspaceId);
         ExposeUnexposeAction.registerCommands(client, context, workspaceId);
-        if (!isRegistered) {
-          registerDidApplyRefactoringCommand(context);
-          isRegistered = true;
-        }
 
         TestRunner.activate(context, workspaceFolder, client);
       }
     });
+
+    registerDidApplyRefactoringCommand(context);
   });
 
   Workspace.onDidChangeWorkspaceFolders(async (event) => {
