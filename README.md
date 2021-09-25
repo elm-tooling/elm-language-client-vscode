@@ -50,24 +50,6 @@ This extension contributes the following settings:
 - `elmLS.onlyUpdateDiagnosticsOnSave`: Only update compiler diagnostics on save, not on document change.
 - `elmLS.elmTestRunner.showElmTestOutput`: Show output of elm-test as terminal task.
 
-## Configuration
-
-Create an [elm-tooling.json](https://github.com/lydell/elm-tooling.json) file next to your `elm.json` to configure your project.
-
-Currently there’s just one thing that you can configure: entrypoints. We run `elm make` to get errors. Without this `elm make` is run on the current file only. To get errors for the entire project you can specify your entrypoint files – basically, those with `main =` in them. Then the language server will run `elm make` on those instead.
-
-Example:
-
-```json
-{
-  "entrypoints": ["./src/Main.elm"]
-}
-```
-
-The entrypoints are relative to the directory where your `elm.json` and `elm-tooling.json` is and must start with `./`.
-
-Check out the [elm-tooling-cli](https://elm-tooling.github.io/elm-tooling-cli/) for creating and validating your `elm-tooling.json`!
-
 ## FAQ
 
 - How to get a logfile?
