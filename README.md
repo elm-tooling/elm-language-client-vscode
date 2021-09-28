@@ -52,21 +52,9 @@ This extension contributes the following settings:
 
 ## Configuration
 
-Create an [elm-tooling.json](https://github.com/lydell/elm-tooling.json) file next to your `elm.json` to configure your project.
+We used to have a file called `elm-tooling.json` where you could specifiy `"entrypoints"`. That’s not needed anymore – the language server finds the entrypoints automatically.
 
-Currently there’s just one thing that you can configure: entrypoints. We run `elm make` to get errors. Without this `elm make` is run on the current file only. To get errors for the entire project you can specify your entrypoint files – basically, those with `main =` in them. Then the language server will run `elm make` on those instead.
-
-Example:
-
-```json
-{
-  "entrypoints": ["./src/Main.elm"]
-}
-```
-
-The entrypoints are relative to the directory where your `elm.json` and `elm-tooling.json` is and must start with `./`.
-
-Check out the [elm-tooling-cli](https://elm-tooling.github.io/elm-tooling-cli/) for creating and validating your `elm-tooling.json`!
+If all you had in `elm-tooling.json` was `"entrypoints"`, you can safely remove that file.
 
 ## FAQ
 
