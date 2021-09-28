@@ -50,6 +50,12 @@ This extension contributes the following settings:
 - `elmLS.onlyUpdateDiagnosticsOnSave`: Only update compiler diagnostics on save, not on document change.
 - `elmLS.elmTestRunner.showElmTestOutput`: Show output of elm-test as terminal task.
 
+## Configuration
+
+We used to have a file called `elm-tooling.json` where you could specifiy `"entrypoints"`. That’s not needed anymore – the language server finds the entrypoints automatically.
+
+If all you had in `elm-tooling.json` was `"entrypoints"`, you can safely remove that file.
+
 ## FAQ
 
 - How to get a logfile?
