@@ -64,7 +64,7 @@ If all you had in `elm-tooling.json` was `"entrypoints"`, you can safely remove 
 
 - Most features don't seem to work for me?
 
-  - This tool needs a valid elm project, please check if you have an `elm.json`. You can easily initialize your project with `elm init`. If it still does work, please try if you get the same behavior with the [elm-spa-example](https://github.com/rtfeldman/elm-spa-example/).
+  - This tool needs a valid elm project, please check if you have an `elm.json`. You can easily initialize your project with `elm init`. If it still does not work, please try if you get the same behavior with the [elm-spa-example](https://github.com/rtfeldman/elm-spa-example/).
 
 - What's the relation to the language server?
 
