@@ -185,9 +185,8 @@ export class ElmTestAdapter implements TestAdapter {
 
     let errorMessage = undefined;
     try {
-      const suiteOrError:
-        | RunTestSuite
-        | string = await this.runner.runSomeTests(uris);
+      const suiteOrError: RunTestSuite | string =
+        await this.runner.runSomeTests(uris);
       if (typeof suiteOrError === "string") {
         errorMessage = suiteOrError;
       } else {
