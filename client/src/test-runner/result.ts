@@ -23,6 +23,27 @@ SOFTWARE.
 */
 import * as json from "jsonc-parser";
 
+export interface ITestResult {
+  event: string;
+  testCount: string;
+  passed: string;
+  failed: string;
+  duration: string;
+  messages: string[];
+  labels: string[];
+  status: string;
+  failures: {
+    message: string;
+    reason: {
+      data: {
+        comparison: string;
+        actual: string;
+        expected: string;
+      };
+    };
+  }[];
+}
+
 /* eslint-disable @typescript-eslint/no-explicit-any */
 /* eslint-disable @typescript-eslint/explicit-module-boundary-types */
 /* eslint-disable @typescript-eslint/no-unsafe-member-access */
@@ -30,7 +51,7 @@ import * as json from "jsonc-parser";
 
 export function parseOutput(line: string): Output {
   const errors: json.ParseError[] = [];
-  const parsed: unknown = json.parse(line, errors);
+  const parsed: ITestResult = json.parse(line, errors);
   const nojson = errors.find(
     (e) => e.error === json.ParseErrorCode.InvalidSymbol,
   );
@@ -40,8 +61,8 @@ export function parseOutput(line: string): Output {
   return parseResult(parsed);
 }
 
-export function parseResult(parsed: any): Result {
-  if ((parsed.event as string) === "runStart") {
+export function parseResult(parsed: ITestResult): Result {
+  if (parsed.event === "runStart") {
     const event: RunEvent = {
       tag: "runStart",
       testCount: Number.parseInt(parsed.testCount),
@@ -61,10 +82,10 @@ export function parseResult(parsed: any): Result {
     const status: TestStatus = parseStatus(parsed);
     if (status) {
       const messages: string[] =
-        (parsed.messages as string[])?.map((m: string) => String(m)) ?? [];
+        parsed.messages?.map((m: string) => String(m)) ?? [];
       const event: RunEvent = {
         tag: "testCompleted",
-        labels: parsed.labels as string[],
+        labels: parsed.labels,
         messages,
         duration: Number.parseInt(parsed.duration),
         status,
@@ -72,10 +93,10 @@ export function parseResult(parsed: any): Result {
       return { type: "result", event };
     }
   }
-  throw new Error(`unknown event ${parsed.event as string}`);
+  throw new Error(`unknown event ${parsed.event}`);
 }
 
-function parseStatus(parsed: any): TestStatus {
+function parseStatus(parsed: ITestResult): TestStatus {
   if (parsed.status === "pass") {
     return { tag: "pass" };
   } else if (parsed.status === "todo") {
@@ -85,7 +106,7 @@ function parseStatus(parsed: any): TestStatus {
     const failures = (parsed.failures as any[]).map(parseFailure);
     return { tag: "fail", failures };
   }
-  throw new Error(`unknown status ${parsed.status as string}`);
+  throw new Error(`unknown status ${parsed.status}`);
 }
 
 function parseFailure(failure: any): Failure {
@@ -99,6 +120,7 @@ function parseFailure(failure: any): Failure {
         comparison: String(data.comparison),
       };
     } else {
+      // eslint-disable-next-line @typescript-eslint/no-unsafe-argument
       const dataMap = Object.keys(data)
         .map((key) => [String(key), String(data[key])])
         .reduce(

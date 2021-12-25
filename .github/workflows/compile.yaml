@@ -15,7 +15,7 @@ jobs:
       fail-fast: false
       matrix:
         os: [ubuntu-latest, windows-latest, macOS-latest]
-        node-version: [12]
+        node-version: [12, 14, 16]
 
     steps:
       - uses: actions/checkout@v2
@@ -29,6 +29,8 @@ jobs:
         run: |
           npm ci
           npm run compile
-          cd client && npm test
+          cd client
+          npm run lint
+          npm test
         env:
           CI: true

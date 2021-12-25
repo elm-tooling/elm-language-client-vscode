@@ -31,6 +31,7 @@ import {
   Output,
   TestCompleted,
   parseResult,
+  ITestResult,
 } from "../result";
 
 describe("result", () => {
@@ -144,7 +145,9 @@ describe("result", () => {
         messages: [],
         duration: "0",
       };
-      expect(() => parseResult(raw)).to.throw("unknown event tralala");
+      expect(() => parseResult(raw as ITestResult)).to.throw(
+        "unknown event tralala",
+      );
     });
     it("with messages", () => {
       // eslint-disable-next-line @typescript-eslint/no-explicit-any
@@ -167,7 +170,7 @@ describe("result", () => {
         type: "result",
         event,
       };
-      expect(parseResult(raw)).to.eql(result);
+      expect(parseResult(raw as ITestResult)).to.eql(result);
       const message = buildMessage(event);
       expect(message).to.eq("hello\nworld");
     });
@@ -208,7 +211,7 @@ describe("result", () => {
         type: "result",
         event,
       };
-      expect(parseResult(raw)).to.eql(result);
+      expect(parseResult(raw as ITestResult)).to.eql(result);
       const message = buildMessage(event);
       expect(message).to.eq("broken");
     });
@@ -250,7 +253,7 @@ describe("result", () => {
         type: "result",
         event,
       };
-      expect(parseResult(raw)).to.eql(result);
+      expect(parseResult(raw as ITestResult)).to.eql(result);
       const message = buildMessage(event);
       expect(message).to.eq("boom");
     });
@@ -297,7 +300,7 @@ describe("result", () => {
         type: "result",
         event,
       };
-      expect(parseResult(raw)).to.eql(result);
+      expect(parseResult(raw as ITestResult)).to.eql(result);
       const message = buildMessage(event);
       expect(message).to.eq(["actual", "| compare", "expected"].join("\n"));
     });
@@ -344,7 +347,7 @@ describe("result", () => {
         type: "result",
         event,
       };
-      expect(parseResult(raw)).to.eql(result);
+      expect(parseResult(raw as ITestResult)).to.eql(result);
       const message = buildMessage(event);
       expect(message).to.eq(
         ["multi", "line", "actual", "| compare", 'quoted "expected"'].join(
@@ -395,15 +398,14 @@ describe("result", () => {
         type: "result",
         event,
       };
-      expect(parseResult(raw)).to.eql(result);
+      expect(parseResult(raw as ITestResult)).to.eql(result);
       const message = buildMessage(event);
       expect(message).to.eq(["key1: value1", "key2: value2"].join("\n"));
     });
   });
 
   it("with message and failure with comparison data", () => {
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    const raw: any = {
+    const raw: ITestResult = {
       event: "testCompleted",
       status: "fail",
       labels: ["suite", "test"],
@@ -421,6 +423,9 @@ describe("result", () => {
       ],
       messages: ["broken"],
       duration: "0",
+      testCount: "0",
+      failed: "0",
+      passed: "0",
     };
     const event: TestCompleted = {
       tag: "testCompleted",
