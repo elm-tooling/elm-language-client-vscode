@@ -9,9 +9,9 @@ interface IElmPackageQuickPickItem extends vscode.QuickPickItem {
   info: string[];
 }
 
-function transformToPackageQuickPickItems(
-  packages: { [K in string]: string[] },
-): IElmPackageQuickPickItem[] {
+function transformToPackageQuickPickItems(packages: {
+  [K in string]: string[];
+}): IElmPackageQuickPickItem[] {
   return Object.keys(packages).map((item: string) => {
     return { label: item, description: item, info: packages[item] };
   });
@@ -25,9 +25,9 @@ function transformToPackageVersionQuickPickItems(
   });
 }
 
-function transformToQuickPickItems(
-  packages: { [K in string]: string[] },
-): vscode.QuickPickItem[] {
+function transformToQuickPickItems(packages: {
+  [K in string]: string[];
+}): vscode.QuickPickItem[] {
   return Object.keys(packages).map((item: string) => {
     return { label: item, description: "", info: packages[item] };
   });
@@ -53,9 +53,8 @@ function getJSON(): Thenable<{ [K in string]: string[] }> {
 }
 
 function getInstallPackageCommand(packageToInstall: string): string {
-  const config: vscode.WorkspaceConfiguration = vscode.workspace.getConfiguration(
-    "elmLS",
-  );
+  const config: vscode.WorkspaceConfiguration =
+    vscode.workspace.getConfiguration("elmLS");
   let t: string = config.get("elmPath") as string;
 
   if (t === "") {
@@ -72,10 +71,8 @@ function installPackageInTerminal(packageToInstall: string) {
       packageTerminal.dispose();
     }
     packageTerminal = vscode.window.createTerminal("Elm Package Install");
-    const [
-      installPackageLaunchCommand,
-      clearCommand,
-    ] = utils.getTerminalLaunchCommands(installPackageCommand);
+    const [installPackageLaunchCommand, clearCommand] =
+      utils.getTerminalLaunchCommands(installPackageCommand);
     packageTerminal.sendText(clearCommand, true);
     packageTerminal.sendText(installPackageLaunchCommand, true);
     packageTerminal.show(false);
