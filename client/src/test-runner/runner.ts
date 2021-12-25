@@ -187,9 +187,11 @@ export class ElmTestRunner implements vscode.Disposable {
     this.process = elm;
 
     const outChunks: Buffer[] = [];
+    // eslint-disable-next-line @typescript-eslint/no-unsafe-argument
     elm.stdout.on("data", (chunk) => outChunks.push(Buffer.from(chunk)));
 
     const errChunks: Buffer[] = [];
+    // eslint-disable-next-line @typescript-eslint/no-unsafe-argument
     elm.stderr.on("data", (chunk) => errChunks.push(Buffer.from(chunk)));
 
     elm.on("error", (err) => {

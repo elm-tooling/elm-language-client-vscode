@@ -42,7 +42,7 @@ function getJSON(): Thenable<{ [K in string]: string[] }> {
           reject(err);
         } else {
           try {
-            resolve(JSON.parse(body));
+            resolve(JSON.parse(body) as { [x: string]: string[] });
           } catch (e) {
             reject(e);
           }
