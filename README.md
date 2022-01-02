@@ -3,6 +3,7 @@
 [![Version](https://vsmarketplacebadge.apphb.com/version/Elmtooling.elm-ls-vscode.png)](https://marketplace.visualstudio.com/items?itemName=Elmtooling.elm-ls-vscode)
 [![Downloads](https://vsmarketplacebadge.apphb.com/downloads-short/Elmtooling.elm-ls-vscode.png)](https://marketplace.visualstudio.com/items?itemName=Elmtooling.elm-ls-vscode)
 [![Rating](https://vsmarketplacebadge.apphb.com/rating-star/Elmtooling.elm-ls-vscode.png)](https://marketplace.visualstudio.com/items?itemName=Elmtooling.elm-ls-vscode)
+![Matrix](https://img.shields.io/matrix/elm-language-server:matrix.org?label=Matrix%20chat&logo=Matrix)
 
 Supports elm 0.19 and up
 
