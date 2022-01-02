@@ -1,5 +1,19 @@
 # Change Log
 
+## 2.4.0
+
+- Update dependencies
+
+- Updated language server
+  - Implement fuzzy matching when using the workspace symbol search
+  - Ignore suppressed elm-review errors
+  - Parsing improvements
+  - Fix references and renames being wrong in some edge case
+  - Fix edge case where type inference was not returning correct results
+  - Fix auto import when there are module docs and no imports
+  - Fix type inference for cases, that need more then 26 types
+  - Update dependencies
+
 ## 2.3.0
 
 - Add json schema help for `elm-analyse.json`
