@@ -59,6 +59,10 @@ If all you had in `elm-tooling.json` was `"entrypoints"`, you can safely remove 
 
 ## FAQ
 
+- Syntax highlighting not working or works only partially?
+
+  - Make sure the theme you're using supports all the tokens used by the extension (the default VS Code theme currently doesn't support it)
+
 - How to get a logfile?
 
   - `F1` -> Type `Output: Focus on Output View` -> In the now open panel, use the drop down on the right to choose `Elm (your project name)`
