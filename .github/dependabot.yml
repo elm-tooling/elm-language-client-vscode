@@ -10,6 +10,11 @@ updates:
     schedule:
       interval: "daily"
       
+  - package-ecosystem: "npm"
+    directory: "/client"
+    schedule:
+      interval: "daily"      
+      
   - package-ecosystem: "github-actions"
     directory: "/"
     schedule:
