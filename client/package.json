@@ -36,14 +36,14 @@
     "@types/mocha": "^9.1.0",
     "@types/request": "^2.48.8",
     "@types/vscode": "^1.64.0",
-    "@typescript-eslint/eslint-plugin": "^5.26.0",
+    "@typescript-eslint/eslint-plugin": "^5.27.0",
     "@typescript-eslint/parser": "^5.10.2",
     "chai": "^4.3.6",
     "eslint": "^8.8.0",
-    "eslint-config-prettier": "^8.3.0",
+    "eslint-config-prettier": "^8.5.0",
     "eslint-plugin-prettier": "^4.0.0",
     "mocha": "^9.2.2",
-    "ts-mocha": "^9.0.2",
+    "ts-mocha": "^10.0.0",
     "typescript": "4.5.5",
     "vscode-test": "^1.6.1"
   }
