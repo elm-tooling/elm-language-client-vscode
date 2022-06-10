@@ -19,6 +19,9 @@
   "keywords": [
     "elm"
   ],
+  "sponsor": {
+    "url": "https://opencollective.com/elm-tooling"
+  },
   "engines": {
     "vscode": "^1.52.0"
   },
