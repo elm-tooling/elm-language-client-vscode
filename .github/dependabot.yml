@@ -9,20 +9,18 @@ updates:
     directory: "/"
     schedule:
       interval: "daily"
-      
+
   - package-ecosystem: "npm"
     directory: "/client"
     schedule:
-      interval: "daily"      
-      
+      interval: "daily"
+
   - package-ecosystem: "github-actions"
     directory: "/"
     schedule:
-      interval: "daily"      
-      
+      interval: "daily"
 
   - package-ecosystem: "gitsubmodule"
     directory: "/"
     schedule:
-      interval: "daily"      
-            
+      interval: "daily"
