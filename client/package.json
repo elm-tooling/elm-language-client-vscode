@@ -22,7 +22,7 @@
   "dependencies": {
     "jsonc-parser": "^3.1.0",
     "nyc": "^15.1.0",
-    "vscode-languageclient": "^7.0.0",
+    "vscode-languageclient": "^8.0.2",
     "vscode-test-adapter-api": "^1.9.0",
     "vscode-test-adapter-util": "^0.7.1"
   },
