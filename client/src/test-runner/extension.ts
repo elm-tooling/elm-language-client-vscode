@@ -64,39 +64,37 @@ class ElmTestAdapterRegister {
     client: LanguageClient,
     log: Log,
   ): void {
-    void client.onReady().then(() => {
-      const testHub = this.getTestHub();
-      log.info(`Test Explorer ${testHub ? "" : "not "}found`);
+    const testHub = this.getTestHub();
+    log.info(`Test Explorer ${testHub ? "" : "not "}found`);
 
-      if (testHub) {
-        void vscode.workspace
-          .findFiles(
-            new vscode.RelativePattern(workspaceFolder, "**/elm.json"),
-            new vscode.RelativePattern(
-              workspaceFolder,
-              "**/{node_modules,elm-stuff}/**",
-            ),
-          )
-          .then((elmJsons) => {
-            elmJsons.forEach((elmJsonPath) => {
-              const elmProjectFolder = vscode.Uri.parse(
-                path.dirname(elmJsonPath.fsPath),
+    if (testHub) {
+      void vscode.workspace
+        .findFiles(
+          new vscode.RelativePattern(workspaceFolder, "**/elm.json"),
+          new vscode.RelativePattern(
+            workspaceFolder,
+            "**/{node_modules,elm-stuff}/**",
+          ),
+        )
+        .then((elmJsons) => {
+          elmJsons.forEach((elmJsonPath) => {
+            const elmProjectFolder = vscode.Uri.parse(
+              path.dirname(elmJsonPath.fsPath),
+            );
+            if (fs.existsSync(path.join(elmProjectFolder.fsPath, "tests"))) {
+              log.info(`Elm Test Runner for ${elmProjectFolder.fsPath}`);
+              const adapter = new ElmTestAdapter(
+                workspaceFolder,
+                elmProjectFolder,
+                client,
+                log,
               );
-              if (fs.existsSync(path.join(elmProjectFolder.fsPath, "tests"))) {
-                log.info(`Elm Test Runner for ${elmProjectFolder.fsPath}`);
-                const adapter = new ElmTestAdapter(
-                  workspaceFolder,
-                  elmProjectFolder,
-                  client,
-                  log,
-                );
-                this.add(workspaceFolder, elmProjectFolder, adapter);
-                testHub.registerTestAdapter(adapter);
-              }
-            });
+              this.add(workspaceFolder, elmProjectFolder, adapter);
+              testHub.registerTestAdapter(adapter);
+            }
           });
-      }
-    });
+        });
+    }
   }
 
   private add(

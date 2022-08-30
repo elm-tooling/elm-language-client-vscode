@@ -8,7 +8,7 @@ export function registerCommand(
   return vscode.commands.registerCommand("elm.commands.restart", async () => {
     for (const langClient of langClients.values()) {
       await langClient.stop();
-      langClient.start();
+      await langClient.start();
     }
   });
 }
