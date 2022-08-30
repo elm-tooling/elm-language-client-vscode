@@ -65,13 +65,13 @@ export interface IRefactorCodeAction extends Omit<CodeAction, "isPreferred"> {
 
 const clients: Map<string, LanguageClient> = new Map<string, LanguageClient>();
 
-export function activate(context: ExtensionContext): void {
+export async function activate(context: ExtensionContext): Promise<void> {
   const module = context.asAbsolutePath(path.join("server", "out", "index.js"));
 
   const config = Workspace.getConfiguration().get<IClientSettings>("elmLS");
 
   // If we have nested workspace folders we only start a server on the outer most workspace folder.
-  void Workspace.findFiles(
+  await Workspace.findFiles(
     "**/elm.json",
     "**/{node_modules,elm-stuff}/**",
   ).then((workspaceFolders) => {
@@ -122,14 +122,15 @@ export function activate(context: ExtensionContext): void {
           serverOptions,
           clientOptions,
         );
-        client.start();
-        const workspaceId = workspaceFolder.uri.toString();
-        clients.set(workspaceId, client);
+        void client.start().then(() => {
+          const workspaceId = workspaceFolder.uri.toString();
+          clients.set(workspaceId, client);
 
-        RefactorAction.registerCommands(client, context, workspaceId);
-        ExposeUnexposeAction.registerCommands(client, context, workspaceId);
+          RefactorAction.registerCommands(client, context, workspaceId);
+          ExposeUnexposeAction.registerCommands(client, context, workspaceId);
 
-        TestRunner.activate(context, workspaceFolder, client);
+          TestRunner.activate(context, workspaceFolder, client);
+        });
       }
     });
 
@@ -147,15 +148,21 @@ export function activate(context: ExtensionContext): void {
     }
   });
 
-  Workspace.onDidChangeConfiguration((event) => {
+  Workspace.onDidChangeConfiguration(async (event) => {
     if (event.affectsConfiguration("elmLS")) {
-      clients.forEach((client) =>
-        client.sendNotification(DidChangeConfigurationNotification.type, {
-          settings: getSettings(
-            Workspace.getConfiguration().get<IClientSettings>("elmLS"),
-          ),
-        }),
-      );
+      const promises: Promise<void>[] = [];
+
+      clients.forEach((client) => {
+        promises.push(
+          client.sendNotification(DidChangeConfigurationNotification.type, {
+            settings: getSettings(
+              Workspace.getConfiguration().get<IClientSettings>("elmLS"),
+            ),
+          }),
+        );
+      });
+
+      await Promise.all(promises);
     }
   });
 
