@@ -20,7 +20,7 @@
     "test:watch": "mocha --watch"
   },
   "dependencies": {
-    "jsonc-parser": "^3.1.0",
+    "jsonc-parser": "^3.2.0",
     "nyc": "^15.1.0",
     "vscode-languageclient": "^8.0.2",
     "vscode-test-adapter-api": "^1.9.0",
