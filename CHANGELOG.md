@@ -2,9 +2,9 @@
 
 ## 2.5.0
 
-  - Removed node 12 compatibility
-  - Update to new language server version
-  - Update dependencies
+- Removed node 12 compatibility
+- Update to new language server version
+- Update dependencies
 
 - Update language server to 2.5.0
   - Removed node 12 compatibility
