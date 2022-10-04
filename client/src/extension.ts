@@ -71,71 +71,77 @@ export async function activate(context: ExtensionContext): Promise<void> {
   const config = Workspace.getConfiguration().get<IClientSettings>("elmLS");
 
   // If we have nested workspace folders we only start a server on the outer most workspace folder.
-  await Workspace.findFiles(
+  const workspaceFolders = await Workspace.findFiles(
     "**/elm.json",
     "**/{node_modules,elm-stuff}/**",
-  ).then((workspaceFolders) => {
-    workspaceFolders.forEach((workspaceFolderUri) => {
-      const workspaceFolder = Workspace.getWorkspaceFolder(workspaceFolderUri);
-      if (workspaceFolder && !clients.has(workspaceFolder.uri.toString())) {
-        const relativeWorkspace = workspaceFolder.name;
-        const outputChannel: OutputChannel = Window.createOutputChannel(
-          relativeWorkspace.length > 0 ? `Elm (${relativeWorkspace})` : "Elm",
-        );
+  );
+  workspaceFolders.map((workspaceFolderUri) => {
+    const workspaceFolder = Workspace.getWorkspaceFolder(workspaceFolderUri);
+    if (workspaceFolder && !clients.has(workspaceFolder.uri.toString())) {
+      const relativeWorkspace = workspaceFolder.name;
+      const outputChannel: OutputChannel = Window.createOutputChannel(
+        relativeWorkspace.length > 0 ? `Elm (${relativeWorkspace})` : "Elm",
+      );
 
-        const debugOptions = {
-          execArgv: ["--nolazy", `--inspect=${6010 + clients.size}`],
-        };
-        const serverOptions: ServerOptions = {
-          debug: {
-            module,
-            options: debugOptions,
-            transport: TransportKind.ipc,
+      const debugOptions = {
+        execArgv: ["--nolazy", `--inspect=${6010 + clients.size}`],
+      };
+      const serverOptions: ServerOptions = {
+        debug: {
+          module,
+          options: debugOptions,
+          transport: TransportKind.ipc,
+        },
+        run: {
+          module,
+          transport: TransportKind.ipc,
+        },
+      };
+      const clientOptions: LanguageClientOptions = {
+        diagnosticCollectionName: "Elm",
+        documentSelector: [
+          {
+            language: "elm",
+            pattern: `${workspaceFolder.uri.fsPath}/**/*`,
+            scheme: "file",
           },
-          run: {
-            module,
-            transport: TransportKind.ipc,
-          },
-        };
-        const clientOptions: LanguageClientOptions = {
-          diagnosticCollectionName: "Elm",
-          documentSelector: [
-            {
-              language: "elm",
-              pattern: `${workspaceFolder.uri.fsPath}/**/*`,
-              scheme: "file",
-            },
-          ],
-          synchronize: {
-            fileEvents: Workspace.createFileSystemWatcher("**/*.elm"),
-          },
-          initializationOptions: getSettings(config),
-          middleware: new CodeLensResolver(),
-          outputChannel,
-          progressOnInitialization: true,
-          revealOutputChannelOn: RevealOutputChannelOn.Never,
-          workspaceFolder,
-        };
-        const client = new LanguageClient(
-          "elmLS",
-          "Elm",
-          serverOptions,
-          clientOptions,
-        );
-        void client.start().then(() => {
-          const workspaceId = workspaceFolder.uri.toString();
-          clients.set(workspaceId, client);
+        ],
+        synchronize: {
+          fileEvents: Workspace.createFileSystemWatcher("**/*.elm"),
+        },
+        initializationOptions: getSettings(config),
+        middleware: new CodeLensResolver(),
+        outputChannel,
+        progressOnInitialization: true,
+        revealOutputChannelOn: RevealOutputChannelOn.Never,
+        workspaceFolder,
+      };
+      const client = new LanguageClient(
+        "elmLS",
+        "Elm",
+        serverOptions,
+        clientOptions,
+      );
 
-          RefactorAction.registerCommands(client, context, workspaceId);
-          ExposeUnexposeAction.registerCommands(client, context, workspaceId);
-
-          TestRunner.activate(context, workspaceFolder, client);
-        });
-      }
-    });
-
-    registerDidApplyRefactoringCommand(context);
+      const workspaceId = workspaceFolder.uri.toString();
+      clients.set(workspaceId, client);
+    }
   });
+
+  for (const [workspaceId, client] of clients) {
+    await client.start();
+
+    RefactorAction.registerCommands(client, context, workspaceId);
+    ExposeUnexposeAction.registerCommands(client, context, workspaceId);
+
+    TestRunner.activate(
+      context,
+      Workspace.getWorkspaceFolder(Uri.parse(workspaceId))!,
+      client,
+    );
+  }
+
+  registerDidApplyRefactoringCommand(context);
 
   Workspace.onDidChangeWorkspaceFolders(async (event) => {
     for (const folder of event.removed) {
