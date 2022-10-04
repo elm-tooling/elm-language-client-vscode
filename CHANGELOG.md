@@ -1,5 +1,9 @@
 # Change Log
 
+## 2.5.1
+
+- Fix clients starting multiple times due to parallelization
+
 ## 2.5.0
 
 - Removed node 12 compatibility
