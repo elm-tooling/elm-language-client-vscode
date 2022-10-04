@@ -75,7 +75,7 @@ export async function activate(context: ExtensionContext): Promise<void> {
     "**/elm.json",
     "**/{node_modules,elm-stuff}/**",
   );
-  workspaceFolders.map(async (workspaceFolderUri) => {
+  workspaceFolders.map((workspaceFolderUri) => {
     const workspaceFolder = Workspace.getWorkspaceFolder(workspaceFolderUri);
     if (workspaceFolder && !clients.has(workspaceFolder.uri.toString())) {
       const relativeWorkspace = workspaceFolder.name;
@@ -122,17 +122,24 @@ export async function activate(context: ExtensionContext): Promise<void> {
         serverOptions,
         clientOptions,
       );
-      await client.start();
 
       const workspaceId = workspaceFolder.uri.toString();
       clients.set(workspaceId, client);
-
-      RefactorAction.registerCommands(client, context, workspaceId);
-      ExposeUnexposeAction.registerCommands(client, context, workspaceId);
-
-      TestRunner.activate(context, workspaceFolder, client);
     }
   });
+
+  for (const [workspaceId, client] of clients) {
+    await client.start();
+
+    RefactorAction.registerCommands(client, context, workspaceId);
+    ExposeUnexposeAction.registerCommands(client, context, workspaceId);
+
+    TestRunner.activate(
+      context,
+      Workspace.getWorkspaceFolder(Uri.parse(workspaceId))!,
+      client,
+    );
+  }
 
   registerDidApplyRefactoringCommand(context);
 
