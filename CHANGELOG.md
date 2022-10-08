@@ -1,5 +1,10 @@
 # Change Log
 
+## 2.5.2
+
+- Update language server to 2.5.2
+  - Fix a bug that caused the language server to stop working
+
 ## 2.5.1
 
 - Fix clients starting multiple times due to parallelization
