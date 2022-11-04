@@ -117,7 +117,7 @@ export async function activate(context: ExtensionContext): Promise<void> {
         workspaceFolder,
       };
       const client = new LanguageClient(
-        "elmLS",
+        "Elm Language Server",
         "Elm",
         serverOptions,
         clientOptions,
