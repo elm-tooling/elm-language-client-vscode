@@ -75,7 +75,7 @@ export async function activate(context: ExtensionContext): Promise<void> {
     "**/elm.json",
     "**/{node_modules,elm-stuff}/**",
   );
-  workspaceFolders.map((workspaceFolderUri) => {
+  workspaceFolders.forEach((workspaceFolderUri) => {
     const workspaceFolder = Workspace.getWorkspaceFolder(workspaceFolderUri);
     if (workspaceFolder && !clients.has(workspaceFolder.uri.toString())) {
       const relativeWorkspace = workspaceFolder.name;
