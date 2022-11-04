@@ -37,11 +37,7 @@ async function moveFunction(
     },
   );
 
-  if (
-    !moveDestinations ||
-    !moveDestinations.destinations ||
-    !moveDestinations.destinations.length
-  ) {
+  if (!moveDestinations?.destinations?.length) {
     void window.showErrorMessage(
       "Cannot find possible file targets to move the selected method to.",
     );
