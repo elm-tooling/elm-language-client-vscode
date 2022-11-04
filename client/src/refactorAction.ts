@@ -43,7 +43,7 @@ async function moveFunction(
     !moveDestinations.destinations.length
   ) {
     void window.showErrorMessage(
-      "Cannot find possible file targets to move the selected method to.",
+      "Cannot find possible file targets to move the selected function to.",
     );
     return;
   }
