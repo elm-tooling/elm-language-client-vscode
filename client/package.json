@@ -36,7 +36,7 @@
     "@types/mocha": "^10.0.1",
     "@types/request": "^2.48.8",
     "@types/vscode": "^1.73.1",
-    "@typescript-eslint/eslint-plugin": "^5.42.0",
+    "@typescript-eslint/eslint-plugin": "^5.45.0",
     "@typescript-eslint/parser": "^5.42.0",
     "chai": "^4.3.7",
     "eslint": "^8.29.0",
