@@ -12,6 +12,7 @@ import {
   Position,
   ProviderResult,
   Range,
+  RelativePattern,
   TextDocument,
   Uri,
   window as Window,
@@ -39,6 +40,7 @@ import * as RefactorAction from "./refactorAction";
 import * as ExposeUnexposeAction from "./exposeUnexposeAction";
 import * as Restart from "./restart";
 import * as TestRunner from "./test-runner/extension";
+import * as VirtualFiles from "./virtualFiles";
 
 export interface IClientSettings {
   elmFormatPath: string;
@@ -75,12 +77,17 @@ export async function activate(context: ExtensionContext): Promise<void> {
     "**/elm.json",
     "**/{node_modules,elm-stuff}/**",
   );
-  workspaceFolders.map((workspaceFolderUri) => {
+  for (const workspaceFolderUri of workspaceFolders) {
     const workspaceFolder = Workspace.getWorkspaceFolder(workspaceFolderUri);
     if (workspaceFolder && !clients.has(workspaceFolder.uri.toString())) {
       const relativeWorkspace = workspaceFolder.name;
       const outputChannel: OutputChannel = Window.createOutputChannel(
         relativeWorkspace.length > 0 ? `Elm (${relativeWorkspace})` : "Elm",
+      );
+
+      const elmJsonFiles = await Workspace.findFiles(
+        new RelativePattern(workspaceFolder, "**/elm.json"),
+        "**/{node_modules,elm-stuff}/**",
       );
 
       const debugOptions = {
@@ -102,14 +109,15 @@ export async function activate(context: ExtensionContext): Promise<void> {
         documentSelector: [
           {
             language: "elm",
-            pattern: `${workspaceFolder.uri.fsPath}/**/*`,
-            scheme: "file",
           },
         ],
         synchronize: {
           fileEvents: Workspace.createFileSystemWatcher("**/*.elm"),
         },
-        initializationOptions: getSettings(config),
+        initializationOptions: {
+          ...getSettings(config),
+          elmJsonFiles: elmJsonFiles.map((file) => file.toString()),
+        },
         middleware: new CodeLensResolver(),
         outputChannel,
         progressOnInitialization: true,
@@ -126,9 +134,11 @@ export async function activate(context: ExtensionContext): Promise<void> {
       const workspaceId = workspaceFolder.uri.toString();
       clients.set(workspaceId, client);
     }
-  });
+  }
 
   for (const [workspaceId, client] of clients) {
+    VirtualFiles.register(client, context);
+
     await client.start();
 
     RefactorAction.registerCommands(client, context, workspaceId);
@@ -176,7 +186,7 @@ export async function activate(context: ExtensionContext): Promise<void> {
   packageDisposables.forEach((d) => context.subscriptions.push(d));
   context.subscriptions.push(Restart.registerCommand(clients));
 
-  function getSettings(config: IClientSettings | undefined): unknown {
+  function getSettings(config: IClientSettings | undefined): object {
     return config
       ? {
           elmFormatPath: config.elmFormatPath,

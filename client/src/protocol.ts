@@ -59,3 +59,17 @@ export type TestSuite = {
   file: string;
   position: { line: number; character: number };
 };
+
+export const ReadFileRequest = new RequestType<string, string, void>(
+  "elm/readFile",
+);
+
+export const ReadDirectoryRequest = new RequestType<string, string[], void>(
+  "elm/readDirectory",
+);
+
+export const ProvideFileContentsRequest = new RequestType<
+  { uri: string },
+  string,
+  void
+>("elm/provideFileContents");
