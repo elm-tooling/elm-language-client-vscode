@@ -35,6 +35,12 @@
   "extensionDependencies": [
     "hbenl.vscode-test-explorer"
   ],
+  "capabilities": {
+    "virtualWorkspaces": {
+      "supported": "limited",
+      "description": "Some features like `elm make` and `elm-format` are not available in virtual workspaces."
+    }
+  },
   "contributes": {
     "languages": [
       {
