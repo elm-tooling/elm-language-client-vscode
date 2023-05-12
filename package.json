@@ -28,9 +28,9 @@
   "activationEvents": [
     "workspaceContains:**/elm.json"
   ],
-  "main": "./client/out/extension",
+  "main": "./out/nodeClient",
   "bin": {
-    "elm-ls": "server/out/index.js"
+    "elm-ls": "out/nodeServer.js"
   },
   "extensionDependencies": [
     "hbenl.vscode-test-explorer"
@@ -187,9 +187,9 @@
     "version-minor": "npm --no-git-tag-version version minor",
     "version-major": "npm --no-git-tag-version version major",
     "version": "npm i && npm run compile",
-    "compile": "cd client && npm run compile && cd ../server && npm run compile && cd .. && tsc -b",
-    "watch": "npm run copy-wasm && tsc -b -w",
-    "copy-wasm": "cd server && npm run copy-wasm",
+    "compile": "npm run copy-wasm && tsc -b tsconfig.json && node ./scripts/build.js",
+    "watch": "npm run copy-wasm && node ./scripts/build.js --watch",
+    "copy-wasm": "copyfiles ./server/tree-sitter-elm.wasm out -f",
     "postinstall": "cd client && npm install && cd ../server && npm install && cd ..",
     "test": "sh ./scripts/e2e.sh"
   },
@@ -199,6 +199,8 @@
   "devDependencies": {
     "@types/mocha": "^10.0.0",
     "@types/node": "^20.1.0",
+    "copyfiles": "^2.4.1",
+    "esbuild": "^0.17.18",
     "prettier": "^2.7.1",
     "typescript": "5.0.4"
   }

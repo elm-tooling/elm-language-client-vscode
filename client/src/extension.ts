@@ -68,7 +68,7 @@ export interface IRefactorCodeAction extends Omit<CodeAction, "isPreferred"> {
 const clients: Map<string, LanguageClient> = new Map<string, LanguageClient>();
 
 export async function activate(context: ExtensionContext): Promise<void> {
-  const module = context.asAbsolutePath(path.join("server", "out", "index.js"));
+  const module = context.asAbsolutePath(path.join("out", "nodeServer.js"));
 
   const config = Workspace.getConfiguration().get<IClientSettings>("elmLS");
 
@@ -83,6 +83,11 @@ export async function activate(context: ExtensionContext): Promise<void> {
       const relativeWorkspace = workspaceFolder.name;
       const outputChannel: OutputChannel = Window.createOutputChannel(
         relativeWorkspace.length > 0 ? `Elm (${relativeWorkspace})` : "Elm",
+      );
+
+      const treeSitterWasmUri = Uri.joinPath(
+        context.extensionUri,
+        "./server/node_modules/web-tree-sitter/tree-sitter.wasm",
       );
 
       const elmJsonFiles = await Workspace.findFiles(
@@ -117,6 +122,10 @@ export async function activate(context: ExtensionContext): Promise<void> {
         initializationOptions: {
           ...getSettings(config),
           elmJsonFiles: elmJsonFiles.map((file) => file.toString()),
+          treeSitterWasmUri:
+            "importScripts" in globalThis
+              ? treeSitterWasmUri.toString()
+              : treeSitterWasmUri.fsPath,
         },
         middleware: new CodeLensResolver(),
         outputChannel,
