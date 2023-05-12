@@ -1,6 +1,6 @@
 out
 node_modules
-client/tsconfig.tsbuildinfo
+client/*.tsbuildinfo
 .vscode-test
 coverage
 .nyc_output
