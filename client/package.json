@@ -22,6 +22,9 @@
   "dependencies": {
     "jsonc-parser": "^3.2.0",
     "nyc": "^15.1.0",
+    "path-browserify": "^1.0.1",
+    "request-light": "^0.7.0",
+    "util": "^0.12.5",
     "vscode-languageclient": "^8.1.0",
     "vscode-test-adapter-api": "^1.9.0",
     "vscode-test-adapter-util": "^0.7.1"

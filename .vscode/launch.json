@@ -16,6 +16,23 @@
       }
     },
     {
+      "type": "extensionHost",
+      "request": "launch",
+      "name": "Launch Client (Web)",
+      "runtimeExecutable": "${execPath}",
+      "args": [
+        "--extensionDevelopmentPath=${workspaceRoot}",
+        "--extensionDevelopmentKind=web"
+      ],
+      "sourceMaps": true,
+      "debugWebWorkerHost": true,
+      "outFiles": ["${workspaceRoot}/out/**/*.js"],
+      "preLaunchTask": {
+        "type": "npm",
+        "script": "watch"
+      }
+    },
+    {
       "type": "node",
       "request": "attach",
       "name": "Attach to Server 6010",
@@ -74,6 +91,10 @@
     {
       "name": "Client + Server",
       "configurations": ["Launch Client", "Attach to Server 6010"]
+    },
+    {
+      "name": "Client + Server (Web)",
+      "configurations": ["Launch Client (Web)", "Attach to Server 6010"]
     }
   ]
 }

@@ -1,13 +1,13 @@
-import { LanguageClient } from "vscode-languageclient/node";
 import { ExtensionContext, commands } from "vscode";
 import {
   ExposeRequest,
   UnexposeRequest,
   IExposeUnexposeParams,
 } from "./protocol";
+import { BaseLanguageClient } from "vscode-languageclient";
 
 export function registerCommands(
-  languageClient: LanguageClient,
+  languageClient: BaseLanguageClient,
   context: ExtensionContext,
   workspaceId: string,
 ): void {
@@ -31,14 +31,14 @@ export function registerCommands(
 }
 
 async function expose(
-  languageClient: LanguageClient,
+  languageClient: BaseLanguageClient,
   params: IExposeUnexposeParams,
 ) {
   await languageClient.sendRequest(ExposeRequest, params);
 }
 
 async function unexpose(
-  languageClient: LanguageClient,
+  languageClient: BaseLanguageClient,
   params: IExposeUnexposeParams,
 ) {
   await languageClient.sendRequest(UnexposeRequest, params);

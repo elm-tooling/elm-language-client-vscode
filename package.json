@@ -29,6 +29,7 @@
     "workspaceContains:**/elm.json"
   ],
   "main": "./out/nodeClient",
+  "browser": "./out/browserClient",
   "bin": {
     "elm-ls": "out/nodeServer.js"
   },
@@ -201,7 +202,9 @@
     "@types/node": "^20.1.0",
     "copyfiles": "^2.4.1",
     "esbuild": "^0.17.18",
+    "path-browserify": "^1.0.1",
     "prettier": "^2.7.1",
-    "typescript": "5.0.4"
+    "typescript": "5.0.4",
+    "util": "^0.12.5"
   }
 }

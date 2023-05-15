@@ -1,10 +1,9 @@
 import { commands, ExtensionContext, window } from "vscode";
-import { CodeActionParams } from "vscode-languageclient";
-import { LanguageClient } from "vscode-languageclient/node";
+import { BaseLanguageClient, CodeActionParams } from "vscode-languageclient";
 import { GetMoveDestinationRequest, MoveRequest } from "./protocol";
 
 export function registerCommands(
-  languageClient: LanguageClient,
+  languageClient: BaseLanguageClient,
   context: ExtensionContext,
   workspaceId: string,
 ): void {
@@ -25,7 +24,7 @@ export function registerCommands(
 }
 
 async function moveFunction(
-  languageClient: LanguageClient,
+  languageClient: BaseLanguageClient,
   params: CodeActionParams,
   commandInfo: string,
 ) {
