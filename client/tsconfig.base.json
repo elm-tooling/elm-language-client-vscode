@@ -4,7 +4,7 @@
     "module": "commonjs",
     "target": "ES6",
     "strict": true,
-    "lib": ["ES6", "ES2020", "WebWorker"],
+    "lib": ["ES6", "ES2020"],
     "sourceMap": false,
     "esModuleInterop": true,
     "experimentalDecorators": true,
@@ -13,6 +13,5 @@
     "downlevelIteration": true,
     "types": ["mocha"]
   },
-  "exclude": ["node_modules"],
-  "include": ["src"]
+  "exclude": ["node_modules"]
 }

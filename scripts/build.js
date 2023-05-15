@@ -98,7 +98,7 @@ async function build() {
   const clientBrowserOptions = {
     ...clientOptions,
     ...browserOptions,
-    entryPoints: { browserClient: "./client/src/extension.browser.ts" },
+    entryPoints: { browserClient: "./client/src/browser/extension.ts" },
   };
 
   const serverBrowserOptions = {
@@ -110,7 +110,7 @@ async function build() {
   const clientNodeOptions = {
     ...clientOptions,
     ...nodeOptions,
-    entryPoints: { nodeClient: "./client/src/extension.ts" },
+    entryPoints: { nodeClient: "./client/src/node/extension.ts" },
     platform: "node",
   };
 
