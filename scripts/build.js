@@ -66,26 +66,7 @@ async function build() {
   };
 
   const nodeOptions = {
-    plugins: [
-      umdToElmPlugin,
-      {
-        name: "node-deps",
-        setup(build) {
-          build.onResolve({ filter: /^path$/ }, (args) => {
-            const path = require.resolve("../node_modules/path-browserify", {
-              paths: [__dirname],
-            });
-            return { path: path };
-          });
-          build.onResolve({ filter: /^util$/ }, (args) => {
-            const path = require.resolve("../node_modules/util", {
-              paths: [__dirname],
-            });
-            return { path: path };
-          });
-        },
-      },
-    ],
+    plugins: [umdToElmPlugin],
   };
 
   const clientOptions = { ...options, external: ["vscode"], format: "cjs" };
