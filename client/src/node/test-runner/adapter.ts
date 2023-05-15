@@ -38,7 +38,11 @@ import {
   TestDecoration,
 } from "vscode-test-adapter-api";
 import { Log } from "vscode-test-adapter-util";
-import { FindTestsRequest, IFindTestsParams, TestSuite } from "../protocol";
+import {
+  FindTestsRequest,
+  IFindTestsParams,
+  TestSuite,
+} from "../../common/protocol";
 import { ElmTestRunner } from "./runner";
 import {
   abreviateToOneLine,
