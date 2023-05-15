@@ -24,7 +24,6 @@ SOFTWARE.
 import * as vscode from "vscode";
 import * as path from "path";
 
-import { LanguageClient } from "vscode-languageclient/node";
 import {
   TestAdapter,
   TestLoadStartedEvent,
@@ -52,6 +51,7 @@ import {
 } from "./util";
 import { RunTestItem, RunTestSuite } from "./runTestSuite";
 import { buildMessage, TestStatus } from "./result";
+import { BaseLanguageClient } from "vscode-languageclient";
 
 /*
   Integration with Test Explorer UI
@@ -90,7 +90,7 @@ export class ElmTestAdapter implements TestAdapter {
   constructor(
     private readonly workspace: vscode.WorkspaceFolder,
     private readonly elmProjectFolder: vscode.Uri,
-    private readonly client: LanguageClient,
+    private readonly client: BaseLanguageClient,
     private readonly log: Log,
   ) {
     this.log.info(

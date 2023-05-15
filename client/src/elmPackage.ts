@@ -1,7 +1,6 @@
 import * as vscode from "vscode";
 import * as utils from "./utils";
-
-import request = require("request");
+import request from "request-light";
 
 let packageTerminal: vscode.Terminal;
 
@@ -33,23 +32,11 @@ function transformToQuickPickItems(packages: {
   });
 }
 
-function getJSON(): Thenable<{ [K in string]: string[] }> {
-  return new Promise((resolve, reject) => {
-    request(
-      "https://package.elm-lang.org/all-packages",
-      (err: unknown, _: request.Response, body: string) => {
-        if (err) {
-          reject(err);
-        } else {
-          try {
-            resolve(JSON.parse(body) as { [x: string]: string[] });
-          } catch (e) {
-            reject(e);
-          }
-        }
-      },
-    );
+async function getJSON(): Promise<{ [K in string]: string[] }> {
+  const response = await request.xhr({
+    url: "https://package.elm-lang.org/all-packages",
   });
+  return JSON.parse(response.body.toString()) as { [x: string]: string[] };
 }
 
 function getInstallPackageCommand(packageToInstall: string): string {

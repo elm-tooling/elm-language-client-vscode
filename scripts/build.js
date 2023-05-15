@@ -3,69 +3,175 @@ const esbuild = require("esbuild");
 async function build() {
   const watch = process.argv.includes("--watch");
 
-  const options = {
-    entryPoints: {
-      nodeClient: "./client/src/extension.ts",
-      nodeServer: "./server/src/index.ts",
+  const umdToElmPlugin = {
+    name: "umd2esm",
+    setup(build) {
+      build.onResolve(
+        { filter: /^(vscode-.*|estree-walker|jsonc-parser)/ },
+        (args) => {
+          const pathUmdMay = require.resolve(args.path, {
+            paths: [args.resolveDir],
+          });
+          // Call twice the replace is to solve the problem of the path in Windows
+          const pathEsm = pathUmdMay
+            .replace("/umd/", "/esm/")
+            .replace("\\umd\\", "\\esm\\");
+          return { path: pathEsm };
+        },
+      );
     },
+  };
+
+  const options = {
     bundle: true,
     outdir: "./out",
-    external: ["vscode", "fs", "path"],
     format: "cjs",
-    platform: "node",
     tsconfig: "./tsconfig.json",
     sourcemap: true,
     minify: process.argv.includes("--minify"),
+  };
+
+  const browserOptions = {
+    inject: ["./server/src/browser/process-shim.ts"],
     plugins: [
       {
-        name: "umd2esm",
+        name: "node-deps",
         setup(build) {
-          build.onResolve(
-            { filter: /^(vscode-.*|estree-walker|jsonc-parser)/ },
-            (args) => {
-              const pathUmdMay = require.resolve(args.path, {
-                paths: [args.resolveDir],
-              });
-              // Call twice the replace is to solve the problem of the path in Windows
-              const pathEsm = pathUmdMay
-                .replace("/umd/", "/esm/")
-                .replace("\\umd\\", "\\esm\\");
-              return { path: pathEsm };
-            },
-          );
+          build.onResolve({ filter: /^path$/ }, (args) => {
+            const path = require.resolve("../node_modules/path-browserify", {
+              paths: [__dirname],
+            });
+            return { path: path };
+          });
+
+          build.onResolve({ filter: /^util$/ }, (args) => {
+            const path = require.resolve("../node_modules/util", {
+              paths: [__dirname],
+            });
+            return { path: path };
+          });
+
+          build.onResolve({ filter: /^perf_hooks$/ }, (args) => {
+            const path = require.resolve(
+              "../server/src/browser/perf_hooks.ts",
+              {
+                paths: [__dirname],
+              },
+            );
+            return { path: path };
+          });
         },
       },
     ],
   };
 
+  const nodeOptions = {
+    plugins: [
+      umdToElmPlugin,
+      {
+        name: "node-deps",
+        setup(build) {
+          build.onResolve({ filter: /^path$/ }, (args) => {
+            const path = require.resolve("../node_modules/path-browserify", {
+              paths: [__dirname],
+            });
+            return { path: path };
+          });
+          build.onResolve({ filter: /^util$/ }, (args) => {
+            const path = require.resolve("../node_modules/util", {
+              paths: [__dirname],
+            });
+            return { path: path };
+          });
+        },
+      },
+    ],
+  };
+
+  const clientOptions = { ...options, external: ["vscode"], format: "cjs" };
+  const serverOptions = {
+    ...options,
+    external: ["fs", "path"],
+    format: "iife",
+  };
+
+  const clientBrowserOptions = {
+    ...clientOptions,
+    ...browserOptions,
+    entryPoints: { browserClient: "./client/src/extension.browser.ts" },
+  };
+
+  const serverBrowserOptions = {
+    ...serverOptions,
+    ...browserOptions,
+    entryPoints: { browserServer: "./server/src/index.browser.ts" },
+  };
+
+  const clientNodeOptions = {
+    ...clientOptions,
+    ...nodeOptions,
+    entryPoints: { nodeClient: "./client/src/extension.ts" },
+    platform: "node",
+  };
+
+  const serverNodeOptions = {
+    ...serverOptions,
+    ...nodeOptions,
+    entryPoints: { nodeServer: "./server/src/index.ts" },
+    platform: "node",
+  };
+
   if (watch) {
+    let pending = 0;
+    const problemMatcherPlugin = {
+      name: "esbuild-problem-matcher",
+      setup(build) {
+        build.onStart(() => {
+          if (pending++ === 0) {
+            console.log("[watch] build started");
+          }
+        });
+        build.onEnd((result) => {
+          pending--;
+          if (result.errors.length) {
+            result.errors.forEach((error) =>
+              console.error(
+                `> ${error.location.file}:${error.location.line}:${error.location.column}: error: ${error.text}`,
+              ),
+            );
+          } else {
+            if (pending === 0) {
+              console.log("[watch] build finished");
+            }
+          }
+        });
+      },
+    };
+
+    const withProblemMatcher = (options) => ({
+      ...options,
+      plugins: [...options.plugins, problemMatcherPlugin],
+    });
+
     esbuild
-      .context({
-        ...options,
-        plugins: [
-          ...options.plugins,
-          {
-            name: "esbuild-problem-matcher",
-            setup(build) {
-              build.onStart(() => {
-                console.log("[watch] build started");
-              });
-              build.onEnd((result) => {
-                if (result.errors.length) {
-                  result.errors.forEach((error) =>
-                    console.error(
-                      `> ${error.location.file}:${error.location.line}:${error.location.column}: error: ${error.text}`,
-                    ),
-                  );
-                } else console.log("[watch] build finished");
-              });
-            },
-          },
-        ],
-      })
+      .context(withProblemMatcher(clientBrowserOptions))
+      .then((ctx) => ctx.watch());
+    esbuild
+      .context(withProblemMatcher(serverBrowserOptions))
+      .then((ctx) => ctx.watch());
+    esbuild
+      .context(withProblemMatcher(clientNodeOptions))
+      .then((ctx) => ctx.watch());
+    esbuild
+      .context(withProblemMatcher(serverNodeOptions))
       .then((ctx) => ctx.watch());
   } else {
-    await esbuild.build(options);
+    await Promise.all([
+      esbuild.build(clientBrowserOptions),
+      esbuild.build(serverBrowserOptions),
+      esbuild.build(clientNodeOptions),
+      esbuild.build(serverNodeOptions),
+    ]);
   }
 }
 

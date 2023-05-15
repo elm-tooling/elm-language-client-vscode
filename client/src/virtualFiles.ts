@@ -4,23 +4,21 @@ import {
   Uri,
   workspace as Workspace,
 } from "vscode";
-import { CancellationToken, LanguageClient } from "vscode-languageclient/node";
+import { CancellationToken, BaseLanguageClient } from "vscode-languageclient";
 import {
   ReadFileRequest,
   ReadDirectoryRequest,
   ProvideFileContentsRequest,
 } from "./protocol";
-import { TextDecoder } from "util";
 
 export function register(
-  client: LanguageClient,
+  client: BaseLanguageClient,
   context: ExtensionContext,
 ): void {
   client.onRequest(ReadFileRequest, async (uri) => {
-    const data = await Workspace.fs.readFile(
-      client.protocol2CodeConverter.asUri(uri),
+    return Array.from(
+      await Workspace.fs.readFile(client.protocol2CodeConverter.asUri(uri)),
     );
-    return new TextDecoder("utf8").decode(data);
   });
   client.onRequest(ReadDirectoryRequest, async (uri) => {
     const result = await Workspace.findFiles(

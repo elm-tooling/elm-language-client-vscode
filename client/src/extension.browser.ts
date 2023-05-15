@@ -30,16 +30,11 @@ import {
   Range as LspRange,
   ProvideCodeActionsSignature,
 } from "vscode-languageclient";
-import {
-  LanguageClient,
-  ServerOptions,
-  TransportKind,
-} from "vscode-languageclient/node";
+import { LanguageClient } from "vscode-languageclient/browser";
 import * as Package from "./elmPackage";
 import * as RefactorAction from "./refactorAction";
 import * as ExposeUnexposeAction from "./exposeUnexposeAction";
 import * as Restart from "./restart";
-import * as TestRunner from "./test-runner/extension";
 import * as VirtualFiles from "./virtualFiles";
 
 export interface IClientSettings {
@@ -68,7 +63,8 @@ export interface IRefactorCodeAction extends Omit<CodeAction, "isPreferred"> {
 const clients: Map<string, LanguageClient> = new Map<string, LanguageClient>();
 
 export async function activate(context: ExtensionContext): Promise<void> {
-  const module = context.asAbsolutePath(path.join("out", "nodeServer.js"));
+  const module = Uri.joinPath(context.extensionUri, "out/browserServer.js");
+  const worker = new Worker(module.toString());
 
   const config = Workspace.getConfiguration().get<IClientSettings>("elmLS");
 
@@ -89,26 +85,16 @@ export async function activate(context: ExtensionContext): Promise<void> {
         context.extensionUri,
         "./server/node_modules/web-tree-sitter/tree-sitter.wasm",
       );
+      const treeSitterElmWasmUri = Uri.joinPath(
+        context.extensionUri,
+        "./out/tree-sitter-elm.wasm",
+      );
 
       const elmJsonFiles = await Workspace.findFiles(
         new RelativePattern(workspaceFolder, "**/elm.json"),
         "**/{node_modules,elm-stuff}/**",
       );
 
-      const debugOptions = {
-        execArgv: ["--nolazy", `--inspect=${6010 + clients.size}`],
-      };
-      const serverOptions: ServerOptions = {
-        debug: {
-          module,
-          options: debugOptions,
-          transport: TransportKind.ipc,
-        },
-        run: {
-          module,
-          transport: TransportKind.ipc,
-        },
-      };
       const clientOptions: LanguageClientOptions = {
         diagnosticCollectionName: "Elm",
         documentSelector: [
@@ -122,10 +108,8 @@ export async function activate(context: ExtensionContext): Promise<void> {
         initializationOptions: {
           ...getSettings(config),
           elmJsonFiles: elmJsonFiles.map((file) => file.toString()),
-          treeSitterWasmUri:
-            "importScripts" in globalThis
-              ? treeSitterWasmUri.toString()
-              : treeSitterWasmUri.fsPath,
+          treeSitterWasmUri: treeSitterWasmUri.toString(),
+          treeSitterElmWasmUri: treeSitterElmWasmUri.toString(),
         },
         middleware: new CodeLensResolver(),
         outputChannel,
@@ -133,12 +117,7 @@ export async function activate(context: ExtensionContext): Promise<void> {
         revealOutputChannelOn: RevealOutputChannelOn.Never,
         workspaceFolder,
       };
-      const client = new LanguageClient(
-        "elmLS",
-        "Elm",
-        serverOptions,
-        clientOptions,
-      );
+      const client = new LanguageClient("elmLS", "Elm", clientOptions, worker);
 
       const workspaceId = workspaceFolder.uri.toString();
       clients.set(workspaceId, client);
@@ -152,12 +131,6 @@ export async function activate(context: ExtensionContext): Promise<void> {
 
     RefactorAction.registerCommands(client, context, workspaceId);
     ExposeUnexposeAction.registerCommands(client, context, workspaceId);
-
-    TestRunner.activate(
-      context,
-      Workspace.getWorkspaceFolder(Uri.parse(workspaceId))!,
-      client,
-    );
   }
 
   registerDidApplyRefactoringCommand(context);
@@ -166,7 +139,6 @@ export async function activate(context: ExtensionContext): Promise<void> {
     for (const folder of event.removed) {
       const client = clients.get(folder.uri.toString());
       if (client) {
-        TestRunner.deactivate(folder);
         clients.delete(folder.uri.toString());
         await client.stop();
       }
@@ -191,8 +163,8 @@ export async function activate(context: ExtensionContext): Promise<void> {
     }
   });
 
-  // const packageDisposables = Package.activatePackage();
-  // packageDisposables.forEach((d) => context.subscriptions.push(d));
+  const packageDisposables = Package.activatePackage();
+  packageDisposables.forEach((d) => context.subscriptions.push(d));
   context.subscriptions.push(Restart.registerCommand(clients));
 
   function getSettings(config: IClientSettings | undefined): object {
