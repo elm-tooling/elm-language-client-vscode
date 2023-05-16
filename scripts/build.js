@@ -85,7 +85,7 @@ async function build() {
   const serverBrowserOptions = {
     ...serverOptions,
     ...browserOptions,
-    entryPoints: { browserServer: "./server/src/index.browser.ts" },
+    entryPoints: { browserServer: "./server/src/browser/index.ts" },
   };
 
   const clientNodeOptions = {
@@ -98,7 +98,7 @@ async function build() {
   const serverNodeOptions = {
     ...serverOptions,
     ...nodeOptions,
-    entryPoints: { nodeServer: "./server/src/index.ts" },
+    entryPoints: { nodeServer: "./server/src/node/index.ts" },
     platform: "node",
   };
 
