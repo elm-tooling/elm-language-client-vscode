@@ -23,7 +23,7 @@
     "url": "https://opencollective.com/elm-tooling"
   },
   "engines": {
-    "vscode": "^1.52.0"
+    "vscode": "^1.63.0"
   },
   "activationEvents": [
     "workspaceContains:**/elm.json"
