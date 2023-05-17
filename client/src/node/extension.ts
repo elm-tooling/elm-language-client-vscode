@@ -191,8 +191,8 @@ export async function activate(context: ExtensionContext): Promise<void> {
     }
   });
 
-  // const packageDisposables = Package.activatePackage();
-  // packageDisposables.forEach((d) => context.subscriptions.push(d));
+  const packageDisposables = Package.activatePackage();
+  packageDisposables.forEach((d) => context.subscriptions.push(d));
   context.subscriptions.push(Restart.registerCommand(clients));
 
   function getSettings(config: IClientSettings | undefined): object {
