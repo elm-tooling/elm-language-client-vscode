@@ -29,6 +29,7 @@ async function build() {
     tsconfig: "./tsconfig.json",
     sourcemap: true,
     minify: process.argv.includes("--minify"),
+    loader: { ".node": "file" },
   };
 
   const browserOptions = {
