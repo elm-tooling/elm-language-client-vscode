@@ -78,7 +78,7 @@ class ElmTestAdapterRegister {
         )
         .then((elmJsons) => {
           elmJsons.forEach((elmJsonPath) => {
-            const elmProjectFolder = vscode.Uri.parse(
+            const elmProjectFolder = vscode.Uri.file(
               path.dirname(elmJsonPath.fsPath),
             );
             if (fs.existsSync(path.join(elmProjectFolder.fsPath, "tests"))) {
