@@ -26,7 +26,6 @@ async function build() {
     bundle: true,
     outdir: "./out",
     format: "cjs",
-    tsconfig: "./tsconfig.json",
     sourcemap: true,
     minify: process.argv.includes("--minify"),
     loader: { ".node": "file" },
@@ -81,12 +80,14 @@ async function build() {
     ...clientOptions,
     ...browserOptions,
     entryPoints: { browserClient: "./client/src/browser/extension.ts" },
+    tsconfig: "./client/tsconfig.browser.json",
   };
 
   const serverBrowserOptions = {
     ...serverOptions,
     ...browserOptions,
     entryPoints: { browserServer: "./server/src/browser/index.ts" },
+    tsconfig: "./server/tsconfig.browser.json",
   };
 
   const clientNodeOptions = {
@@ -94,6 +95,7 @@ async function build() {
     ...nodeOptions,
     entryPoints: { nodeClient: "./client/src/node/extension.ts" },
     platform: "node",
+    tsconfig: "./client/tsconfig.node.json",
   };
 
   const serverNodeOptions = {
@@ -101,6 +103,7 @@ async function build() {
     ...nodeOptions,
     entryPoints: { nodeServer: "./server/src/node/index.ts" },
     platform: "node",
+    tsconfig: "./server/tsconfig.node.json",
   };
 
   if (watch) {
