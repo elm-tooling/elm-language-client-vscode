@@ -25,7 +25,7 @@
     "path-browserify": "^1.0.1",
     "request-light": "^0.7.0",
     "util": "^0.12.5",
-    "vscode-languageclient": "^8.1.0",
+    "vscode-languageclient": "^9.0.1",
     "vscode-test-adapter-api": "^1.9.0",
     "vscode-test-adapter-util": "^0.7.1"
   },
@@ -35,19 +35,19 @@
     "watch-files": "src/**/*.ts"
   },
   "devDependencies": {
-    "@types/chai": "^4.3.5",
-    "@types/mocha": "^10.0.1",
-    "@types/request": "^2.48.8",
-    "@types/vscode": "^1.83.0",
-    "@typescript-eslint/eslint-plugin": "^5.59.2",
-    "@typescript-eslint/parser": "^5.62.0",
-    "chai": "^4.3.7",
-    "eslint": "^8.51.0",
-    "eslint-config-prettier": "^8.8.0",
-    "eslint-plugin-prettier": "^5.0.0",
+    "@types/chai": "^4.3.11",
+    "@types/mocha": "^10.0.6",
+    "@types/request": "^2.48.12",
+    "@types/vscode": "^1.85.0",
+    "@typescript-eslint/eslint-plugin": "^6.15.0",
+    "@typescript-eslint/parser": "^6.15.0",
+    "chai": "^4.3.10",
+    "eslint": "^8.56.0",
+    "eslint-config-prettier": "^9.1.0",
+    "eslint-plugin-prettier": "^5.1.1",
     "mocha": "^10.2.0",
     "ts-mocha": "^10.0.0",
-    "typescript": "5.2.2",
+    "typescript": "5.3.3",
     "vscode-test": "^1.6.1"
   }
 }
