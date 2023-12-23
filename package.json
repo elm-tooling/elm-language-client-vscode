@@ -198,13 +198,13 @@
     "request": "2.88.2"
   },
   "devDependencies": {
-    "@types/mocha": "^10.0.0",
-    "@types/node": "^20.1.0",
+    "@types/mocha": "^10.0.6",
+    "@types/node": "^20.10.5",
     "copyfiles": "^2.4.1",
-    "esbuild": "^0.19.2",
+    "esbuild": "^0.19.10",
     "path-browserify": "^1.0.1",
-    "prettier": "^3.0.2",
-    "typescript": "5.2.2",
+    "prettier": "^3.1.1",
+    "typescript": "5.3.3",
     "util": "^0.12.5"
   }
 }

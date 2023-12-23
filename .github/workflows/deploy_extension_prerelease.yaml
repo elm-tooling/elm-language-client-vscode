@@ -13,7 +13,7 @@ jobs:
           submodules: true
       - uses: actions/setup-node@v4
         with:
-          node-version: 16
+          node-version: 20
       - run: npm ci
       - run: npm run compile --minify
       - name: Publish to Visual Studio Marketplace
