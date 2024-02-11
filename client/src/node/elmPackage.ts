@@ -1,6 +1,6 @@
 import * as vscode from "vscode";
 import * as utils from "./utils";
-import request from "request-light";
+import * as request from "request-light";
 
 let packageTerminal: vscode.Terminal;
 
