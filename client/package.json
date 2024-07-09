@@ -20,7 +20,7 @@
     "test:watch": "mocha --watch"
   },
   "dependencies": {
-    "jsonc-parser": "^3.2.0",
+    "jsonc-parser": "^3.2.1",
     "nyc": "^15.1.0",
     "path-browserify": "^1.0.1",
     "request-light": "^0.7.0",
