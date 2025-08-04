@@ -35,13 +35,13 @@
     "watch-files": "src/**/*.ts"
   },
   "devDependencies": {
-    "@types/chai": "^4.3.11",
+    "@types/chai": "^5.2.2",
     "@types/mocha": "^10.0.7",
     "@types/request": "^2.48.12",
     "@types/vscode": "^1.85.0",
     "@typescript-eslint/eslint-plugin": "^6.15.0",
     "@typescript-eslint/parser": "^6.15.0",
-    "chai": "^4.3.10",
+    "chai": "^5.2.1",
     "eslint": "^8.56.0",
     "eslint-config-prettier": "^9.1.0",
     "eslint-plugin-prettier": "^5.1.3",
