@@ -204,7 +204,7 @@
     "esbuild": "^0.24.0",
     "path-browserify": "^1.0.1",
     "prettier": "^3.1.1",
-    "typescript": "5.6.2",
+    "typescript": "5.9.3",
     "util": "^0.12.5"
   }
 }
