@@ -58,6 +58,15 @@ export interface IRefactorCodeAction extends Omit<CodeAction, "isPreferred"> {
   };
 }
 
+function isRefactorCodeAction(
+  codeAction: CodeAction | Command,
+): codeAction is IRefactorCodeAction {
+  const data = (codeAction as { data?: Partial<IRefactorCodeAction["data"]> })
+    .data;
+
+  return typeof data?.refactorName === "string";
+}
+
 const clients: Map<string, LanguageClient> = new Map<string, LanguageClient>();
 
 export async function activate(context: ExtensionContext): Promise<void> {
@@ -311,20 +320,23 @@ export class CodeLensResolver implements Middleware {
     next: ProvideCodeActionsSignature,
   ): ProviderResult<(CodeAction | Command)[]> {
     // TODO: Export IRefactorAction type from the server to use here
-    return (
-      next(document, range, context, token) as Thenable<IRefactorCodeAction[]>
-    ).then((codeActions) =>
-      codeActions.map((codeAction) => {
-        // Maybe use 'Did apply refactoring' for more refactor actions later, but for now this is all that is needed
-        if (codeAction.data.refactorName === "extract_function") {
-          codeAction.command = codeAction.command ?? {
-            title: "Did apply refactoring",
-            command: didApplyRefactoringCommandId,
-            arguments: [codeAction],
-          };
-        }
-        return codeAction;
-      }),
+    return Promise.resolve(next(document, range, context, token)).then(
+      (codeActions) =>
+        codeActions?.map((codeAction) => {
+          if (!isRefactorCodeAction(codeAction)) {
+            return codeAction;
+          }
+
+          // Maybe use 'Did apply refactoring' for more refactor actions later, but for now this is all that is needed
+          if (codeAction.data.refactorName === "extract_function") {
+            codeAction.command = codeAction.command ?? {
+              title: "Did apply refactoring",
+              command: didApplyRefactoringCommandId,
+              arguments: [codeAction],
+            };
+          }
+          return codeAction;
+        }),
     );
   }
 
@@ -333,19 +345,23 @@ export class CodeLensResolver implements Middleware {
     token: CancellationToken,
     next: ResolveCodeActionSignature,
   ): ProviderResult<CodeAction> {
+    if (!isRefactorCodeAction(item)) {
+      return next(item, token);
+    }
+
     const refactorItem = item as IRefactorCodeAction;
     // We can't send the command to the server, because it has circular json
     // VS code already has reference to the command, so we don't need to send it back
     // The `didApplyRefactoring` command argument has a reference to `refactorItem`,
     // so when we update the data here, the command will know
     refactorItem.command = undefined;
-    return (next(refactorItem, token) as Thenable<IRefactorCodeAction>).then(
-      (codeAction) => {
+    return Promise.resolve(next(refactorItem, token)).then((codeAction) => {
+      if (codeAction && isRefactorCodeAction(codeAction)) {
         refactorItem.edit = codeAction.edit;
         refactorItem.data = codeAction.data;
+      }
 
-        return refactorItem;
-      },
-    );
+      return refactorItem;
+    });
   }
 }
