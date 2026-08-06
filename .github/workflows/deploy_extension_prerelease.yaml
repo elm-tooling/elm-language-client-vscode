@@ -17,7 +17,7 @@ jobs:
       - run: npm ci
       - run: npm run compile --minify
       - name: Publish to Visual Studio Marketplace
-        uses: HaaLeo/publish-vscode-extension@v1
+        uses: HaaLeo/publish-vscode-extension@v2
         with:
           pat: ${{ secrets.VS_MARKETPLACE_TOKEN }}
           preRelease: true
