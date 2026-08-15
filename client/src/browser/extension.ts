@@ -81,7 +81,7 @@ export async function activate(context: ExtensionContext): Promise<void> {
 
       const treeSitterWasmUri = Uri.joinPath(
         context.extensionUri,
-        "./server/node_modules/web-tree-sitter/tree-sitter.wasm",
+        "./out/web-tree-sitter.wasm",
       );
       const treeSitterElmWasmUri = Uri.joinPath(
         context.extensionUri,
