@@ -57,13 +57,30 @@ async function build() {
             );
             return { path: path };
           });
+
+          build.onResolve({ filter: /^module$/ }, () => ({
+            path: "module",
+            external: true,
+          }));
         },
       },
     ],
   };
 
   const nodeOptions = {
-    plugins: [umdToElmPlugin],
+    plugins: [
+      umdToElmPlugin,
+      {
+        name: "web-tree-sitter-cjs",
+        setup(build) {
+          build.onResolve({ filter: /^web-tree-sitter$/ }, () => ({
+            path: require.resolve("web-tree-sitter", {
+              paths: [`${__dirname}/../server`],
+            }),
+          }));
+        },
+      },
+    ],
   };
 
   const clientOptions = { ...options, external: ["vscode"], format: "cjs" };

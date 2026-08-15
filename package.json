@@ -190,7 +190,7 @@
     "version": "npm i && npm run compile",
     "compile": "npm run copy-wasm && tsc -b tsconfig.json && node ./scripts/build.js",
     "watch": "npm run copy-wasm && node ./scripts/build.js --watch",
-    "copy-wasm": "copyfiles ./server/tree-sitter-elm.wasm out -f",
+    "copy-wasm": "copyfiles ./server/tree-sitter-elm.wasm ./server/node_modules/web-tree-sitter/web-tree-sitter.wasm out -f",
     "postinstall": "cd client && npm install && cd ../server && npm install && cd ..",
     "test": "sh ./scripts/e2e.sh"
   },
