@@ -1,5 +1,15 @@
 # Change Log
 
+## Unreleased
+
+- Require Visual Studio Code 1.134
+- Target Node.js 22.17 or newer for development
+- Update the bundled Elm language server
+- Update to Language Server Protocol 3.18
+- Use native ES modules for the desktop extension and language server
+- Add desktop extension-host and browser language-worker checks; a full web
+  extension-host test is not yet automated
+
 ## 2.8.0
 
 - Allow running with newer node versions
@@ -204,7 +214,6 @@
 - Updated language server
 
   ### Features
-
   - Enabled type checking diagnostics that update on document change. These include parsing errors, type mismatch errors, value not found errors, etc
   - Support file events APIs (Previously VSCode only)
 
@@ -222,7 +231,6 @@
   - Ports now have codeLenses, can find references and have correct types on mouseover
 
   ### Bug Fixes
-
   - Greatly improve performance of diagnostics and type inference
   - Fix some type inference cases
   - Fix module resolution to be more like how the compiler resolves modules
@@ -231,7 +239,6 @@
   - Fixed test dependencies being available in non test modules
 
   ### Other Changes
-
   - Update package rankings
   - Update our parser
 

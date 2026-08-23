@@ -1,4 +1,10 @@
-const esbuild = require("esbuild");
+import { createRequire } from "node:module";
+import { dirname } from "node:path";
+import { fileURLToPath } from "node:url";
+import * as esbuild from "esbuild";
+
+const require = createRequire(import.meta.url);
+const __dirname = dirname(fileURLToPath(import.meta.url));
 
 async function build() {
   const watch = process.argv.includes("--watch");
@@ -22,7 +28,6 @@ async function build() {
   const options = {
     bundle: true,
     outdir: "./out",
-    format: "cjs",
     sourcemap: true,
     minify: process.argv.includes("--minify"),
     loader: { ".node": "file" },
@@ -58,41 +63,50 @@ async function build() {
             return { path: path };
           });
 
-          build.onResolve({ filter: /^module$/ }, () => ({
-            path: "module",
-            external: true,
+          build.onResolve({ filter: /^fs\/promises$/ }, (args) => ({
+            path: args.path,
+            namespace: "browser-node-guard",
           }));
+          build.onResolve({ filter: /^module$/ }, (args) => ({
+            path: args.path,
+            namespace: "browser-node-guard",
+          }));
+          build.onLoad(
+            { filter: /^fs\/promises$/, namespace: "browser-node-guard" },
+            () => ({
+              contents:
+                'export const readFile = () => { throw new Error("fs/promises is unavailable in a browser worker"); };',
+            }),
+          );
+          build.onLoad(
+            { filter: /^module$/, namespace: "browser-node-guard" },
+            () => ({
+              contents:
+                'export const createRequire = () => { throw new Error("module is unavailable in a browser worker"); };',
+            }),
+          );
         },
       },
     ],
   };
 
   const nodeOptions = {
-    plugins: [
-      umdToElmPlugin,
-      {
-        name: "web-tree-sitter-cjs",
-        setup(build) {
-          build.onResolve({ filter: /^web-tree-sitter$/ }, () => ({
-            path: require.resolve("web-tree-sitter", {
-              paths: [`${__dirname}/../server`],
-            }),
-          }));
-        },
-      },
-    ],
+    banner: {
+      js: 'import { createRequire as __createRequire } from "node:module";import { dirname as __pathDirname } from "node:path";import { fileURLToPath as __fileURLToPath } from "node:url";const require = __createRequire(import.meta.url);const __filename = __fileURLToPath(import.meta.url);const __dirname = __pathDirname(__filename);',
+    },
+    plugins: [umdToElmPlugin],
   };
 
-  const clientOptions = { ...options, external: ["vscode"], format: "cjs" };
+  const clientOptions = { ...options, external: ["vscode"] };
   const serverOptions = {
     ...options,
-    external: ["fs", "path"],
-    format: "iife",
   };
 
   const clientBrowserOptions = {
     ...clientOptions,
     ...browserOptions,
+    format: "cjs",
+    outExtension: { ".js": ".cjs" },
     entryPoints: { browserClient: "./client/src/browser/extension.ts" },
     tsconfig: "./client/tsconfig.browser.json",
   };
@@ -100,6 +114,7 @@ async function build() {
   const serverBrowserOptions = {
     ...serverOptions,
     ...browserOptions,
+    format: "esm",
     entryPoints: { browserServer: "./server/src/browser/index.ts" },
     tsconfig: "./server/tsconfig.browser.json",
   };
@@ -107,6 +122,8 @@ async function build() {
   const clientNodeOptions = {
     ...clientOptions,
     ...nodeOptions,
+    format: "esm",
+    outExtension: { ".js": ".mjs" },
     entryPoints: { nodeClient: "./client/src/node/extension.ts" },
     platform: "node",
     tsconfig: "./client/tsconfig.node.json",
@@ -115,9 +132,21 @@ async function build() {
   const serverNodeOptions = {
     ...serverOptions,
     ...nodeOptions,
+    format: "esm",
+    outExtension: { ".js": ".mjs" },
     entryPoints: { nodeServer: "./server/src/node/index.ts" },
     platform: "node",
     tsconfig: "./server/tsconfig.node.json",
+  };
+
+  const testOptions = {
+    ...clientOptions,
+    format: "cjs",
+    entryPoints: { extensionTests: "./client/src/node/test/extensionHost.ts" },
+    outdir: "./client/out",
+    outExtension: { ".js": ".cjs" },
+    platform: "node",
+    tsconfig: "./client/tsconfig.node.json",
   };
 
   if (watch) {
@@ -170,6 +199,7 @@ async function build() {
       esbuild.build(serverBrowserOptions),
       esbuild.build(clientNodeOptions),
       esbuild.build(serverNodeOptions),
+      esbuild.build(testOptions),
     ]);
   }
 }

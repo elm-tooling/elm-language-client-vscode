@@ -20,7 +20,9 @@ jobs:
     steps:
       - uses: actions/checkout@v7
         with:
-          submodules: true
+          persist-credentials: false
+      - name: Checkout language server
+        run: git submodule update --init --depth=1 -- server
       - name: Setup node ${{ matrix.node-version }}
         uses: actions/setup-node@v7
         with:
@@ -29,8 +31,20 @@ jobs:
         run: |
           npm ci
           npm run compile
+          npm run smoke
           cd client
           npm run lint
           npm test
         env:
           CI: true
+      - name: Package extension
+        if: matrix.os == 'ubuntu-latest' && matrix.node-version == 24
+        run: npm run package
+      - name: Test extension host
+        if: matrix.os == 'ubuntu-latest' && matrix.node-version == 24
+        run: xvfb-run -a npm run test:e2e
+      - name: Test browser module worker
+        if: matrix.os == 'ubuntu-latest' && matrix.node-version == 24
+        run: |
+          npx playwright install chromium
+          npm run test:e2e-web
