@@ -9,7 +9,7 @@
       "runtimeExecutable": "${execPath}",
       "args": ["--extensionDevelopmentPath=${workspaceRoot}"],
       "sourceMaps": true,
-      "outFiles": ["${workspaceRoot}/out/**/*.js"],
+      "outFiles": ["${workspaceRoot}/out/**/*.{js,mjs,cjs}"],
       "preLaunchTask": {
         "type": "npm",
         "script": "watch"
@@ -67,10 +67,14 @@
       "runtimeExecutable": "${execPath}",
       "args": [
         "--extensionDevelopmentPath=${workspaceRoot}",
-        "--extensionTestsPath=${workspaceRoot}/client/out/test",
+        "--extensionTestsPath=${workspaceRoot}/client/out/extensionTests.cjs",
         "${workspaceRoot}/client/testFixture"
       ],
-      "outFiles": ["${workspaceRoot}/client/out/test/**/*.js"]
+      "outFiles": ["${workspaceRoot}/client/out/extensionTests.cjs"],
+      "preLaunchTask": {
+        "type": "npm",
+        "script": "compile"
+      }
     },
     {
       "name": "Debug Jest Tests",

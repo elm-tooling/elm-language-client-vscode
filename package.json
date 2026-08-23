@@ -6,6 +6,7 @@
   "icon": "images/elm.png",
   "author": "Kolja Lampe",
   "license": "MIT",
+  "type": "module",
   "version": "2.8.0",
   "repository": {
     "type": "git",
@@ -23,15 +24,15 @@
     "url": "https://opencollective.com/elm-tooling"
   },
   "engines": {
-    "vscode": "^1.63.0"
+    "vscode": "^1.134.0"
   },
   "activationEvents": [
     "workspaceContains:**/elm.json"
   ],
-  "main": "./out/nodeClient",
-  "browser": "./out/browserClient",
+  "main": "./out/nodeClient.mjs",
+  "browser": "./out/browserClient.cjs",
   "bin": {
-    "elm-ls": "out/nodeServer.js"
+    "elm-ls": "out/nodeServer.mjs"
   },
   "extensionDependencies": [
     "hbenl.vscode-test-explorer"
@@ -188,23 +189,29 @@
     "version-minor": "npm --no-git-tag-version version minor",
     "version-major": "npm --no-git-tag-version version major",
     "version": "npm i && npm run compile",
-    "compile": "npm run copy-wasm && tsc -b tsconfig.json && node ./scripts/build.js",
+    "clean": "node --input-type=module -e \"import fs from 'node:fs';for(const path of ['out','client/out'])fs.rmSync(path,{recursive:true,force:true})\"",
+    "compile": "npm run clean && npm run copy-wasm && tsc -b tsconfig.json && node ./scripts/build.js",
     "watch": "npm run copy-wasm && node ./scripts/build.js --watch",
     "copy-wasm": "copyfiles ./server/tree-sitter-elm.wasm ./server/node_modules/web-tree-sitter/web-tree-sitter.wasm out -f",
-    "postinstall": "cd client && npm install && cd ../server && npm install && cd ..",
-    "test": "sh ./scripts/e2e.sh"
-  },
-  "dependencies": {
-    "request": "2.88.2"
+    "postinstall": "npm --prefix client ci && npm --prefix server ci --ignore-scripts",
+    "smoke": "node ./scripts/smoke.mjs",
+    "test": "npm --prefix client test",
+    "pretest:e2e": "npm run compile",
+    "test:e2e": "node ./scripts/e2e.mjs",
+    "verify": "npm run compile && npm run smoke && npm --prefix client run lint && npm --prefix client test",
+    "package": "npm run compile -- --minify && npm run smoke && vsce package --no-dependencies --out elm-ls-vscode.vsix && node ./scripts/verify-vsix.mjs elm-ls-vscode.vsix"
   },
   "devDependencies": {
     "@types/mocha": "^10.0.6",
     "@types/node": "^26.2.0",
+    "@vscode/test-electron": "^3.1.0",
+    "@vscode/vsce": "^3.9.2",
     "copyfiles": "^2.4.1",
     "esbuild": "^0.28.1",
     "path-browserify": "^1.0.1",
     "prettier": "^3.1.1",
-    "typescript": "5.6.2",
-    "util": "^0.12.5"
+    "typescript": "5.9.3",
+    "util": "^0.12.5",
+    "yauzl": "^3.4.0"
   }
 }

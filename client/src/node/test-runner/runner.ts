@@ -22,7 +22,7 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.
 */
 import * as vscode from "vscode";
-import path = require("path");
+import path from "path";
 import * as child_process from "child_process";
 import * as fs from "fs";
 

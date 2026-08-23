@@ -8,7 +8,7 @@ import {
   commands,
   ExtensionContext,
   Location,
-  OutputChannel,
+  LogOutputChannel,
   Position,
   ProviderResult,
   Range,
@@ -68,7 +68,19 @@ export interface IRefactorCodeAction extends Omit<CodeAction, "isPreferred"> {
 const clients: Map<string, LanguageClient> = new Map<string, LanguageClient>();
 
 export async function activate(context: ExtensionContext): Promise<void> {
-  const module = context.asAbsolutePath(path.join("out", "nodeServer.js"));
+  const module = context.asAbsolutePath(path.join("out", "nodeServer.mjs"));
+  const pendingClients = new Map<
+    string,
+    { client: LanguageClient; outputChannel: LogOutputChannel }
+  >();
+  const disposePendingClients = async (): Promise<void> => {
+    await Promise.allSettled(
+      [...pendingClients].map(async ([workspaceId, { client }]) => {
+        clients.delete(workspaceId);
+        await client.dispose();
+      }),
+    );
+  };
 
   const config = Workspace.getConfiguration().get<IClientSettings>("elmLS");
 
@@ -79,10 +91,15 @@ export async function activate(context: ExtensionContext): Promise<void> {
   );
   for (const workspaceFolderUri of workspaceFolders) {
     const workspaceFolder = Workspace.getWorkspaceFolder(workspaceFolderUri);
-    if (workspaceFolder && !clients.has(workspaceFolder.uri.toString())) {
+    if (
+      workspaceFolder &&
+      !clients.has(workspaceFolder.uri.toString()) &&
+      !pendingClients.has(workspaceFolder.uri.toString())
+    ) {
       const relativeWorkspace = workspaceFolder.name;
-      const outputChannel: OutputChannel = Window.createOutputChannel(
+      const outputChannel: LogOutputChannel = Window.createOutputChannel(
         relativeWorkspace.length > 0 ? `Elm (${relativeWorkspace})` : "Elm",
+        { log: true },
       );
 
       const treeSitterWasmUri = Uri.joinPath(
@@ -141,23 +158,34 @@ export async function activate(context: ExtensionContext): Promise<void> {
       );
 
       const workspaceId = workspaceFolder.uri.toString();
-      clients.set(workspaceId, client);
+      pendingClients.set(workspaceId, { client, outputChannel });
     }
   }
 
-  for (const [workspaceId, client] of clients) {
-    VirtualFiles.register(client, context);
+  try {
+    for (const [workspaceId, { client, outputChannel }] of pendingClients) {
+      VirtualFiles.register(client, context);
 
-    await client.start();
+      try {
+        await client.start();
+        clients.set(workspaceId, client);
+      } catch (error) {
+        outputChannel.error("Failed to start the Elm language server", error);
+        throw error;
+      }
 
-    RefactorAction.registerCommands(client, context, workspaceId);
-    ExposeUnexposeAction.registerCommands(client, context, workspaceId);
+      RefactorAction.registerCommands(client, context, workspaceId);
+      ExposeUnexposeAction.registerCommands(client, context, workspaceId);
 
-    TestRunner.activate(
-      context,
-      Workspace.getWorkspaceFolder(Uri.parse(workspaceId))!,
-      client,
-    );
+      TestRunner.activate(
+        context,
+        Workspace.getWorkspaceFolder(Uri.parse(workspaceId))!,
+        client,
+      );
+    }
+  } catch (error) {
+    await disposePendingClients();
+    throw error;
   }
 
   registerDidApplyRefactoringCommand(context);

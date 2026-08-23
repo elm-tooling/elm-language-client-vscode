@@ -29,8 +29,15 @@ jobs:
         run: |
           npm ci
           npm run compile
+          npm run smoke
           cd client
           npm run lint
           npm test
         env:
           CI: true
+      - name: Package extension
+        if: matrix.os == 'ubuntu-latest' && matrix.node-version == 24
+        run: npm run package
+      - name: Test extension host
+        if: matrix.os == 'ubuntu-latest' && matrix.node-version == 24
+        run: xvfb-run -a npm run test:e2e

@@ -17,7 +17,7 @@ describe("node server bundle", () => {
     const root = path.resolve(process.cwd(), "..");
     const child = spawn(
       process.execPath,
-      [path.join(root, "out/nodeServer.js"), "--stdio"],
+      [path.join(root, "out/nodeServer.mjs"), "--stdio"],
       {
         cwd: root,
         stdio: ["pipe", "pipe", "pipe"],
