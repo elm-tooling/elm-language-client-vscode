@@ -113,7 +113,10 @@ export async function activate(context: ExtensionContext): Promise<void> {
       );
 
       const debugOptions = {
-        execArgv: ["--nolazy", `--inspect=${6010 + clients.size}`],
+        execArgv: [
+          "--nolazy",
+          `--inspect=${6010 + clients.size + pendingClients.size}`,
+        ],
       };
       const serverOptions: ServerOptions = {
         debug: {

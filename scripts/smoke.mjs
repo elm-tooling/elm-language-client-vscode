@@ -1,8 +1,12 @@
 import assert from "node:assert/strict";
-import { readFile } from "node:fs/promises";
+import { mkdtemp, readFile, rm, writeFile } from "node:fs/promises";
 import { spawnSync } from "node:child_process";
+import { isBuiltin } from "node:module";
+import { tmpdir } from "node:os";
+import path from "node:path";
 import { pathToFileURL } from "node:url";
 import { Worker } from "node:worker_threads";
+import * as esbuild from "esbuild";
 
 const manifest = JSON.parse(await readFile("package.json", "utf8"));
 const entries = [
@@ -23,12 +27,112 @@ for (const entry of entries) {
   );
 }
 
-const browserServer = await readFile("out/browserServer.js", "utf8");
-assert.doesNotMatch(
-  browserServer,
-  /(?:from|require\(|import\()["'](?:fs\/promises|module)["']/,
-  "browser server contains an unresolved Node import",
+const nodeImports = new Set();
+await esbuild.build({
+  bundle: true,
+  entryPoints: ["out/browserServer.js"],
+  logLevel: "silent",
+  platform: "browser",
+  plugins: [
+    {
+      name: "unresolved-node-imports",
+      setup(build) {
+        build.onResolve({ filter: /.*/ }, (args) => {
+          if (isBuiltin(args.path)) {
+            nodeImports.add(args.path);
+            return { external: true, path: args.path };
+          }
+        });
+      },
+    },
+  ],
+  write: false,
+});
+assert.deepEqual(
+  [...nodeImports],
+  [],
+  `browser server contains unresolved Node imports: ${[...nodeImports].join(", ")}`,
 );
+
+const nodeClientSource = await readFile(manifest.main, "utf8");
+const vscodeExports = new Set(
+  [...nodeClientSource.matchAll(/import\s*{([^}]+)}\s*from\s*["']vscode["']/gs)]
+    .flatMap(([, imports]) => imports.split(","))
+    .map((name) => name.trim().split(/\s+as\s+/)[0])
+    .filter(Boolean),
+);
+assert.ok(vscodeExports.size > 0, "desktop client has no VS Code imports");
+
+const smokeDirectory = await mkdtemp(path.join(tmpdir(), "elm-ls-smoke-"));
+try {
+  const vscodeStub = `
+      const stub = new Proxy(class {}, {
+        apply: () => stub,
+        construct: () => stub,
+        get: (target, property) => {
+          const descriptor = Reflect.getOwnPropertyDescriptor(target, property);
+          if (descriptor && !descriptor.configurable) {
+            return Reflect.get(target, property);
+          }
+          if (property === "then") return undefined;
+          if (property === Symbol.toPrimitive) return () => "";
+          return stub;
+        }
+      });
+  `;
+  const vscodeModule = path.join(smokeDirectory, "vscode.mjs");
+  await writeFile(
+    vscodeModule,
+    `${vscodeStub}
+      ${[...vscodeExports].map((name) => `export { stub as ${name} };`).join("\n")}
+      export default stub;
+    `,
+  );
+  const loader = path.join(smokeDirectory, "loader.mjs");
+  await writeFile(
+    loader,
+    `
+      const vscodeModule = ${JSON.stringify(pathToFileURL(vscodeModule).href)};
+      export async function resolve(specifier, context, nextResolve) {
+        return specifier === "vscode"
+          ? { shortCircuit: true, url: vscodeModule }
+          : nextResolve(specifier, context);
+      }
+    `,
+  );
+  const preload = path.join(smokeDirectory, "preload.cjs");
+  await writeFile(
+    preload,
+    `${vscodeStub}
+      const Module = require("node:module");
+      const load = Module._load;
+      Module._load = function(request, ...args) {
+        return request === "vscode" ? stub : load.call(this, request, ...args);
+      };
+    `,
+  );
+  const desktopImport = spawnSync(
+    process.execPath,
+    [
+      "--no-warnings",
+      "--experimental-loader",
+      loader,
+      "--require",
+      preload,
+      "--input-type=module",
+      "--eval",
+      `await import(${JSON.stringify(pathToFileURL(path.resolve(manifest.main)).href)})`,
+    ],
+    { encoding: "utf8" },
+  );
+  assert.equal(
+    desktopImport.status,
+    0,
+    `desktop client failed to import: ${desktopImport.stderr}`,
+  );
+} finally {
+  await rm(smokeDirectory, { force: true, recursive: true });
+}
 
 const wasmFiles = ["out/tree-sitter-elm.wasm", "out/web-tree-sitter.wasm"];
 const wasmContents = await Promise.all(wasmFiles.map((wasm) => readFile(wasm)));

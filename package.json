@@ -198,6 +198,8 @@
     "test": "npm --prefix client test",
     "pretest:e2e": "npm run compile",
     "test:e2e": "node ./scripts/e2e.mjs",
+    "pretest:e2e-web": "npm run compile",
+    "test:e2e-web": "node ./scripts/e2e-web.mjs",
     "verify": "npm run compile && npm run smoke && npm --prefix client run lint && npm --prefix client test",
     "package": "npm run compile -- --minify && npm run smoke && vsce package --no-dependencies --out elm-ls-vscode.vsix && node ./scripts/verify-vsix.mjs elm-ls-vscode.vsix"
   },
@@ -209,6 +211,7 @@
     "copyfiles": "^2.4.1",
     "esbuild": "^0.28.1",
     "path-browserify": "^1.0.1",
+    "playwright": "^1.62.1",
     "prettier": "^3.1.1",
     "typescript": "5.9.3",
     "util": "^0.12.5",
