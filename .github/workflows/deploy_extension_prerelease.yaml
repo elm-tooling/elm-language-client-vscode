@@ -17,10 +17,10 @@ jobs:
         with:
           node-version: 24
       - run: npm ci
-      - run: npm run compile -- --minify
+      - run: npm run package:pre-release
       - name: Publish to Visual Studio Marketplace
         uses: HaaLeo/publish-vscode-extension@v2
         with:
           pat: ${{ secrets.VS_MARKETPLACE_TOKEN }}
-          preRelease: true
+          extensionFile: elm-ls-vscode.vsix
           registryUrl: https://marketplace.visualstudio.com
