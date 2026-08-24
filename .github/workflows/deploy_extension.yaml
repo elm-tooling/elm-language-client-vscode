@@ -17,13 +17,15 @@ jobs:
         with:
           node-version: 24
       - run: npm ci
-      - run: npm run compile -- --minify
+      - run: npm run package
       - name: Publish to Visual Studio Marketplace
         uses: HaaLeo/publish-vscode-extension@v2
         with:
           pat: ${{ secrets.VS_MARKETPLACE_TOKEN }}
+          extensionFile: elm-ls-vscode.vsix
           registryUrl: https://marketplace.visualstudio.com
       - name: Publish to Open VSX Registry
         uses: HaaLeo/publish-vscode-extension@v2
         with:
           pat: ${{ secrets.OPEN_VSX_TOKEN }}
+          extensionFile: elm-ls-vscode.vsix

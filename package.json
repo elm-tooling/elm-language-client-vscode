@@ -201,7 +201,8 @@
     "pretest:e2e-web": "npm run compile",
     "test:e2e-web": "node ./scripts/e2e-web.mjs",
     "verify": "npm run compile && npm run smoke && npm --prefix client run lint && npm --prefix client test",
-    "package": "npm run compile -- --minify && npm run smoke && vsce package --no-dependencies --out elm-ls-vscode.vsix && node ./scripts/verify-vsix.mjs elm-ls-vscode.vsix"
+    "package": "npm run compile -- --minify && npm run smoke && vsce package --no-dependencies --out elm-ls-vscode.vsix && node ./scripts/verify-vsix.mjs elm-ls-vscode.vsix",
+    "package:pre-release": "npm run compile -- --minify && npm run smoke && vsce package --pre-release --no-dependencies --out elm-ls-vscode.vsix && node ./scripts/verify-vsix.mjs elm-ls-vscode.vsix"
   },
   "devDependencies": {
     "@types/mocha": "^10.0.6",
