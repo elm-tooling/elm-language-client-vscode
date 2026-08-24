@@ -1,6 +1,6 @@
 # Change Log
 
-## Unreleased
+## 2.9.0
 
 - Require Visual Studio Code 1.134
 - Target Node.js 22.17 or newer for development
