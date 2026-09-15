@@ -1,5 +1,12 @@
 # Change Log
 
+## Unreleased
+
+- Show Elm tests in VS Code's native Testing view without the Test Explorer UI extension
+- Keep test discovery active after cancelling a run, and report incomplete elm-test output as an error
+- Fix browser language-server startup inside VS Code's web extension host
+- Add checks for native test execution and installation of the packaged web extension
+
 ## 2.9.0
 
 - Require Visual Studio Code 1.134

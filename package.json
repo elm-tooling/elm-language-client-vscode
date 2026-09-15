@@ -34,9 +34,6 @@
   "bin": {
     "elm-ls": "out/nodeServer.mjs"
   },
-  "extensionDependencies": [
-    "hbenl.vscode-test-explorer"
-  ],
   "capabilities": {
     "virtualWorkspaces": {
       "supported": "limited",
@@ -200,6 +197,8 @@
     "test:e2e": "node ./scripts/e2e.mjs",
     "pretest:e2e-web": "npm run compile",
     "test:e2e-web": "node ./scripts/e2e-web.mjs",
+    "pretest:e2e-web-host": "npm run package",
+    "test:e2e-web-host": "node ./scripts/e2e-web-host.mjs",
     "verify": "npm run compile && npm run smoke && npm --prefix client run lint && npm --prefix client test",
     "package": "npm run compile -- --minify && npm run smoke && vsce package --no-dependencies --out elm-ls-vscode.vsix && node ./scripts/verify-vsix.mjs elm-ls-vscode.vsix",
     "package:pre-release": "npm run compile -- --minify && npm run smoke && vsce package --pre-release --no-dependencies --out elm-ls-vscode.vsix && node ./scripts/verify-vsix.mjs elm-ls-vscode.vsix"
@@ -208,8 +207,11 @@
     "@types/mocha": "^10.0.6",
     "@types/node": "^26.2.0",
     "@vscode/test-electron": "^3.1.0",
+    "@vscode/test-web": "^0.0.81",
     "@vscode/vsce": "^3.9.2",
     "copyfiles": "^2.4.1",
+    "elm": "0.19.1-6",
+    "elm-test": "0.19.1-revision16",
     "esbuild": "^0.28.1",
     "path-browserify": "^1.0.1",
     "playwright": "^1.62.1",

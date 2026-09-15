@@ -43,6 +43,12 @@ await new Promise((resolve, reject) => {
 });
 
 assert.ok(manifest, "VSIX does not contain extension/package.json");
+assert.equal(
+  manifest.extensionDependencies?.includes("hbenl.vscode-test-explorer") ??
+    false,
+  false,
+  "VSIX still requires the desktop-only Test Explorer extension",
+);
 
 const manifestEntries = [
   manifest.main,
@@ -70,6 +76,8 @@ for (const entry of [
 }
 
 for (const prefix of [
+  "extension/.vscode-test",
+  "extension/.vscode-test-web",
   "extension/client/",
   "extension/docs/",
   "extension/server/",
