@@ -42,9 +42,15 @@ jobs:
         run: npm run package
       - name: Test extension host
         if: matrix.os == 'ubuntu-latest' && matrix.node-version == 24
-        run: xvfb-run -a npm run test:e2e
+        run: xvfb-run -a node scripts/e2e.mjs
+      - name: Test extension host on Windows and macOS
+        if: matrix.os != 'ubuntu-latest' && matrix.node-version == 24
+        run: node scripts/e2e.mjs
       - name: Test browser module worker
         if: matrix.os == 'ubuntu-latest' && matrix.node-version == 24
         run: |
           npx playwright install chromium
           npm run test:e2e-web
+      - name: Test packaged web extension installation and activation
+        if: matrix.os == 'ubuntu-latest' && matrix.node-version == 24
+        run: node scripts/e2e-web-host.mjs

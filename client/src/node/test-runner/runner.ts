@@ -1,141 +1,130 @@
-/*
-MIT License
-
- Copyright 2021 Frank Wagner
-
-Permission is hereby granted, free of charge, to any person obtaining a copy
-of this software and associated documentation files (the "Software"), to deal
-in the Software without restriction, including without limitation the rights
-to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
-copies of the Software, and to permit persons to whom the Software is
-furnished to do so, subject to the following conditions:
-
-The above copyright notice and this permission notice shall be included in all
-copies or substantial portions of the Software.
-
-THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
-IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
-FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
-AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
-LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
-OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
-SOFTWARE.
-*/
+// Copyright 2021 Frank Wagner. Licensed under the MIT License; see LICENSE.
 import * as vscode from "vscode";
 import path from "path";
-import * as child_process from "child_process";
+import * as childProcess from "child_process";
 import * as fs from "fs";
-
-import {
-  Result,
-  parseOutput,
-  parseErrorOutput,
-  buildErrorMessage,
-  TestCompleted,
-} from "./result";
+import spawn from "cross-spawn";
+import { parseErrorOutput, buildErrorMessage } from "./result";
 import {
   IElmBinaries,
   buildElmTestArgs,
   buildElmTestArgsWithReport,
 } from "./util";
-import { Log } from "vscode-test-adapter-util";
-import { IClientSettings } from "../extension";
-import { insertRunTestData, RunTestSuite } from "./runTestSuite";
+import { readReport } from "./report";
+import type { RunTestSuite } from "./runTestSuite";
 
+/** One cancellable execution, including the optional terminal-output task. */
 export class ElmTestRunner implements vscode.Disposable {
-  private resolve?: (
-    value: RunTestSuite | string | PromiseLike<RunTestSuite | string>,
-  ) => void = undefined;
-
-  private currentSuite?: RunTestSuite = undefined;
-  private errorMessage?: string = undefined;
-  private pendingMessages: string[] = [];
-
-  private taskExecution?: vscode.TaskExecution = undefined;
-  private process?: child_process.ChildProcessWithoutNullStreams = undefined;
+  private resolve?: (value: RunTestSuite | string) => void;
+  private cancelled = false;
+  private taskExecution?: vscode.TaskExecution;
+  private process?: childProcess.ChildProcess;
   private disposables: vscode.Disposable[] = [];
 
   constructor(
-    private workspaceFolder: vscode.WorkspaceFolder,
+    private readonly workspaceFolder: vscode.WorkspaceFolder,
     private readonly elmProjectFolder: vscode.Uri,
-    private readonly log: Log,
+    private readonly log: vscode.LogOutputChannel,
+    private readonly tasks: Pick<
+      typeof vscode.tasks,
+      "executeTask" | "onDidEndTask" | "onDidEndTaskProcess"
+    > = vscode.tasks,
   ) {}
 
   dispose(): void {
-    this.cancel();
-  }
-
-  private cancel(): void {
-    if (this.resolve) {
-      this.log.info("Running Elm Tests cancelled", this.relativeProjectFolder);
-      this.resolve("cancelled");
-    }
-    this.taskExecution?.terminate();
-    this.process?.kill();
-    this.disposables.forEach((d) => void d.dispose());
+    this.cancelled = true;
+    this.finish("cancelled");
   }
 
   private finish(result: RunTestSuite | string): void {
-    this.log.debug("Running Elm Tests finished");
-    this.resolve?.(result);
+    const resolve = this.resolve;
     this.resolve = undefined;
-    this.cancel();
-  }
-
-  private get relativeProjectFolder(): string {
-    return path.relative(
-      this.workspaceFolder.uri.fsPath,
-      this.elmProjectFolder.fsPath,
-    );
-  }
-
-  async runSomeTests(uris?: string[]): Promise<RunTestSuite | string> {
-    if (this.resolve) {
-      return Promise.reject("already running");
+    this.taskExecution?.terminate();
+    this.taskExecution = undefined;
+    if (this.process?.pid) {
+      if (process.platform === "win32") {
+        childProcess.execFile(
+          "taskkill",
+          ["/pid", String(this.process.pid), "/T", "/F"],
+          () => undefined,
+        );
+      } else {
+        try {
+          process.kill(-this.process.pid, "SIGTERM");
+        } catch {
+          this.process.kill();
+        }
+      }
     }
-    return new Promise<RunTestSuite | string>((resolve) => {
+    this.process = undefined;
+    this.disposables.forEach((disposable) => void disposable.dispose());
+    this.disposables = [];
+    resolve?.(result);
+  }
+
+  runSomeTests(uris?: string[]): Promise<RunTestSuite | string> {
+    if (this.cancelled) return Promise.resolve("cancelled");
+    if (this.resolve)
+      return Promise.reject(new Error("Already running Elm tests"));
+    return new Promise((resolve) => {
       this.resolve = resolve;
-      this.currentSuite = {
-        type: "suite",
-        id: "",
-        label: "root",
-        children: [],
-      };
-      this.errorMessage = undefined;
-      this.pendingMessages = [];
-      this.runElmTests(uris);
+      try {
+        const config = vscode.workspace.getConfiguration(
+          "elmLS",
+          this.elmProjectFolder,
+        );
+        const configured: IElmBinaries = {
+          elm: config.get<string>("elmPath") || undefined,
+          elmTest: config.get<string>("elmTestPath") || undefined,
+        };
+        const roots = [
+          this.elmProjectFolder.fsPath,
+          this.workspaceFolder.uri.fsPath,
+        ];
+        const local = (name: string): string | undefined =>
+          roots
+            .map((root) =>
+              path.join(
+                root,
+                "node_modules",
+                ".bin",
+                name + (process.platform === "win32" ? ".cmd" : ""),
+              ),
+            )
+            .find((file) => fs.existsSync(file));
+        const args = buildElmTestArgs(
+          {
+            elm: configured.elm ?? local("elm"),
+            elmTest: configured.elmTest ?? local("elm-test"),
+          },
+          uris?.map((uri) => vscode.Uri.parse(uri).fsPath),
+        );
+        if (config.get<boolean>("elmTestRunner.showElmTestOutput")) {
+          void this.runWithOutput(args).catch((error: unknown) =>
+            this.finish(String(error)),
+          );
+        } else {
+          this.runReport(args);
+        }
+      } catch (error) {
+        this.finish(String(error));
+      }
     });
   }
 
-  private runElmTests(uris?: string[]) {
-    const withOutput = vscode.workspace
-      .getConfiguration("elmLS.elmTestRunner", null)
-      .get("showElmTestOutput");
-    const args = this.elmTestArgs(uris);
-    const cwdPath = this.elmProjectFolder.fsPath;
-    if (withOutput) {
-      this.runElmTestsWithOutput(cwdPath, args);
-    } else {
-      this.runElmTestWithReport(cwdPath, args);
-    }
-  }
-
-  private runElmTestsWithOutput(cwdPath: string, args: string[]) {
-    const kind: vscode.TaskDefinition = {
-      type: "elm-test",
-    };
-
-    this.log.info("Running Elm Tests as task", args);
-
+  private async runWithOutput(args: string[]): Promise<void> {
     const task = new vscode.Task(
-      kind,
+      { type: "elm-test" },
       this.workspaceFolder,
-      this.relativeProjectFolder.length > 0
-        ? `Run Elm Test (${this.relativeProjectFolder})`
-        : "Run Elm Test",
-      "Elm Test Run",
+      `Run Elm tests (${
+        path.relative(
+          this.workspaceFolder.uri.fsPath,
+          this.elmProjectFolder.fsPath,
+        ) || this.workspaceFolder.name
+      })`,
+      "Elm",
       new vscode.ShellExecution(args[0], args.slice(1), {
-        cwd: cwdPath,
+        cwd: this.elmProjectFolder.fsPath,
       }),
     );
     task.group = vscode.TaskGroup.Test;
@@ -143,196 +132,96 @@ export class ElmTestRunner implements vscode.Disposable {
       clear: true,
       echo: true,
       focus: false,
-      reveal: vscode.TaskRevealKind.Never,
+      reveal: vscode.TaskRevealKind.Always,
       showReuseMessage: false,
     };
-
-    void vscode.tasks.executeTask(task).then((taskExecution) => {
-      this.taskExecution = taskExecution;
-    });
-
+    // Subscribe before executeTask: a short-lived process can finish during startup.
+    const processExits = new Map<vscode.TaskExecution, number | undefined>();
+    const endedTasks = new Set<vscode.TaskExecution>();
+    const settle = (): void => {
+      const execution = this.taskExecution;
+      if (!execution || !this.resolve || this.cancelled) return;
+      if (processExits.has(execution)) {
+        const code = processExits.get(execution);
+        this.taskExecution = undefined;
+        if (code !== undefined && code <= 3) this.runReport(args);
+        else
+          this.finish(
+            `elm-test failed with exit code ${code ?? "unknown"}. See the "${
+              task.name
+            }" terminal.`,
+          );
+      } else if (endedTasks.has(execution)) {
+        this.taskExecution = undefined;
+        this.finish(
+          `elm-test task ended without starting a process or returning an exit status. See the "${task.name}" terminal.`,
+        );
+      }
+    };
     this.disposables.push(
-      vscode.tasks.onDidEndTaskProcess((event) => {
-        if (event.execution === this.taskExecution) {
-          this.taskExecution = undefined;
-          if ((event.exitCode ?? 0) <= 3) {
-            this.runElmTestWithReport(cwdPath, args);
-          } else {
-            console.error("elm-test failed", event.exitCode, args);
-            this.log.info("Running Elm Test task failed", event.exitCode, args);
-            const errorMessage = [
-              "elm-test failed.",
-              "Check for Elm errors,",
-              `find details in the "Task - ${event.execution.task.name}" terminal.`,
-            ].join("\n");
-            this.finish(errorMessage);
-          }
-        }
+      this.tasks.onDidEndTaskProcess((event) => {
+        processExits.set(event.execution, event.exitCode);
+        settle();
+      }),
+      this.tasks.onDidEndTask((event) => {
+        endedTasks.add(event.execution);
+        settle();
       }),
     );
-  }
-
-  private runElmTestWithReport(cwdPath: string, args: string[]) {
-    this.log.info("Running Elm Tests", args);
-
-    const argsWithReport = buildElmTestArgsWithReport(args);
-    const elm = child_process.spawn(
-      argsWithReport[0],
-      argsWithReport.slice(1),
-      {
-        cwd: cwdPath,
-        env: process.env,
-      },
-    );
-    this.process = elm;
-
-    const outChunks: Buffer[] = [];
-    // eslint-disable-next-line @typescript-eslint/no-unsafe-argument
-    elm.stdout.on("data", (chunk) => outChunks.push(Buffer.from(chunk)));
-
-    const errChunks: Buffer[] = [];
-    // eslint-disable-next-line @typescript-eslint/no-unsafe-argument
-    elm.stderr.on("data", (chunk) => errChunks.push(Buffer.from(chunk)));
-
-    elm.on("error", (err) => {
-      this.process = undefined;
-      const message = `Failed to run Elm Tests, is elm-test installed at "${args[0]}"?`;
-      this.log.error(message, err);
-      this.finish(message);
-    });
-
-    elm.once("exit", () => {
-      this.process = undefined;
-      const data = Buffer.concat(outChunks).toString("utf8");
-      const lines = data.split("\n");
-      try {
-        this.parse(lines);
-      } catch (err) {
-        this.log.warn("Failed to parse line", args);
-      }
-
-      if (errChunks.length > 0) {
-        const data = Buffer.concat(errChunks).toString("utf8");
-        const lines = data.split("\n");
-        this.errorMessage = lines
-          .map(parseErrorOutput)
-          .map(buildErrorMessage)
-          .join("\n");
-      }
-
-      if (this.errorMessage) {
-        this.finish(this.errorMessage);
-      } else if (this.currentSuite) {
-        this.finish(this.currentSuite);
-      }
-    });
-  }
-
-  private elmTestArgs(uris?: string[]): string[] {
-    const files = uris?.map((uri) => vscode.Uri.parse(uri).fsPath);
-    return buildElmTestArgs(this.getElmBinaries(), files);
-  }
-
-  private getConfiguredElmBinaries(): IElmBinaries {
-    const config = vscode.workspace
-      .getConfiguration()
-      .get<IClientSettings>("elmLS");
-    return <IElmBinaries>{
-      elm: nonEmpty(config?.elmPath),
-      elmTest: nonEmpty(config?.elmTestPath),
-    };
-  }
-
-  private getElmBinaries(): IElmBinaries {
-    const configured = this.getConfiguredElmBinaries();
-    return resolveElmBinaries(
-      configured,
-      this.elmProjectFolder,
-      this.workspaceFolder.uri,
-    );
-  }
-
-  private parse(lines: string[]): void {
-    lines
-      .filter((line) => line.length > 0)
-      .map((line) => {
-        try {
-          return parseOutput(line);
-        } catch (err) {
-          this.log.warn("Failed to parse line", line, err);
-          return undefined;
-        }
-      })
-      .forEach((output) => {
-        switch (output?.type) {
-          case "message":
-            this.pushMessage(output.line);
-            break;
-          case "result":
-            this.accept(output);
-        }
-      });
-  }
-
-  private pushMessage(message: string): void {
-    if (!message) {
+    const execution = await this.tasks.executeTask(task);
+    if (this.cancelled || !this.resolve) {
+      execution.terminate();
       return;
     }
-    this.pendingMessages.push(message);
+    this.taskExecution = execution;
+    settle();
   }
 
-  private popMessages(): string[] {
-    const result = this.pendingMessages;
-    this.pendingMessages = [];
-    return result;
-  }
-
-  private accept(result: Result): void {
-    switch (result?.event.tag) {
-      case "testCompleted": {
-        if (!this.currentSuite) {
-          throw new Error("not loading?");
+  private runReport(args: string[]): void {
+    if (this.cancelled || !this.resolve) return;
+    const reportArgs = buildElmTestArgsWithReport(args);
+    this.log.info("Running Elm tests", reportArgs);
+    const child = spawn(reportArgs[0], reportArgs.slice(1), {
+      cwd: this.elmProjectFolder.fsPath,
+      env: process.env,
+      // elm-test starts compiler and worker children; cancel the whole group.
+      detached: process.platform !== "win32",
+    });
+    this.process = child;
+    const stdout: Buffer[] = [];
+    const stderr: Buffer[] = [];
+    child.stdout?.on("data", (chunk: Buffer) => stdout.push(chunk));
+    child.stderr?.on("data", (chunk: Buffer) => stderr.push(chunk));
+    child.once("error", (error) => {
+      if (this.process !== child) return;
+      this.finish(`Failed to run elm-test at "${args[0]}": ${error.message}`);
+    });
+    // close waits for stdout/stderr, unlike exit, which can truncate the final report.
+    child.once("close", (code) => {
+      if (this.process !== child || this.cancelled || !this.resolve) return;
+      this.process = undefined;
+      try {
+        const errors = Buffer.concat(stderr).toString("utf8").trim();
+        if (errors) {
+          this.finish(
+            errors
+              .split(/\r?\n/)
+              .map(parseErrorOutput)
+              .map(buildErrorMessage)
+              .join("\n"),
+          );
+        } else if (code === null || code > 3) {
+          this.finish(
+            `elm-test exited with code ${code ?? "unknown"}.\n${Buffer.concat(
+              stdout,
+            ).toString("utf8")}`,
+          );
+        } else {
+          this.finish(readReport(Buffer.concat(stdout).toString("utf8")));
         }
-        const event: TestCompleted = {
-          ...result.event,
-          messages: this.popMessages(),
-        };
-        this.currentSuite = insertRunTestData(this.currentSuite, event);
-        break;
+      } catch (error) {
+        this.finish(`Failed to read elm-test results: ${String(error)}`);
       }
-      case "runStart":
-        break;
-      case "runComplete":
-        break;
-    }
+    });
   }
-}
-
-function resolveElmBinaries(
-  configured: IElmBinaries,
-  ...roots: vscode.Uri[]
-): IElmBinaries {
-  const rootPaths = Array.from(new Set(roots.map((r) => r.fsPath)).values());
-  return <IElmBinaries>{
-    elmTest:
-      configured.elmTest ??
-      rootPaths
-        .map((r) => findLocalNpmBinary("elm-test", r))
-        .filter((p) => p)[0],
-    elm:
-      configured.elm ??
-      rootPaths.map((r) => findLocalNpmBinary("elm", r)).filter((p) => p)[0],
-  };
-}
-
-function findLocalNpmBinary(
-  binary: string,
-  projectRoot: string,
-): string | undefined {
-  const binaryPath = path.join(projectRoot, "node_modules", ".bin", binary);
-  return fs.existsSync(binaryPath) ? binaryPath : undefined;
-}
-
-function nonEmpty(text: string | undefined): string | undefined {
-  return text && text.length > 0 ? text : undefined;
 }

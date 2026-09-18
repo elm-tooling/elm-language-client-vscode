@@ -1,5 +1,9 @@
 .github/**
 .vscode/**
+.vscode-test
+.vscode-test/**
+.vscode-test-web
+.vscode-test-web/**
 client/**
 docs/**
 scripts/**

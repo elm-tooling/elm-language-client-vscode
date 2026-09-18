@@ -34,6 +34,7 @@ import * as RefactorAction from "../common/refactorAction";
 import * as ExposeUnexposeAction from "../common/exposeUnexposeAction";
 import * as Restart from "../common/restart";
 import * as VirtualFiles from "../common/virtualFiles";
+import { createLanguageServerWorker } from "./worker";
 
 export interface IClientSettings {
   elmFormatPath: string;
@@ -134,10 +135,7 @@ export async function activate(context: ExtensionContext): Promise<void> {
       let worker: Worker | undefined;
       let client: LanguageClient;
       try {
-        worker = new Worker(module.toString(true), {
-          name: "elm-language-server",
-          type: "module",
-        });
+        worker = await createLanguageServerWorker(module.toString(true));
         client = new LanguageClient("elmLS", "Elm", worker, clientOptions);
       } catch (error) {
         outputChannel.error("Failed to create the Elm language server", error);

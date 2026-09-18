@@ -29,6 +29,7 @@ export interface ITestResult {
   passed: string;
   failed: string;
   duration: string;
+  autoFail?: string;
   messages: string[];
   labels: string[];
   status: string;
@@ -49,7 +50,10 @@ export interface ITestResult {
 /* eslint-disable @typescript-eslint/no-unsafe-member-access */
 /* eslint-disable @typescript-eslint/no-unsafe-assignment */
 
-export function parseOutput(line: string): Output {
+export function parseOutput(line: string, strict = false): Output {
+  if (strict && line.trimStart().startsWith("{")) {
+    return parseResult(JSON.parse(line) as ITestResult);
+  }
   const errors: json.ParseError[] = [];
   const parsed: ITestResult = json.parse(line, errors);
   const nojson = errors.find(
@@ -75,6 +79,7 @@ export function parseResult(parsed: ITestResult): Result {
       passed: Number.parseInt(parsed.passed),
       failed: Number.parseInt(parsed.failed),
       duration: Number.parseInt(parsed.duration),
+      ...(parsed.autoFail ? { autoFail: parsed.autoFail } : {}),
     };
     return { type: "result", event };
   }
@@ -172,7 +177,13 @@ export type Result = {
 export type RunEvent =
   | { tag: "runStart"; testCount: number }
   | TestCompleted
-  | { tag: "runComplete"; passed: number; failed: number; duration: number };
+  | {
+      tag: "runComplete";
+      passed: number;
+      failed: number;
+      duration: number;
+      autoFail?: string;
+    };
 
 export type TestCompleted = {
   tag: "testCompleted";

@@ -248,6 +248,7 @@ export async function activate(context: ExtensionContext): Promise<void> {
 }
 
 export function deactivate(): Thenable<void> | undefined {
+  TestRunner.dispose();
   const promises: Thenable<void>[] = [];
   for (const client of clients.values()) {
     promises.push(client.stop());

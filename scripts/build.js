@@ -141,12 +141,23 @@ async function build() {
 
   const testOptions = {
     ...clientOptions,
+    plugins: [umdToElmPlugin],
     format: "cjs",
     entryPoints: { extensionTests: "./client/src/node/test/extensionHost.ts" },
     outdir: "./client/out",
     outExtension: { ".js": ".cjs" },
     platform: "node",
     tsconfig: "./client/tsconfig.node.json",
+  };
+
+  const browserTestOptions = {
+    ...clientOptions,
+    format: "cjs",
+    entryPoints: { browserTests: "./client/src/browser/test/extensionHost.ts" },
+    outdir: "./client/out",
+    outExtension: { ".js": ".cjs" },
+    platform: "browser",
+    tsconfig: "./client/tsconfig.browser.json",
   };
 
   if (watch) {
@@ -200,6 +211,7 @@ async function build() {
       esbuild.build(clientNodeOptions),
       esbuild.build(serverNodeOptions),
       esbuild.build(testOptions),
+      esbuild.build(browserTestOptions),
     ]);
   }
 }

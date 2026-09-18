@@ -1,5 +1,6 @@
 import assert from "node:assert/strict";
 import { commands, extensions } from "vscode";
+import { runNativeTesting, withTimeout } from "./nativeTesting";
 
 export async function run(): Promise<void> {
   const extension = extensions.getExtension("elmTooling.elm-ls-vscode");
@@ -10,4 +11,13 @@ export async function run(): Promise<void> {
 
   const registeredCommands = await commands.getCommands(true);
   assert.ok(registeredCommands.includes("elm.commands.restart"));
+  assert.equal(
+    extensions.getExtension("hbenl.vscode-test-explorer"),
+    undefined,
+  );
+  await withTimeout(
+    runNativeTesting(),
+    120000,
+    "Native testing checks timed out",
+  );
 }
