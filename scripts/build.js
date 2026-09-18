@@ -143,7 +143,10 @@ async function build() {
     ...clientOptions,
     plugins: [umdToElmPlugin],
     format: "cjs",
-    entryPoints: { extensionTests: "./client/src/node/test/extensionHost.ts" },
+    entryPoints: {
+      extensionTests: "./client/src/node/test/extensionHost.ts",
+      runnerProcessTests: "./client/src/node/test/processExecution.ts",
+    },
     outdir: "./client/out",
     outExtension: { ".js": ".cjs" },
     platform: "node",
