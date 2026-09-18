@@ -46,7 +46,7 @@ This extension contributes the following settings:
 - `elmLS.elmReviewDiagnostics`: Configure linting diagnostics from elm-review. Possible values: `off`, `warning`, `error`.
 - `elmLS.elmFormatPath`: The path to your elm-format executable.
 - `elmLS.elmTestPath`: The path to your elm-test executable.
-- `elmLS.disableElmLSDiagnostics`: Disable linting diagnostics from the language server.
+- `elmLS.disableElmLSDiagnostics`: Disable linting diagnostics from the language server, including elm-analyse checks.
 - `elmLS.skipInstallPackageConfirmation`: Skip confirmation for the Install Package code action.
 - `elmLS.onlyUpdateDiagnosticsOnSave`: Only update compiler diagnostics on save, not on document change.
 - `elmLS.elmTestRunner.showElmTestOutput`: Show output of elm-test as terminal task.

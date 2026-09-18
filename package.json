@@ -162,7 +162,7 @@
           "scope": "window",
           "type": "boolean",
           "default": false,
-          "description": "Disable linting diagnostics from the language server."
+          "description": "Disable linting diagnostics from the language server, including elm-analyse checks."
         },
         "elmLS.skipInstallPackageConfirmation": {
           "scope": "window",
