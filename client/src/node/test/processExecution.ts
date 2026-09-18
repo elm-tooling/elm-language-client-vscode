@@ -80,6 +80,22 @@ export async function run(): Promise<void> {
     );
     await config.update("elmPath", "", vscode.ConfigurationTarget.Global);
 
+    process.env.ELM_RUNNER_SCENARIO = "shell-error";
+    const shellErrorRunner = new ElmTestRunner(workspace, project, log);
+    try {
+      const failure = await shellErrorRunner.runSomeTests();
+      assert.equal(typeof failure, "string");
+      assert.match(String(failure), /^Failed to run elm-test/);
+      assert.ok(String(failure).includes(executable));
+      assert.match(
+        String(failure),
+        /elm-runner-command-that-does-not-exist/,
+        "the underlying shell diagnostic must remain visible",
+      );
+    } finally {
+      shellErrorRunner.dispose();
+    }
+
     process.env.ELM_RUNNER_SCENARIO = "report";
     const reportRunner = new ElmTestRunner(workspace, project, log);
     try {

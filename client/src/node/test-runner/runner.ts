@@ -189,12 +189,15 @@ export class ElmTestRunner implements vscode.Disposable {
         try {
           const errors = result.stderr.trim();
           if (errors) {
+            const diagnostic = errors
+              .split(/\r?\n/)
+              .map(parseErrorOutput)
+              .map(buildErrorMessage)
+              .join("\n");
+            // Windows can report a missing command through cmd.exe's stderr
+            // and exit code rather than a direct spawn error.
             this.finish(
-              errors
-                .split(/\r?\n/)
-                .map(parseErrorOutput)
-                .map(buildErrorMessage)
-                .join("\n"),
+              `Failed to run elm-test at "${args[0]}":\n${diagnostic}`,
             );
           } else if (result.exitCode === undefined || result.exitCode > 3) {
             this.finish(

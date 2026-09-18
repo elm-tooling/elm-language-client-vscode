@@ -1,5 +1,15 @@
-const { fork } = require("node:child_process");
+const { fork, spawnSync } = require("node:child_process");
 const { writeFileSync } = require("node:fs");
+
+if (process.env.ELM_RUNNER_SCENARIO === "shell-error") {
+  const result = spawnSync("elm-runner-command-that-does-not-exist", [], {
+    shell: true,
+    encoding: "utf8",
+  });
+  process.stderr.write(result.stderr);
+  process.exitCode = 1;
+  return;
+}
 
 if (["report", "large-report"].includes(process.env.ELM_RUNNER_SCENARIO)) {
   writeFileSync(
