@@ -24,6 +24,10 @@
     { "open": "'", "close": "'", "notIn": ["string", "comment"] }
   ],
   "folding": {
-    "offSide": true
+    "offSide": true,
+    "markers": {
+      "start": "^\\s*--\\s*#?region\\b",
+      "end": "^\\s*--\\s*#?endregion\\b"
+    }
   }
 }
