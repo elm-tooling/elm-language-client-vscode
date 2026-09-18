@@ -1,9 +1,8 @@
 // Copyright 2021 Frank Wagner. Licensed under the MIT License; see LICENSE.
 import * as vscode from "vscode";
 import path from "path";
-import * as childProcess from "child_process";
 import * as fs from "fs";
-import spawn from "cross-spawn";
+import { execa } from "execa";
 import { parseErrorOutput, buildErrorMessage } from "./result";
 import {
   IElmBinaries,
@@ -17,8 +16,8 @@ import type { RunTestSuite } from "./runTestSuite";
 export class ElmTestRunner implements vscode.Disposable {
   private resolve?: (value: RunTestSuite | string) => void;
   private cancelled = false;
+  private readonly cancellation = new AbortController();
   private taskExecution?: vscode.TaskExecution;
-  private process?: childProcess.ChildProcess;
   private disposables: vscode.Disposable[] = [];
 
   constructor(
@@ -33,6 +32,7 @@ export class ElmTestRunner implements vscode.Disposable {
 
   dispose(): void {
     this.cancelled = true;
+    this.cancellation.abort();
     this.finish("cancelled");
   }
 
@@ -41,22 +41,6 @@ export class ElmTestRunner implements vscode.Disposable {
     this.resolve = undefined;
     this.taskExecution?.terminate();
     this.taskExecution = undefined;
-    if (this.process?.pid) {
-      if (process.platform === "win32") {
-        childProcess.execFile(
-          "taskkill",
-          ["/pid", String(this.process.pid), "/T", "/F"],
-          () => undefined,
-        );
-      } else {
-        try {
-          process.kill(-this.process.pid, "SIGTERM");
-        } catch {
-          this.process.kill();
-        }
-      }
-    }
-    this.process = undefined;
     this.disposables.forEach((disposable) => void disposable.dispose());
     this.disposables = [];
     resolve?.(result);
@@ -181,47 +165,58 @@ export class ElmTestRunner implements vscode.Disposable {
     if (this.cancelled || !this.resolve) return;
     const reportArgs = buildElmTestArgsWithReport(args);
     this.log.info("Running Elm tests", reportArgs);
-    const child = spawn(reportArgs[0], reportArgs.slice(1), {
+    const child = execa(reportArgs[0], reportArgs.slice(1), {
       cwd: this.elmProjectFolder.fsPath,
       env: process.env,
-      // elm-test starts compiler and worker children; cancel the whole group.
-      detached: process.platform !== "win32",
+      cancelSignal: this.cancellation.signal,
+      killDescendants: true,
+      // Nonzero exit codes can carry valid failing-test reports.
+      reject: false,
+      stripFinalNewline: false,
+      // Preserve the previous runner's unbounded report buffering.
+      maxBuffer: Infinity,
     });
-    this.process = child;
-    const stdout: Buffer[] = [];
-    const stderr: Buffer[] = [];
-    child.stdout?.on("data", (chunk: Buffer) => stdout.push(chunk));
-    child.stderr?.on("data", (chunk: Buffer) => stderr.push(chunk));
-    child.once("error", (error) => {
-      if (this.process !== child) return;
-      this.finish(`Failed to run elm-test at "${args[0]}": ${error.message}`);
-    });
-    // close waits for stdout/stderr, unlike exit, which can truncate the final report.
-    child.once("close", (code) => {
-      if (this.process !== child || this.cancelled || !this.resolve) return;
-      this.process = undefined;
-      try {
-        const errors = Buffer.concat(stderr).toString("utf8").trim();
-        if (errors) {
+    // Execa settles after the process and its output streams have completed.
+    void child
+      .then((result) => {
+        if (this.cancelled || !this.resolve) return;
+        if (result.failed && result.exitCode === undefined) {
           this.finish(
-            errors
+            `Failed to run elm-test at "${args[0]}": ${result.shortMessage}`,
+          );
+          return;
+        }
+        try {
+          const errors = result.stderr.trim();
+          if (errors) {
+            const diagnostic = errors
               .split(/\r?\n/)
               .map(parseErrorOutput)
               .map(buildErrorMessage)
-              .join("\n"),
-          );
-        } else if (code === null || code > 3) {
-          this.finish(
-            `elm-test exited with code ${code ?? "unknown"}.\n${Buffer.concat(
-              stdout,
-            ).toString("utf8")}`,
-          );
-        } else {
-          this.finish(readReport(Buffer.concat(stdout).toString("utf8")));
+              .join("\n");
+            // Windows can report a missing command through cmd.exe's stderr
+            // and exit code rather than a direct spawn error.
+            this.finish(
+              `Failed to run elm-test at "${args[0]}":\n${diagnostic}`,
+            );
+          } else if (result.exitCode === undefined || result.exitCode > 3) {
+            this.finish(
+              `elm-test exited with code ${result.exitCode ?? "unknown"}.\n${
+                result.stdout
+              }`,
+            );
+          } else {
+            this.finish(readReport(result.stdout));
+          }
+        } catch (error) {
+          this.finish(`Failed to read elm-test results: ${String(error)}`);
         }
-      } catch (error) {
-        this.finish(`Failed to read elm-test results: ${String(error)}`);
-      }
-    });
+      })
+      .catch((error: unknown) => {
+        if (!this.cancelled)
+          this.finish(
+            `Failed to run elm-test at "${args[0]}": ${String(error)}`,
+          );
+      });
   }
 }
