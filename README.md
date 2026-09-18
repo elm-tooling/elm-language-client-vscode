@@ -57,28 +57,6 @@ We used to have a file called `elm-tooling.json` where you could specifiy `"entr
 
 If all you had in `elm-tooling.json` was `"entrypoints"`, you can safely remove that file.
 
-## Running tests
-
-Open VS Code's Testing view to discover and run Elm tests. The extension uses
-VS Code's native Testing API, so no additional Test Explorer extension is needed.
-Each Elm project has its own test tree and Run profile.
-
-Selecting a test or suite runs **all tests in its containing files**, because
-the runner passes file paths to `elm-test`. The Testing view shows the results
-for every test that actually runs. Excluding a test does not prevent it from
-running if another selected test shares its file. Excluding a whole file or
-suite removes its files unless they also contain selected tests.
-
-Test results include failure messages and source locations where available.
-Use Refresh Tests to rediscover tests, or Cancel Test Run to stop execution.
-Saving Elm files invalidates results and refreshes discovery. The
-`elmLS.elmTestRunner.showElmTestOutput` setting retains the terminal-output mode;
-this runs elm-test once in the terminal and again to collect its JSON results.
-
-Test execution requires a desktop or remote Node extension host with `elm` and
-`elm-test` installed. The web extension provides language features without
-requiring the desktop Test Explorer extension.
-
 ## FAQ
 
 - Syntax highlighting not working or works only partially?
