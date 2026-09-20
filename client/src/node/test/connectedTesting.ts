@@ -1,6 +1,14 @@
 import assert from "node:assert/strict";
 import { once } from "node:events";
-import { copyFile, mkdir, mkdtemp, realpath, rm } from "node:fs/promises";
+import {
+  copyFile,
+  mkdir,
+  mkdtemp,
+  readFile,
+  realpath,
+  rm,
+  writeFile,
+} from "node:fs/promises";
 import path from "node:path";
 import * as vscode from "vscode";
 import { LanguageClient, TransportKind } from "vscode-languageclient/node";
@@ -32,6 +40,12 @@ export async function runConnectedTesting(
     path.join(root, "client/testFixture/tests/Tests.elm"),
     path.join(directory, "tests/Tests.elm"),
   );
+  const testFile = path.join(directory, "tests/Tests.elm");
+  const generatedSource = (await readFile(testFile, "utf8")).replace(
+    ', todo "later"',
+    ', todo "later"\n        , describe "generated" (List.map (\\label -> test label (\\_ -> Expect.pass)) [ "one", "two" ])',
+  );
+  await writeFile(testFile, generatedSource);
   const client = new LanguageClient(
     "elm-test-verification",
     "Elm test verification",
@@ -148,6 +162,56 @@ export async function runConnectedTesting(
       "a complete report has no native execution errors",
     );
 
+    const generatedSuite = suite.children.get(
+      testId(["Tests", "native testing", "generated"]),
+    )!;
+    const generated = generatedSuite.children.get(
+      testId(["Tests", "native testing", "generated", "one"]),
+    )!;
+    const removedId = testId(["Tests", "native testing", "generated", "two"]);
+    assert.ok(generated, "elm-test discovers List.map-generated tests");
+    await writeFile(testFile, generatedSource + "\n-- edit\n");
+    await controller.refresh();
+    assert.equal(
+      generatedSuite.children.get(generated.id),
+      generated,
+      "generated tests survive edit/discovery",
+    );
+    states.clear();
+    await controller.run(new vscode.TestRunRequest([generated]), token.token);
+    assert.equal(
+      states.get(generated.id),
+      "passed",
+      "a retained generated test is executable",
+    );
+    assert.equal(
+      states.get(removedId),
+      "passed",
+      "the whole selected file is reported",
+    );
+    await writeFile(
+      testFile,
+      generatedSource.replace('[ "one", "two" ]', '[ "one" ]'),
+    );
+    await controller.refresh();
+    states.clear();
+    await controller.run(new vscode.TestRunRequest([generated]), token.token);
+    assert.equal(states.get(generated.id), "passed");
+    assert.equal(
+      generatedSuite.children.get(removedId),
+      undefined,
+      "a completed run removes obsolete generated tests",
+    );
+    assert.equal(
+      states.get(removedId),
+      "skipped",
+      "removed generated tests settle their queued run state",
+    );
+    assert.ok(
+      ![...states.values()].includes("errored"),
+      "removed generated tests do not report execution errors",
+    );
+
     staticDiscovery = false;
     await controller.refresh();
     await controller.run(new vscode.TestRunRequest(), token.token);
@@ -160,6 +224,12 @@ export async function runConnectedTesting(
     const runtimeTest = runtimeModule.children
       .get(testId(["Tests", "native testing"]))!
       .children.get(passing.id)!;
+    await controller.refresh();
+    assert.equal(
+      controller.root.children.get(runtimeModule.id),
+      runtimeModule,
+      "runtime-only modules survive refresh while their file exists",
+    );
     states.clear();
     await controller.run(new vscode.TestRunRequest([runtimeTest]), token.token);
     assert.equal(
@@ -167,7 +237,14 @@ export async function runConnectedTesting(
       "passed",
       "runtime-only tests can be rerun through elm-test",
     );
-    assert.equal(ended, 3);
+    assert.equal(ended, 5);
+    await rm(testFile);
+    await controller.refresh();
+    assert.equal(
+      controller.root.children.size,
+      0,
+      "deleting a runtime-only module's file removes its tests",
+    );
   } finally {
     controller.dispose();
     token.dispose();

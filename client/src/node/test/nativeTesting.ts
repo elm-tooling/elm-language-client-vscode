@@ -124,6 +124,7 @@ export async function runNativeTesting(): Promise<void> {
         cancelledQueue.token,
       );
       cancelledQueue.cancel();
+      await controller.refresh();
       result.resolve({
         type: "suite",
         id: "",
@@ -170,7 +171,7 @@ export async function runNativeTesting(): Promise<void> {
       );
       assert.ok(
         module.children.get(testId(["Tests", "generated"])),
-        "runtime-only tests appear in the tree",
+        "runtime-only tests survive discovery queued during a run",
       );
       assert.equal(
         module.children.get(leaf.id),
@@ -183,6 +184,12 @@ export async function runNativeTesting(): Promise<void> {
     }
 
     const generated = module.children.get(testId(["Tests", "generated"]))!;
+    await controller.refresh();
+    assert.equal(
+      module.children.get(generated.id),
+      generated,
+      "discovery after an edit retains runtime-only tests",
+    );
     const rerunToken = new vscode.CancellationTokenSource();
     try {
       await controller.run(
@@ -235,6 +242,13 @@ export async function runNativeTesting(): Promise<void> {
     } finally {
       other.dispose();
     }
+    suites = [];
+    await controller.refresh();
+    assert.equal(
+      controller.root.children.size,
+      0,
+      "removing a static module also removes its generated tests",
+    );
   } finally {
     controller.dispose();
     cancellation.dispose();

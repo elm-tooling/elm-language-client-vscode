@@ -18,6 +18,7 @@ export class ElmTestController implements vscode.Disposable {
   private readonly log: vscode.LogOutputChannel;
   private readonly disposables: vscode.Disposable[] = [];
   private readonly items = new Map<string, vscode.TestItem>();
+  private readonly runtimeItems = new Set<string>();
   private disposed = false;
   private discovered = false;
   private refreshPending = false;
@@ -97,8 +98,28 @@ export class ElmTestController implements vscode.Disposable {
       this.root.busy = true;
       try {
         const suites = await this.findTests();
+        // Entire modules can be invisible to static discovery. Keep them while
+        // their source file exists; the next completed run reconciles results.
+        const runtimeModules: vscode.TestItem[] = [];
+        for (const [, item] of this.root.children) {
+          if (!this.runtimeItems.has(item.id) || !item.uri) continue;
+          try {
+            await vscode.workspace.fs.stat(item.uri);
+            runtimeModules.push(item);
+          } catch (error) {
+            if (
+              !(error instanceof vscode.FileSystemError) ||
+              error.code !== "FileNotFound"
+            )
+              throw error;
+          }
+        }
         if (this.disposed) return;
         const retained = new Set([this.root.id]);
+        const retainRuntime = (item: vscode.TestItem): void => {
+          retained.add(item.id);
+          item.children.forEach(retainRuntime);
+        };
         const convert = (
           suite: TestSuite,
           parents: string[],
@@ -121,16 +142,34 @@ export class ElmTestController implements vscode.Disposable {
             suite.position.line,
             suite.position.character,
           );
-          item.children.replace(
-            (suite.tests ?? []).map((child) => convert(child, labels)),
+          const children = (suite.tests ?? []).map((child) =>
+            convert(child, labels),
           );
+          item.children.forEach((child) => {
+            if (this.runtimeItems.has(child.id) && !retained.has(child.id)) {
+              retainRuntime(child);
+              children.push(child);
+            }
+          });
+          item.children.replace(children);
+          this.runtimeItems.delete(id);
           this.items.set(id, item);
           retained.add(id);
           return item;
         };
-        this.root.children.replace(suites.map((suite) => convert(suite, [])));
+        const modules = suites.map((suite) => convert(suite, []));
+        for (const item of runtimeModules) {
+          if (!retained.has(item.id)) {
+            retainRuntime(item);
+            modules.push(item);
+          }
+        }
+        this.root.children.replace(modules);
         for (const id of this.items.keys())
-          if (!retained.has(id)) this.items.delete(id);
+          if (!retained.has(id)) {
+            this.items.delete(id);
+            this.runtimeItems.delete(id);
+          }
         this.root.error = undefined;
         this.discovered = true;
       } catch (error) {
@@ -219,6 +258,30 @@ export class ElmTestController implements vscode.Disposable {
       const result = await this.runner.runSomeTests(files);
       if (cancellation.token.isCancellationRequested) return;
       if (typeof result === "string") throw new Error(result);
+      const reported = new Set<string>();
+      const collect = (node: RunTestItem, parents: string[]): void => {
+        const labels = [...parents, node.label];
+        reported.add(testId(labels));
+        if (node.type === "suite")
+          node.children.forEach((child) => collect(child, labels));
+      };
+      result.children.forEach((child) => collect(child, []));
+      const prune = (parent: vscode.TestItem): void => {
+        for (const [, item] of parent.children) {
+          prune(item);
+          if (
+            this.runtimeItems.has(item.id) &&
+            !reported.has(item.id) &&
+            (!files || (item.uri && files.includes(item.uri.toString())))
+          ) {
+            parent.children.delete(item.id);
+            this.items.delete(item.id);
+            this.runtimeItems.delete(item.id);
+            if (pending.delete(item)) run.skipped(item);
+          }
+        }
+      };
+      prune(this.root);
       const runtimeFiles = new Map<string, vscode.Uri>();
       for (const module of result.children) {
         if (this.items.get(testId([module.label]))?.uri) continue;
@@ -252,6 +315,7 @@ export class ElmTestController implements vscode.Disposable {
           );
           item.range = parent === this.root ? undefined : parent.range;
           this.items.set(id, item);
+          this.runtimeItems.add(id);
           parent.children.add(item);
         }
         if (node.type === "suite") {
