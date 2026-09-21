@@ -32,7 +32,7 @@ import {
 } from "vscode-languageclient";
 import {
   LanguageClient,
-  ServerOptions,
+  NodeModule,
   TransportKind,
 } from "vscode-languageclient/node";
 import * as Package from "./elmPackage";
@@ -41,6 +41,7 @@ import * as ExposeUnexposeAction from "../common/exposeUnexposeAction";
 import * as Restart from "../common/restart";
 import * as TestRunner from "./test-runner/extension";
 import * as VirtualFiles from "../common/virtualFiles";
+import { ElmLanguageClient } from "./languageClient";
 
 export interface IClientSettings {
   elmFormatPath: string;
@@ -118,7 +119,7 @@ export async function activate(context: ExtensionContext): Promise<void> {
           `--inspect=${6010 + clients.size + pendingClients.size}`,
         ],
       };
-      const serverOptions: ServerOptions = {
+      const serverOptions: { run: NodeModule; debug: NodeModule } = {
         debug: {
           module,
           options: debugOptions,
@@ -153,7 +154,7 @@ export async function activate(context: ExtensionContext): Promise<void> {
         revealOutputChannelOn: RevealOutputChannelOn.Never,
         workspaceFolder,
       };
-      const client = new LanguageClient(
+      const client = new ElmLanguageClient(
         "elmLS",
         "Elm",
         serverOptions,
